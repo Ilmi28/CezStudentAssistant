@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="src/cez-student-assistant-app/cez-student-assistant-app.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="src/CezStudentAssistant.API/CezStudentAssistant.API.csproj" />
+  <Project Path="src/CezStudentAssistant.Worker/CezStudentAssistant.Worker.csproj" />
+  <Project Path="tests/CezStudentAssistant.IntegrationTests/CezStudentAssistant.IntegrationTests.csproj" />
+  <Project Path="tests/CezStudentAssistant.UnitTests/CezStudentAssistant.UnitTests.csproj" />
+</Solution>
