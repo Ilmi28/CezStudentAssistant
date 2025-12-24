@@ -24,10 +24,10 @@ jobs:
       run: dotnet restore CezStudentAssistant.slnx
 
     - name: Build
-      run: dotnet build --no-restore OcenaPracownicza.slnx
+      run: dotnet build --no-restore CezStudentAssistant.slnx
 
     - name: Test
-      run: dotnet test OcenaPracownicza.slnx
+      run: dotnet test CezStudentAssistant.slnx
   frontend:
     name: React
     runs-on: ubuntu-latest
