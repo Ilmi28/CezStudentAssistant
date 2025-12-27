@@ -1,4 +1,11 @@
 
+using CezStudentAssistant.API.Extensions;
+using CezStudentAssistant.API.Interfaces.CQRS;
+using CezStudentAssistant.API.Queries;
+using CezStudentAssistant.API.QueryHandlers;
+using CezStudentAssistant.API.Responses;
+using FluentValidation;
+
 namespace CezStudentAssistant.API
 {
     public class Program
@@ -7,28 +14,34 @@ namespace CezStudentAssistant.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            ConfigureServices(builder.Services);
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
-
-            app.MapControllers();
+            MapEndpoints(app);
+            ConfigureMiddleware(app);
 
             app.Run();
+        }
+
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddCQRSHandlers();
+            services.AddLoggingDecorator();
+            services.AddValidatorsFromAssemblyContaining<Program>();
+        }
+
+        private static void MapEndpoints(WebApplication app)
+        {
+            app.MapGet("/example-query", async ([AsParameters] ExampleQuery query, IQueryHandler<ExampleQuery, ExampleResponse> handler) 
+                => await handler.HandleAsync(query));
+
+        }
+
+        private static void ConfigureMiddleware(WebApplication app)
+        {
+            app.UseHttpsRedirection();
         }
     }
 }

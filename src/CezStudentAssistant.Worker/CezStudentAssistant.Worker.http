@@ -1,6 +1,0 @@
-@CezStudentAssistant.Worker_HostAddress = http://localhost:5206
-
-GET {{CezStudentAssistant.Worker_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
