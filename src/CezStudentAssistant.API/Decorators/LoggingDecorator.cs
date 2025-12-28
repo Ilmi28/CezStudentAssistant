@@ -1,4 +1,5 @@
 ﻿using CezStudentAssistant.API.Interfaces.CQRS;
+using CezStudentAssistant.API.Responses;
 
 namespace CezStudentAssistant.API.Decorators
 {
@@ -13,12 +14,48 @@ namespace CezStudentAssistant.API.Decorators
             where TCommand : ICommand
             where TResponse : class
         {
-            public async Task<TResponse> HandleAsync(TCommand command, CancellationToken cancellationToken = default)
+            public async Task<ApiResponse<TResponse>> HandleAsync(TCommand command, CancellationToken cancellationToken = default)
             {
                 var typeName = typeof(TCommand).Name;
 
                 logger.LogInformation(
                     "\n{Separator}\n[COMMAND] START: Handling query {CommandType}\nPayload: {@CommandPayload}\n{Separator}\n",
+                    Separator, typeName, command, Separator);
+
+                try
+                {
+                    var response = await innerHandler.HandleAsync(command, cancellationToken);
+
+                    logger.LogInformation(
+                        "\n{Separator}\n[COMMAND] END: Successfully handled {CommandType}\n{Separator}\n",
+                        Separator, typeName, Separator);
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex,
+                        "\n{Separator}\n[COMMAND] ERROR: Failed to handle {CommandType}\nMessage: {ErrorMessage}\n{Separator}\n",
+                        Separator, typeName, ex.Message, Separator);
+
+                    throw;
+                }
+            }
+        }
+
+
+        public sealed class CommandHandler<TCommand>(
+            ICommandHandler<TCommand> innerHandler,
+            ILogger<CommandHandler<TCommand>> logger)
+            : ICommandHandler<TCommand>
+            where TCommand : ICommand
+        {
+            public async Task<ApiResponse> HandleAsync(TCommand command, CancellationToken cancellationToken = default)
+            {
+                var typeName = typeof(TCommand).Name;
+
+                logger.LogInformation(
+                    "\n{Separator}\n[COMMAND] START: Handling command {CommandType}\nPayload: {@CommandPayload}\n{Separator}\n",
                     Separator, typeName, command, Separator);
 
                 try
@@ -49,7 +86,7 @@ namespace CezStudentAssistant.API.Decorators
             where TQuery : IQuery
             where TResponse : class
         {
-            public async Task<TResponse> HandleAsync(TQuery query, CancellationToken cancellationToken = default)
+            public async Task<ApiResponse<TResponse>> HandleAsync(TQuery query, CancellationToken cancellationToken = default)
             {
                 var typeName = typeof(TQuery).Name;
 

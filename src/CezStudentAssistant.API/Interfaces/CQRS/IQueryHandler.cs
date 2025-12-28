@@ -1,10 +1,12 @@
-﻿namespace CezStudentAssistant.API.Interfaces.CQRS
+﻿using CezStudentAssistant.API.Responses;
+
+namespace CezStudentAssistant.API.Interfaces.CQRS
 {
     /// <summary>
-    /// Defines a handler for processing queries and returning a response of a specified type.
+    /// Generic interface for handling queries of a specified type and returning a response asynchronously.
     /// </summary>
-    /// <typeparam name="TQuery">The type of query to be handled. Must implement the IQuery interface.</typeparam>
-    /// <typeparam name="TResponse">The type of response returned by the handler. Must be a reference type.</typeparam>
+    /// <typeparam name="TQuery">Type of the specific query.</typeparam>
+    /// <typeparam name="TResponse">Type of the specific response.</typeparam>
     public interface IQueryHandler<TQuery, TResponse>
         where TQuery : IQuery
         where TResponse : class
@@ -15,6 +17,6 @@
         /// <param name="query">The query to be handled.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the response of the specified type.</returns>
-        Task<TResponse> HandleAsync(TQuery query, CancellationToken cancellationToken = default);
+        Task<ApiResponse<TResponse>> HandleAsync(TQuery query, CancellationToken cancellationToken = default);
     }
 }

@@ -1,4 +1,5 @@
 
+using CezStudentAssistant.API.Commands;
 using CezStudentAssistant.API.Extensions;
 using CezStudentAssistant.API.Interfaces.CQRS;
 using CezStudentAssistant.API.Queries;
@@ -27,6 +28,7 @@ namespace CezStudentAssistant.API
 
         private static void ConfigureServices(IServiceCollection services)
         {
+            services.AddSwaggerGen();
             services.AddCQRSHandlers();
             services.AddLoggingDecorator();
             services.AddValidatorsFromAssemblyContaining<Program>();
@@ -37,10 +39,21 @@ namespace CezStudentAssistant.API
             app.MapGet("/example-query", async ([AsParameters] ExampleQuery query, IQueryHandler<ExampleQuery, ExampleResponse> handler) 
                 => await handler.HandleAsync(query));
 
+            app.MapPost("/example-command", async (ExampleCommand query, ICommandHandler<ExampleCommand, ExampleResponse> handler)
+                => await handler.HandleAsync(query));
+
+            app.MapPost("/example-command-without-response", async (ExampleCommand query, ICommandHandler<ExampleCommand> handler)
+                => await handler.HandleAsync(query));
+
         }
 
         private static void ConfigureMiddleware(WebApplication app)
         {
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
             app.UseHttpsRedirection();
         }
     }

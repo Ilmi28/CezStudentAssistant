@@ -13,7 +13,11 @@ namespace CezStudentAssistant.API.Extensions
                     .WithScopedLifetime()
                 .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)))
                     .AsImplementedInterfaces()
+                    .WithScopedLifetime()
+                .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)))
+                    .AsImplementedInterfaces()
                     .WithScopedLifetime());
+
 
             return services;
         }
@@ -21,6 +25,7 @@ namespace CezStudentAssistant.API.Extensions
         public static IServiceCollection AddLoggingDecorator(this IServiceCollection services)
         {
             services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingDecorator.CommandHandler<,>));
+            services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandHandler<>));
             services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingDecorator.QueryHandler<,>));
             return services;
         }

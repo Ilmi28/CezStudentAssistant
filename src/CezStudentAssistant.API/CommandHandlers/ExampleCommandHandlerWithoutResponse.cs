@@ -5,12 +5,12 @@ using System.Net;
 
 namespace CezStudentAssistant.API.CommandHandlers
 {
-    public class ExampleCommandHandler : ICommandHandler<ExampleCommand, ExampleResponse>
+    public class ExampleCommandHandlerWithoutResponse : ICommandHandler<ExampleCommand>
     {
-        public async Task<ApiResponse<ExampleResponse>> HandleAsync(ExampleCommand command, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse> HandleAsync(ExampleCommand command, CancellationToken cancellationToken = default)
         {
             await Task.Delay(3000, cancellationToken);
-            return new ApiResponse<ExampleResponse>
+            return new ApiResponse
             {
                 Success = true,
                 StatusCode = HttpStatusCode.OK,
