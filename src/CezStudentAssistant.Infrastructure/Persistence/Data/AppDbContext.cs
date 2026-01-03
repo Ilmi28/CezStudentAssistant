@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CezStudentAssistant.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Data;
 
@@ -8,4 +9,6 @@ public class AppDbContext : DbContext
         : base(options) { }
 
     public AppDbContext() { }
+
+    public DbSet<ExampleEntity> ExampleEntities { get; set; }
 }

@@ -2,6 +2,7 @@
 using CezStudentAssistant.Domain.Interfaces.CQRS;
 using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
+using CezStudentAssistant.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CezStudentAssistant.API.Extensions;
@@ -53,7 +54,7 @@ public static class ServicesExtensions
         public IServiceCollection AddRepositories()
         {
             services.Scan(scan =>
-                scan.FromAssembliesOf(typeof(IGenericRepository<>))
+                scan.FromAssembliesOf(typeof(ExampleEntityRepository))
                     .AddClasses(classes => classes.AssignableTo(typeof(IGenericRepository<>)))
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()

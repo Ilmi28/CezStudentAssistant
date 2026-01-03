@@ -27,6 +27,7 @@ public class Program
 
     private static void ConfigureServices(WebApplicationBuilder builder)
     {
+        builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddCqrsHandlers();
         builder.Services.AddLoggingDecorator();

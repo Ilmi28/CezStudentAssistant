@@ -1,18 +1,23 @@
-﻿using CezStudentAssistant.Domain.Commands;
+﻿using System.Net;
+using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
+using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+using CezStudentAssistant.Domain.Interfaces.Persistence.Repositories;
 using CezStudentAssistant.Domain.Responses;
-using System.Net;
 
 namespace CezStudentAssistant.Domain.CommandHandlers;
 
-public class ExampleCommandHandler : ICommandHandler<ExampleCommand, ExampleResponse>
+public class ExampleCommandHandler(IUnitOfWork unitOfWork)
+    : ICommandHandler<ExampleCommand, ExampleResponse>
 {
     public async Task<ApiResponse<ExampleResponse>> HandleAsync(
         ExampleCommand command,
         CancellationToken cancellationToken = default
     )
     {
-        await Task.Delay(3000, cancellationToken);
+        await unitOfWork
+            .Repository<IExampleEntityRepository>()
+            .AddAsync(new Entities.ExampleEntity());
         return new ApiResponse<ExampleResponse>
         {
             Success = true,
