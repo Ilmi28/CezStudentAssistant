@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CezStudentAssistant.Domain\CezStudentAssistant.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Persistence\Repositories\" />
   </ItemGroup>
 
