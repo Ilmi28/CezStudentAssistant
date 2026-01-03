@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="CezStudentAssistant.Domain/CezStudentAssistant.Domain.csproj" Id="e05fbf5b-4f96-4d20-88f6-8af04641ee59" />
+  <Project Path="CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj" Id="2a52dc8d-9c31-4296-8ed1-1f9210d2fe2f" />
   <Project Path="src/CezStudentAssistant.API/CezStudentAssistant.API.csproj" />
   <Project Path="src/CezStudentAssistant.Worker/CezStudentAssistant.Worker.csproj" />
   <Project Path="tests/CezStudentAssistant.IntegrationTests/CezStudentAssistant.IntegrationTests.csproj" />
