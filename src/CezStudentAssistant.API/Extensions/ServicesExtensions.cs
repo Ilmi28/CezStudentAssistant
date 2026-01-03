@@ -1,30 +1,74 @@
 ﻿using CezStudentAssistant.API.Decorators;
-using CezStudentAssistant.API.Interfaces.CQRS;
+using CezStudentAssistant.Domain.Interfaces.CQRS;
+using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+using CezStudentAssistant.Infrastructure.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace CezStudentAssistant.API.Extensions
+namespace CezStudentAssistant.API.Extensions;
+
+public static class ServicesExtensions
 {
-    public static class ServicesExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddCQRSHandlers(this IServiceCollection services)
+        public IServiceCollection AddCqrsHandlers()
         {
-            services.Scan(scan => scan.FromAssembliesOf(typeof(Program))
-                .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
+            services.Scan(scan =>
+                scan.FromAssembliesOf(typeof(IQueryHandler<,>))
+                    .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
-                .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)))
+                    .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)))
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
-                .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)))
+                    .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)))
                     .AsImplementedInterfaces()
-                    .WithScopedLifetime());
-
+                    .WithScopedLifetime()
+            );
 
             return services;
         }
 
-        public static IServiceCollection AddLoggingDecorator(this IServiceCollection services)
+        public IServiceCollection AddSqlServer(
+            bool loggingEnabled = false,
+            bool detailedErrors = false
+        )
         {
-            services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingDecorator.CommandHandler<,>));
+            var connectionString = Environment.GetEnvironmentVariable(
+                "SQLSERVER_CONNECTION_STRING"
+            );
+
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(connectionString);
+
+                if (loggingEnabled)
+                    options.EnableSensitiveDataLogging();
+                if (detailedErrors)
+                    options.EnableDetailedErrors();
+            });
+
+            return services;
+        }
+
+        public IServiceCollection AddRepositories()
+        {
+            services.Scan(scan =>
+                scan.FromAssembliesOf(typeof(IGenericRepository<>))
+                    .AddClasses(classes => classes.AssignableTo(typeof(IGenericRepository<>)))
+                    .AsImplementedInterfaces()
+                    .WithScopedLifetime()
+            );
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            return services;
+        }
+
+        public IServiceCollection AddLoggingDecorator()
+        {
+            services.Decorate(
+                typeof(ICommandHandler<,>),
+                typeof(LoggingDecorator.CommandHandler<,>)
+            );
             services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandHandler<>));
             services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingDecorator.QueryHandler<,>));
             return services;
