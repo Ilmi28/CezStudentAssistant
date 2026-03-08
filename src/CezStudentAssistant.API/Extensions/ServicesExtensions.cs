@@ -1,8 +1,10 @@
 ﻿using CezStudentAssistant.API.Decorators;
+using CezStudentAssistant.Domain.Interfaces.Common;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
 using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
 using CezStudentAssistant.Infrastructure.Persistence.Repositories;
+using CezStudentAssistant.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CezStudentAssistant.API.Extensions;
@@ -61,6 +63,17 @@ public static class ServicesExtensions
             );
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            return services;
+        }
+
+        public IServiceCollection AddServices()
+        {
+            services.Scan(scan =>
+                scan.FromAssembliesOf(typeof(CurrentUserService))
+                    .AddClasses(classes => classes.AssignableTo(typeof(IScopedService)))
+                    .AsImplementedInterfaces()
+                    .WithScopedLifetime()
+            );
             return services;
         }
 

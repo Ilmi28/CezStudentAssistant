@@ -11,7 +11,9 @@ public class ApiResponse
 
     public HttpStatusCode StatusCode { get; set; }
 
-    public string? Message { get; set; }
+    public string ApplicationCode { get; set; } = string.Empty;
+
+    public string Message { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -21,7 +23,6 @@ public class ApiResponse
 /// This is useful for returning both status information and a typed result from API endpoints.</remarks>
 /// <typeparam name="T">The type of the data payload included in the response. Must be a reference type.</typeparam>
 public class ApiResponse<T> : ApiResponse
-    where T : class
 {
     public T? Data { get; set; }
 }

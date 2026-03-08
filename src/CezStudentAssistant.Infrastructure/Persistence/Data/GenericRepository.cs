@@ -1,6 +1,6 @@
-﻿using System.Linq.Expressions;
-using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+﻿using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Data;
 
@@ -13,31 +13,21 @@ public class GenericRepository<TEntity>(DbContext context) : IGenericRepository<
     public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         await _dbSet.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        entity.LastModifiedAt = DateTime.UtcNow;
-
         _dbSet.Update(entity);
-
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        entity.DeletedAt = DateTime.UtcNow;
-
-        _dbSet.Update(entity);
-
-        await _context.SaveChangesAsync(cancellationToken);
+        _dbSet.Remove(entity);
     }
 
     public async Task<bool> ExistsAsync(
         Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
         return await _dbSet.AnyAsync(predicate, cancellationToken);
     }
@@ -45,8 +35,7 @@ public class GenericRepository<TEntity>(DbContext context) : IGenericRepository<
     public async Task<IEnumerable<TEntity>> FindAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes
-    )
+        params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet.AsNoTracking();
 
@@ -63,10 +52,7 @@ public class GenericRepository<TEntity>(DbContext context) : IGenericRepository<
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(
-        CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes
-    )
+    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet.AsNoTracking();
 
@@ -81,11 +67,7 @@ public class GenericRepository<TEntity>(DbContext context) : IGenericRepository<
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<TEntity?> GetByIdAsync(
-        Guid id,
-        CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes
-    )
+    public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes)
     {
         if (includes == null || includes.Length == 0)
         {

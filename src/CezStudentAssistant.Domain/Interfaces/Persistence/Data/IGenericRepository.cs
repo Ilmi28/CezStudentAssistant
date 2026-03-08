@@ -22,10 +22,7 @@ public interface IGenericRepository<TEntity>
     /// a navigation property to be eagerly loaded.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable collection of all
     /// entities of type TEntity.</returns>
-    Task<IEnumerable<TEntity>> GetAllAsync(
-        CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes
-    );
+    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes);
 
     /// <summary>
     /// Asynchronously retrieves entities that satisfy the specified predicate.
@@ -36,11 +33,7 @@ public interface IGenericRepository<TEntity>
     /// navigation properties.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a collection of entities that match
     /// the specified predicate. The collection is empty if no entities are found.</returns>
-    Task<IEnumerable<TEntity>> FindAsync(
-        Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes
-    );
+    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes);
 
     /// <summary>
     /// Asynchronously determines whether any entities satisfy the specified predicate.
@@ -49,10 +42,7 @@ public interface IGenericRepository<TEntity>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains <see langword="true"/> if any
     /// entities match the predicate; otherwise, <see langword="false"/>.</returns>
-    Task<bool> ExistsAsync(
-        Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken = default
-    );
+    Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves an entity by its unique identifier, optionally including related entities.
@@ -63,11 +53,7 @@ public interface IGenericRepository<TEntity>
     /// navigation property to be eagerly loaded.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the entity matching the specified
     /// identifier, or <see langword="null"/> if no entity is found.</returns>
-    Task<TEntity?> GetByIdAsync(
-        Guid id,
-        CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes
-    );
+    Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes);
 
     /// <summary>
     /// Asynchronously adds the specified entity to the data store.

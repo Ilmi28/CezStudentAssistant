@@ -17,4 +17,9 @@ public class UnitOfWork(AppDbContext context, IServiceProvider serviceProvider) 
     {
         return serviceProvider.GetRequiredService<TRepository>();
     }
+
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return await context.SaveChangesAsync(cancellationToken);
+    }
 }

@@ -18,10 +18,7 @@ public interface ICommandHandler<TCommand, TResponse>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an <see
     /// cref="ApiResponse{TResponse}"/> with the outcome of the command.</returns>
-    Task<ApiResponse<TResponse>> HandleAsync(
-        TCommand command,
-        CancellationToken cancellationToken = default
-    );
+    Task<ApiResponse<TResponse>> HandleAsync(TCommand command, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
