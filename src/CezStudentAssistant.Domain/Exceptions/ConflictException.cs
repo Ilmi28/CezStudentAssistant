@@ -2,9 +2,9 @@
 
 namespace CezStudentAssistant.Domain.Exceptions;
 
-public class NotFoundException : AppException
+public class ConflictException : AppException
 {
-    public NotFoundException(ApiMessage message) : base(message)
+    public ConflictException(ApiMessage message) : base(message)
     {
         ApiMessage = message;
     }

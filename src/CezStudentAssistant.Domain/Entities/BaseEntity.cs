@@ -8,5 +8,4 @@ public abstract class BaseEntity : IBaseEntity
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastModifiedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
-    public Guid? UserId { get; set; }
 }

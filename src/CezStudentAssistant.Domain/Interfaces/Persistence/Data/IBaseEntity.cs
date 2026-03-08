@@ -14,6 +14,4 @@ public interface IBaseEntity
     public DateTime LastModifiedAt { get; set; }
 
     public DateTime? DeletedAt { get; set; }
-
-    public Guid? UserId { get; set; }
 }

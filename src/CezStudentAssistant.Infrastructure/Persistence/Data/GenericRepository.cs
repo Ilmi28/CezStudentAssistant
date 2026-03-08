@@ -4,10 +4,10 @@ using System.Linq.Expressions;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Data;
 
-public class GenericRepository<TEntity>(DbContext context) : IGenericRepository<TEntity>
+public class GenericRepository<TEntity>(AppDbContext context) : IGenericRepository<TEntity>
     where TEntity : class, IBaseEntity
 {
-    protected readonly DbContext _context = context;
+    protected readonly AppDbContext _context = context;
     protected readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
     public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default)

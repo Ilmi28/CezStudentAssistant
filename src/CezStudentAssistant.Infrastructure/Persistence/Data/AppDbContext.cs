@@ -10,7 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserSe
 {
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
-        foreach (var entry in ChangeTracker.Entries<IBaseEntity>())
+        foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
         {
             switch (entry.State)
             {

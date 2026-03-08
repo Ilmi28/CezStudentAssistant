@@ -9,7 +9,6 @@ namespace CezStudentAssistant.Domain.Interfaces.CQRS;
 /// <typeparam name="TResponse">The type of response returned after handling the command. Must be a reference type.</typeparam>
 public interface ICommandHandler<TCommand, TResponse>
     where TCommand : ICommand
-    where TResponse : class
 {
     /// <summary>
     /// Asynchronously processes the specified command and returns an API response containing the result.
