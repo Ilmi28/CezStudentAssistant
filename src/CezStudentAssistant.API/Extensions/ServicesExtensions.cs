@@ -74,6 +74,13 @@ public static class ServicesExtensions
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
             );
+
+            services.Scan(scan =>
+                scan.FromAssembliesOf(typeof(PasswordService))
+                    .AddClasses(classes => classes.AssignableTo(typeof(ISingletonService)))
+                    .AsImplementedInterfaces()
+                    .WithSingletonLifetime()
+            );
             return services;
         }
 

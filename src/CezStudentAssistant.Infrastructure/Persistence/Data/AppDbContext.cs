@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserSe
                 case EntityState.Added:
                     entry.Entity.UserId = currentUserService.UserId;
                     entry.Entity.CreatedAt = DateTime.UtcNow;
+                    entry.Entity.LastModifiedAt = DateTime.UtcNow;
                     break;
 
                 case EntityState.Modified:
@@ -34,4 +35,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserSe
     }
 
     public DbSet<ExampleEntity> ExampleEntities { get; set; }
+
+    public DbSet<User> Users { get; set; }
 }

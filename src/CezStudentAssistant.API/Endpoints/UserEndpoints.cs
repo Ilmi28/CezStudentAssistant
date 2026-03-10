@@ -1,0 +1,17 @@
+﻿using CezStudentAssistant.Domain.Commands;
+using CezStudentAssistant.Domain.Interfaces.CQRS;
+
+namespace CezStudentAssistant.API.Endpoints;
+
+public static class UserEndpoints
+{
+    public static void MapUserEndpoints(this WebApplication app)
+    {
+        var group = app.MapGroup("/users").WithTags("Users");
+
+        group.MapPost(
+            "/register",
+            async (RegisterUserCommand command, ICommandHandler<RegisterUserCommand, Guid> handler)
+            => await handler.HandleAsync(command));
+    }
+}

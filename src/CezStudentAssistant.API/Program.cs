@@ -1,3 +1,4 @@
+using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.API.Extensions;
 using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.DTOs;
@@ -51,6 +52,7 @@ public class Program
 
     private static void MapEndpoints(WebApplication app)
     {
+        app.MapUserEndpoints();
         app.MapGet(
             "/example-query",
             async ([AsParameters] ExampleQuery query, IQueryHandler<ExampleQuery, ExampleResponse> handler)
@@ -79,12 +81,11 @@ public class Program
 
                 ApiResponse apiResponse = exception switch
                 {
-                    ApiValidationException validationException =>
-                        new ValidationResponse(validationException.ApiMessage, validationException.Errors),
-
                     AppException appException => appException switch
                     {
                         NotFoundException => new NotFoundResponse(appException.ApiMessage),
+                        ConflictException => new ConflictResponse(appException.ApiMessage),
+                        ApiValidationException => new ValidationResponse(appException.ApiMessage, ((ApiValidationException)appException).Errors),
                         _ => new ServerErrorResponse(appException.ApiMessage)
                     },
 
@@ -92,7 +93,7 @@ public class Program
                 };
 
                 context.Response.StatusCode = (int)apiResponse.StatusCode;
-                await context.Response.WriteAsJsonAsync(apiResponse);
+                await context.Response.WriteAsJsonAsync((object)apiResponse);
             });
         });
 
