@@ -1,11 +1,12 @@
-﻿using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+﻿using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Data;
 
 public class GenericRepository<TEntity>(AppDbContext context) : IGenericRepository<TEntity>
-    where TEntity : class, IBaseEntity
+    where TEntity : BaseEntity
 {
     protected readonly AppDbContext _context = context;
     protected readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();

@@ -1,8 +1,6 @@
-﻿using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+﻿namespace CezStudentAssistant.Domain.Entities;
 
-namespace CezStudentAssistant.Domain.Entities;
-
-public abstract class BaseEntity : IBaseEntity
+public abstract class BaseEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

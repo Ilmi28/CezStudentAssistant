@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using CezStudentAssistant.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 
@@ -10,7 +11,7 @@ namespace CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 /// with a data store such as a database. All operations are asynchronous to support non-blocking data access.</remarks>
 /// <typeparam name="TEntity">The type of entity managed by the repository. Must implement the IBaseEntity interface.</typeparam>
 public interface IGenericRepository<TEntity>
-    where TEntity : IBaseEntity
+    where TEntity : BaseEntity
 {
     /// <summary>
     /// Asynchronously retrieves all entities of type TEntity from the data source.

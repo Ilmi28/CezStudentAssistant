@@ -12,22 +12,29 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserSe
     {
         foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
         {
-            switch (entry.State)
+            if (entry.Entity is BaseEntity baseEntity)
             {
-                case EntityState.Added:
-                    entry.Entity.UserId = currentUserService.UserId;
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
-                    entry.Entity.LastModifiedAt = DateTime.UtcNow;
-                    break;
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        baseEntity.CreatedAt = DateTime.UtcNow;
+                        baseEntity.LastModifiedAt = DateTime.UtcNow;
+                        break;
 
-                case EntityState.Modified:
-                    entry.Entity.LastModifiedAt = DateTime.UtcNow;
-                    break;
+                    case EntityState.Modified:
+                        baseEntity.LastModifiedAt = DateTime.UtcNow;
+                        break;
 
-                case EntityState.Deleted:
-                    entry.State = EntityState.Modified;
-                    entry.Entity.DeletedAt = DateTime.UtcNow;
-                    break;
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified;
+                        baseEntity.DeletedAt = DateTime.UtcNow;
+                        break;
+                }
+            }
+
+            if (entry.Entity is IAuditableEntity auditable && entry.State == EntityState.Added)
+            {
+                auditable.UserId = currentUserService.UserId;
             }
         }
 

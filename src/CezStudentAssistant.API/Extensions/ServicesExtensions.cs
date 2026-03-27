@@ -88,10 +88,10 @@ public static class ServicesExtensions
         {
             services.Decorate(
                 typeof(ICommandHandler<,>),
-                typeof(LoggingDecorator.CommandHandler<,>)
+                typeof(LoggingDecorator.CommandHandlerDecorator<,>)
             );
-            services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandHandler<>));
-            services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingDecorator.QueryHandler<,>));
+            services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandHandlerDecorator<>));
+            services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingDecorator.QueryHandlerDecorator<,>));
             return services;
         }
     }

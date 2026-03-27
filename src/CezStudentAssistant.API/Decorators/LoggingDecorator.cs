@@ -7,12 +7,11 @@ public static class LoggingDecorator
 {
     private const string Separator = "==================================================";
 
-    public sealed class CommandHandler<TCommand, TResponse>(
+    public sealed class CommandHandlerDecorator<TCommand, TResponse>(
         ICommandHandler<TCommand, TResponse> innerHandler,
-        ILogger<CommandHandler<TCommand, TResponse>> logger
+        ILogger<CommandHandlerDecorator<TCommand, TResponse>> logger
     ) : ICommandHandler<TCommand, TResponse>
         where TCommand : ICommand
-        where TResponse : class
     {
         public async Task<ApiResponse<TResponse>> HandleAsync(
             TCommand command,
@@ -58,9 +57,9 @@ public static class LoggingDecorator
         }
     }
 
-    public sealed class CommandHandler<TCommand>(
+    public sealed class CommandHandlerDecorator<TCommand>(
         ICommandHandler<TCommand> innerHandler,
-        ILogger<CommandHandler<TCommand>> logger
+        ILogger<CommandHandlerDecorator<TCommand>> logger
     ) : ICommandHandler<TCommand>
         where TCommand : ICommand
     {
@@ -108,9 +107,9 @@ public static class LoggingDecorator
         }
     }
 
-    public sealed class QueryHandler<TQuery, TResponse>(
+    public sealed class QueryHandlerDecorator<TQuery, TResponse>(
         IQueryHandler<TQuery, TResponse> innerHandler,
-        ILogger<QueryHandler<TQuery, TResponse>> logger
+        ILogger<QueryHandlerDecorator<TQuery, TResponse>> logger
     ) : IQueryHandler<TQuery, TResponse>
         where TQuery : IQuery
         where TResponse : class
