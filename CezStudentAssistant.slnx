@@ -4,6 +4,10 @@
     <File Path="scripts/remove-migration.bat" />
     <File Path="scripts/update-db.bat" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path="docker-compose.yml" />
+  </Folder>
   <Project Path="src/CezStudentAssistant.API/CezStudentAssistant.API.csproj" />
   <Project Path="src/CezStudentAssistant.Domain/CezStudentAssistant.Domain.csproj" />
   <Project Path="src/CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj" />

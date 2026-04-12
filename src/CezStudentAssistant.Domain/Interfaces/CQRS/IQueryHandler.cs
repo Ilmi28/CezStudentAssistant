@@ -9,7 +9,6 @@ namespace CezStudentAssistant.Domain.Interfaces.CQRS;
 /// <typeparam name="TResponse">Type of the specific response.</typeparam>
 public interface IQueryHandler<TQuery, TResponse>
     where TQuery : IQuery
-    where TResponse : class
 {
     /// <summary>
     /// Handles the specified query asynchronously and returns a response of the specified type.

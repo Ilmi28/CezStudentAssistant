@@ -1,0 +1,15 @@
+# Ignore local build artifacts
+**/bin/
+**/obj/
+
+# Ignore IDE settings
+.vs/
+.vscode/
+
+# Ignore version control
+.git/
+
+# Ignore frontend dependencies (we install these inside the container)
+**/node_modules/
+**/dist/
+**/build/

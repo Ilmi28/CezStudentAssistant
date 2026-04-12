@@ -1,0 +1,30 @@
+# Build folders - CRITICAL to ignore
+**/bin/
+**/obj/
+
+# Source Control
+.git/
+.gitignore
+
+# IDE specific
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.dotSettings
+
+# Local Environment/Secrets
+*.local.settings.json
+appsettings.Development.json
+secrets.json
+.env
+
+# Docker/Podman specific
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# Test results and logs
+TestResults/
+*.log
