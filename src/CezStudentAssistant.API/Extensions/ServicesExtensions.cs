@@ -42,7 +42,7 @@ public static class ServicesExtensions
 
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options.UseNpgsql(connectionString);
 
                 if (loggingEnabled)
                     options.EnableSensitiveDataLogging();

@@ -23,6 +23,12 @@
       "executablePath": "C:\\Users\\Ilmi\\AppData\\Local\\Programs\\Podman\\podman.exe",
       "commandLineArgs": "compose up --build",
       "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant"
+    },
+    "Docker Compose API Rebuild": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Ilmi\\AppData\\Local\\Programs\\Podman\\podman.exe",
+      "commandLineArgs": "compose up --build api",
+      "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant"
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"
