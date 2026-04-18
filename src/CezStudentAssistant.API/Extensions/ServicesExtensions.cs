@@ -37,7 +37,7 @@ public static class ServicesExtensions
         )
         {
             var connectionString = Environment.GetEnvironmentVariable(
-                "SQLSERVER_CONNECTION_STRING"
+                "DB_CONNECTION_STRING"
             );
 
             services.AddDbContext<AppDbContext>(options =>

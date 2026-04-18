@@ -4,11 +4,11 @@ namespace CezStudentAssistant.Domain.Responses;
 
 public class ServerErrorResponse : ApiResponse
 {
-    public ServerErrorResponse(ApiMessage message)
+    public ServerErrorResponse()
     {
         Success = false;
         StatusCode = HttpStatusCode.InternalServerError;
-        Message = message.Message;
-        ApplicationCode = message.Code;
+        Message = "An unexpected error occurred while processing your request. Please try again later.";
+        ApplicationCode = "INTERNAL_SERVER_ERROR";
     }
 }

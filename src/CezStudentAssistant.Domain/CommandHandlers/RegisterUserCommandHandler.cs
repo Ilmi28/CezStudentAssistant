@@ -24,22 +24,22 @@ public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUser
         _passwordService = passwordService;
     }
 
-    protected override ApiMessage ValidationMessage => new ApiMessage("VALIDATION_ERROR", "Validation failed");
+    protected override ApiMessage ValidationMessage => new ApiMessage(this, "Validation failed");
 
-    protected override ApiMessage SuccessMessage => new ApiMessage("SUCCESS", "User registered successfully");
+    protected override ApiMessage SuccessMessage => new ApiMessage(this, "User registered successfully");
 
-    protected override ApiMessage ErrorMessage => new ApiMessage("ERROR", "An error occurred while registering the user");
+    protected override ApiMessage ErrorMessage => new ApiMessage(this, "An error occurred while registering the user");
     protected async override Task<Guid> ExecuteAsync(RegisterUserCommand command, CancellationToken ct)
     {
         var userRepo = _unitOfWork.Repository<IUserRepository>();
 
         var userWithEmailExists = await userRepo.ExistsAsync(x => x.Email == command.Email, ct);
         if (userWithEmailExists)
-            throw new ConflictException(new ApiMessage("CONFLICT", "Email already exists"));
+            throw new ConflictException(new ApiMessage(this, "Email already exists"));
 
         var userWithUserNameExists = await userRepo.ExistsAsync(x => x.UserName == command.UserName, ct);
         if (userWithUserNameExists)
-            throw new ConflictException(new ApiMessage("CONFLICT", "Username already exists"));
+            throw new ConflictException(new ApiMessage(this, "Username already exists"));
         var user = new User
         {
             UserName = command.UserName,

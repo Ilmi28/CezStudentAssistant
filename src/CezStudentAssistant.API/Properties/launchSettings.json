@@ -1,5 +1,16 @@
 {
   "profiles": {
+    "Local API": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:7001;http://localhost:7000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
     "Docker Compose": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\Ilmi\\AppData\\Local\\Programs\\Podman\\podman.exe",

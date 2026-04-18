@@ -9,6 +9,6 @@ public class ConflictResponse : ApiResponse
         Success = false;
         StatusCode = HttpStatusCode.Conflict;
         Message = message.Message;
-        ApplicationCode = message.Code;
+        ApplicationCode = $"{message.Source}_{message.Message}";
     }
 }

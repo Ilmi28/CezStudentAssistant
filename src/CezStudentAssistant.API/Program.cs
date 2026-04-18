@@ -1,7 +1,6 @@
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.API.Extensions;
 using CezStudentAssistant.Domain.Commands;
-using CezStudentAssistant.Domain.DTOs;
 using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
 using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
@@ -18,7 +17,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        DotNetEnv.Env.Load();
+        DotNetEnv.Env.Load(".env.local");
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -86,10 +85,10 @@ public class Program
                         NotFoundException => new NotFoundResponse(appException.ApiMessage),
                         ConflictException => new ConflictResponse(appException.ApiMessage),
                         ApiValidationException => new ValidationResponse(appException.ApiMessage, ((ApiValidationException)appException).Errors),
-                        _ => new ServerErrorResponse(appException.ApiMessage)
+                        _ => new ServerErrorResponse()
                     },
 
-                    _ => new ServerErrorResponse(CommonApiMessage.AppServerError)
+                    _ => new ServerErrorResponse()
                 };
 
                 context.Response.StatusCode = (int)apiResponse.StatusCode;

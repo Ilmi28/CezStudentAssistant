@@ -11,7 +11,7 @@ public class ValidationResponse : ApiResponse
         Success = false;
         StatusCode = HttpStatusCode.BadRequest;
         Message = message.Message;
-        ApplicationCode = message.Code;
+        ApplicationCode = $"{message.Source}_VALIDATION";
         Errors = errors;
     }
 }

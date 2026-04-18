@@ -9,6 +9,6 @@ public class NotFoundResponse : ApiResponse
         Success = false;
         StatusCode = HttpStatusCode.NotFound;
         Message = message.Message;
-        ApplicationCode = message.Code;
+        ApplicationCode = $"{message.Source}_NOT_FOUND";
     }
 }

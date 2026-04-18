@@ -10,7 +10,7 @@ public class SuccessResponse<T> : ApiResponse<T>
         StatusCode = HttpStatusCode.OK;
         Message = message.Message;
         Data = data;
-        ApplicationCode = message.Code;
+        ApplicationCode = $"{message.Source}_SUCCESS";
     }
 }
 
@@ -21,6 +21,6 @@ public class SuccessResponse : ApiResponse
         Success = true;
         StatusCode = HttpStatusCode.OK;
         Message = message.Message;
-        ApplicationCode = message.Code;
+        ApplicationCode = $"{message.Source}_SUCCESS";
     }
 }
