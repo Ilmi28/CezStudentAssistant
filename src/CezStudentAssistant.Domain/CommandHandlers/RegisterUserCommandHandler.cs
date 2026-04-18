@@ -1,5 +1,4 @@
 ﻿using CezStudentAssistant.Domain.Commands;
-using CezStudentAssistant.Domain.DTOs;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
@@ -25,24 +24,22 @@ public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUser
         _passwordService = passwordService;
     }
 
-    protected override ApiMessage ValidationMessage => UserApiMessage.RegisterUserValidation;
+    protected override ApiMessage ValidationMessage => new ApiMessage("VALIDATION_ERROR", "Validation failed");
 
-    protected override ApiMessage SuccessMessage => UserApiMessage.RegisterUserSuccess;
+    protected override ApiMessage SuccessMessage => new ApiMessage("SUCCESS", "User registered successfully");
 
-    protected override ApiMessage ErrorMessage => UserApiMessage.RegisterUserError;
-
+    protected override ApiMessage ErrorMessage => new ApiMessage("ERROR", "An error occurred while registering the user");
     protected async override Task<Guid> ExecuteAsync(RegisterUserCommand command, CancellationToken ct)
     {
         var userRepo = _unitOfWork.Repository<IUserRepository>();
 
         var userWithEmailExists = await userRepo.ExistsAsync(x => x.Email == command.Email, ct);
         if (userWithEmailExists)
-            throw new ConflictException(UserApiMessage.RegisterUserEmailExists);
+            throw new ConflictException(new ApiMessage("CONFLICT", "Email already exists"));
 
         var userWithUserNameExists = await userRepo.ExistsAsync(x => x.UserName == command.UserName, ct);
         if (userWithUserNameExists)
-            throw new ConflictException(UserApiMessage.RegisterUserUserNameExists);
-
+            throw new ConflictException(new ApiMessage("CONFLICT", "Username already exists"));
         var user = new User
         {
             UserName = command.UserName,

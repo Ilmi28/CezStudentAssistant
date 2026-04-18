@@ -1,15 +1,18 @@
 ﻿using CezStudentAssistant.Domain.Commands;
-using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
-using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 using CezStudentAssistant.Domain.Responses;
 
 namespace CezStudentAssistant.Domain.CommandHandlers;
 
-public class ExampleCommandHandler(IUnitOfWork unitOfWork) : ICommandHandler<ExampleCommand, ExampleResponse>
+public class ExampleCommandHandler : BaseCommandHandler<ExampleCommand, ExampleResponse>,
+    ICommandHandler<ExampleCommand, ExampleResponse>
 {
-    public async Task<ApiResponse<ExampleResponse>> HandleAsync(ExampleCommand command, CancellationToken cancellationToken = default)
+    protected override ApiMessage SuccessMessage => new ApiMessage("SUCCESS", "Operation completed successfully");
+
+    protected override ApiMessage ErrorMessage => new ApiMessage("ERROR", "An error occurred");
+
+    protected async override Task<ExampleResponse> ExecuteAsync(ExampleCommand command, CancellationToken ct)
     {
-        throw new NotFoundException(new ApiMessage("SOMETHING_WRONG", "Something went wrong"));
+        return new ExampleResponse();
     }
 }

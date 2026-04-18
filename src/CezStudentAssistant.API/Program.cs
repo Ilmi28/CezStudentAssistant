@@ -26,8 +26,8 @@ public class Program
 
         var app = builder.Build();
 
-        MapEndpoints(app);
         ConfigureMiddleware(app);
+        MapEndpoints(app);
 
         app.Run();
     }

@@ -39,7 +39,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ExampleEntities");
+                    b.ToTable("ExampleEntities", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.User", b =>
@@ -70,7 +70,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 #pragma warning restore 612, 618
         }

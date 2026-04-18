@@ -1,34 +1,47 @@
 {
   "profiles": {
-    "http": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5021"
-    },
-    "https": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7073;http://localhost:5021"
-    },
     "Docker Compose": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\Ilmi\\AppData\\Local\\Programs\\Podman\\podman.exe",
       "commandLineArgs": "compose up --build",
       "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant"
     },
-    "Docker Compose API Rebuild": {
+    "Docker Compose API": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\Ilmi\\AppData\\Local\\Programs\\Podman\\podman.exe",
       "commandLineArgs": "compose up --build api",
       "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant"
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "Docker Compose UI": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Ilmi\\AppData\\Local\\Programs\\Podman\\podman.exe",
+      "commandLineArgs": "compose up --build frontend",
+      "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant"
+    },
+    "Docker Compose UP": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Ilmi\\AppData\\Local\\Programs\\Podman\\podman.exe",
+      "commandLineArgs": "compose up --remove-orphans",
+      "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant"
+    },
+    "Migration Remove": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts\\remove-migration.bat",
+      "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts"
+    },
+    "Migration Add": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts\\add-migration.bat",
+      "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts"
+    },
+    "Update DB": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts\\update-db.bat",
+      "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts"
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"
