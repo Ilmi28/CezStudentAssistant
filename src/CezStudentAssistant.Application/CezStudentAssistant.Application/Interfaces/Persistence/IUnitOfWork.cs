@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+﻿namespace CezStudentAssistant.Application.Interfaces.Persistence;
 
 /// <summary>
 /// Defines a contract for a unit of work that coordinates the writing of changes and provides access to repositories

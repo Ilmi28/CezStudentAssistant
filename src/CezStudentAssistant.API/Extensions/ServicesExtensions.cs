@@ -1,4 +1,5 @@
 ﻿using CezStudentAssistant.API.Decorators;
+using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Interfaces.Common;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
 using CezStudentAssistant.Domain.Interfaces.Persistence.Data;

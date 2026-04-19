@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+﻿namespace CezStudentAssistant.Domain.Interfaces.Repositories;
 
 public interface IAuditableEntity
 {

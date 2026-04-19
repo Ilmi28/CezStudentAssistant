@@ -8,10 +8,18 @@
     <File Path=".dockerignore" />
     <File Path="docker-compose.yml" />
   </Folder>
-  <Project Path="src/CezStudentAssistant.API/CezStudentAssistant.API.csproj" />
-  <Project Path="src/CezStudentAssistant.Domain/CezStudentAssistant.Domain.csproj" />
-  <Project Path="src/CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj" />
-  <Project Path="src/CezStudentAssistant.Worker/CezStudentAssistant.Worker.csproj" />
-  <Project Path="tests/CezStudentAssistant.IntegrationTests/CezStudentAssistant.IntegrationTests.csproj" />
-  <Project Path="tests/CezStudentAssistant.UnitTests/CezStudentAssistant.UnitTests.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/CezStudentAssistant.API/CezStudentAssistant.API.csproj" />
+    <Project Path="src/CezStudentAssistant.Application/CezStudentAssistant.Application/CezStudentAssistant.Application.csproj" Id="1777243a-dbe1-4090-8d62-0b5722a4c405" />
+    <Project Path="src/CezStudentAssistant.Domain/CezStudentAssistant.Domain.csproj" />
+    <Project Path="src/CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj" />
+    <Project Path="src/CezStudentAssistant.Worker/CezStudentAssistant.Worker.csproj" />
+  </Folder>
+  <Folder Name="/src/ExternalServices/">
+    <Project Path="src/ExternalServices/CezStudentAssistant.ExternalServices.Cez/CezStudentAssistant.Cez.csproj" Id="da5f0939-4e58-4cf5-be3b-33cdd020fd7d" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CezStudentAssistant.IntegrationTests/CezStudentAssistant.IntegrationTests.csproj" />
+    <Project Path="tests/CezStudentAssistant.UnitTests/CezStudentAssistant.UnitTests.csproj" />
+  </Folder>
 </Solution>

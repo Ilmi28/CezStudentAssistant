@@ -1,14 +1,15 @@
-﻿using CezStudentAssistant.Domain.Commands;
+﻿using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Responses;
+using CezStudentAssistant.Domain.CommandHandlers;
+using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
-using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
-using CezStudentAssistant.Domain.Interfaces.Persistence.Repositories;
+using CezStudentAssistant.Domain.Interfaces.Repositories;
 using CezStudentAssistant.Domain.Interfaces.Services;
-using CezStudentAssistant.Domain.Responses;
 using FluentValidation;
 
-namespace CezStudentAssistant.Domain.CommandHandlers;
+namespace CezStudentAssistant.Application.CommandHandlers;
 
 public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUserCommand, Guid>,
     ICommandHandler<RegisterUserCommand, Guid>

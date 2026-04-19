@@ -1,4 +1,5 @@
-﻿using CezStudentAssistant.Domain.Responses;
+﻿using CezStudentAssistant.Application.Responses;
+using CezStudentAssistant.Domain.Responses;
 using FluentValidation.Results;
 
 namespace CezStudentAssistant.Domain.Exceptions;

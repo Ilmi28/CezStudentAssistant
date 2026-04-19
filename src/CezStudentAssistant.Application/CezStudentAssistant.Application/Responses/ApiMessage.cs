@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Domain.Responses;
+﻿namespace CezStudentAssistant.Application.Responses;
 
 
 public readonly struct ApiMessage(object source, string message)

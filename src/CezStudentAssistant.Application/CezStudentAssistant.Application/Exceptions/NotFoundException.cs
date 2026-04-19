@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Domain.Responses;
+﻿using CezStudentAssistant.Application.Responses;
 
 namespace CezStudentAssistant.Domain.Exceptions;
 

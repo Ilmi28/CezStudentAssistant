@@ -1,5 +1,4 @@
-﻿using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using CezStudentAssistant.Application.Interfaces.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Data;
