@@ -1,7 +1,8 @@
 ﻿using CezStudentAssistant.Domain.Interfaces.CQRS;
 using CezStudentAssistant.Domain.Responses;
+using Microsoft.Extensions.Logging;
 
-namespace CezStudentAssistant.API.Decorators;
+namespace CezStudentAssistant.Application.Decorators;
 
 public static class LoggingDecorator
 {

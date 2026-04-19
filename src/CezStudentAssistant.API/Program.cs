@@ -1,14 +1,11 @@
 using CezStudentAssistant.API.Endpoints;
-using CezStudentAssistant.API.Extensions;
-using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application;
 using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
 using CezStudentAssistant.Domain.Queries;
 using CezStudentAssistant.Domain.Responses;
-using CezStudentAssistant.Domain.Validators;
-using CezStudentAssistant.Infrastructure.Persistence.Data;
-using FluentValidation;
+using CezStudentAssistant.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace CezStudentAssistant.API;
@@ -35,18 +32,9 @@ public class Program
     {
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddCqrsHandlers();
-        builder.Services.AddLoggingDecorator();
-        builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserCommandValidator>();
-        builder.Services.AddRepositories();
-        builder.Services.AddServices();
-        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddHttpContextAccessor();
-
-        if (builder.Environment.IsDevelopment())
-            builder.Services.AddSqlServer(loggingEnabled: true, detailedErrors: true);
-        else
-            builder.Services.AddSqlServer();
+        builder.Services.AddApplication();
+        builder.Services.AddInstrastructure(builder.Environment.IsDevelopment());
     }
 
     private static void MapEndpoints(WebApplication app)
