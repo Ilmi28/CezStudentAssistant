@@ -2,8 +2,6 @@
 using CezStudentAssistant.Domain.Interfaces.Common;
 using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
-using CezStudentAssistant.Infrastructure.Persistence.Repositories;
-using CezStudentAssistant.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,8 +42,9 @@ public static class DependencyInjection
 
         private IServiceCollection AddRepositories()
         {
+            var asesmblies = AppDomain.CurrentDomain.GetAssemblies();
             services.Scan(scan =>
-                scan.FromAssembliesOf(typeof(ExampleEntityRepository))
+                scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
                     .AddClasses(classes => classes.AssignableTo(typeof(IGenericRepository<>)))
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
@@ -58,18 +57,12 @@ public static class DependencyInjection
         private IServiceCollection AddServices()
         {
             services.Scan(scan =>
-                scan.FromAssembliesOf(typeof(CurrentUserService))
+                scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
                     .AddClasses(classes => classes.AssignableTo(typeof(IScopedService)))
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
             );
 
-            services.Scan(scan =>
-                scan.FromAssembliesOf(typeof(PasswordService))
-                    .AddClasses(classes => classes.AssignableTo(typeof(ISingletonService)))
-                    .AsImplementedInterfaces()
-                    .WithSingletonLifetime()
-            );
             return services;
         }
     }
