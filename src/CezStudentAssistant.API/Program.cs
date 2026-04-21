@@ -1,5 +1,6 @@
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.Application;
+using CezStudentAssistant.Cez;
 using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
@@ -35,6 +36,7 @@ public class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddApplication();
         builder.Services.AddInstrastructure(builder.Environment.IsDevelopment());
+        builder.Services.AddCez();
     }
 
     private static void MapEndpoints(WebApplication app)

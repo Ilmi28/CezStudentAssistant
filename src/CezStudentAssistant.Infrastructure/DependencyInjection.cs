@@ -62,6 +62,12 @@ public static class DependencyInjection
                     .AsImplementedInterfaces()
                     .WithScopedLifetime()
             );
+            services.Scan(scan =>
+                scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
+                    .AddClasses(classes => classes.AssignableTo(typeof(ISingletonService)))
+                    .AsImplementedInterfaces()
+                    .WithSingletonLifetime()
+            );
 
             return services;
         }
