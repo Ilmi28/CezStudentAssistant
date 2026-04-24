@@ -3,7 +3,7 @@ using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
 using CezStudentAssistant.Domain.Responses;
 
-namespace CezStudentAssistant.Domain.CommandHandlers;
+namespace CezStudentAssistant.Application.CommandHandlers;
 
 public abstract class BaseCommandHandler<TCommand> : ICommandHandler<TCommand>
     where TCommand : ICommand

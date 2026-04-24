@@ -1,6 +1,7 @@
-﻿using System.Net;
+﻿using CezStudentAssistant.Domain.Responses;
+using System.Net;
 
-namespace CezStudentAssistant.Domain.Responses;
+namespace CezStudentAssistant.Application.Responses;
 
 public class ServerErrorResponse : ApiResponse
 {

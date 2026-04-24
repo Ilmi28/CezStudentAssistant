@@ -1,5 +1,7 @@
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.Application;
+using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.Exceptions;
@@ -76,7 +78,10 @@ public class Program
                         NotFoundException => new NotFoundResponse(appException.ApiMessage),
                         ConflictException => new ConflictResponse(appException.ApiMessage),
                         ApiValidationException => new ValidationResponse(appException.ApiMessage, ((ApiValidationException)appException).Errors),
-                        _ => new ServerErrorResponse()
+                        BadGatewayException => new BadGatewayResponse(appException.ApiMessage),
+                        UnauthorizedException => new UnauthorizedResponse(appException.ApiMessage),
+                        BadRequestException => new BadRequestResponse(appException.ApiMessage),
+                        _ => new BadRequestResponse(appException.ApiMessage)
                     },
 
                     _ => new ServerErrorResponse()
