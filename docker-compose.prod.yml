@@ -1,0 +1,21 @@
+services:
+  api:
+    env_file: []
+    build:
+      args:
+        - BUILD_CONFIGURATION=Release
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+      CEZ_API_BASE_URL: ${CEZ_API_BASE_URL}
+    restart: unless-stopped
+
+  frontend:
+    profiles: ["dev"]
+
+  db:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-CezStudentAssistantDb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    restart: unless-stopped

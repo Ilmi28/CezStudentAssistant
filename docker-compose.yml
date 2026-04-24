@@ -1,7 +1,6 @@
 services:
   api:
     container_name: cez-student-assistant-api
-    env_file: src/CezStudentAssistant.API/.env.docker
     build:
       context: .
       dockerfile: src/CezStudentAssistant.API/Dockerfile
@@ -11,6 +10,8 @@ services:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DB_CONNECTION_STRING=Host=db;Port=5432;Database=CezStudentAssistantDb;Username=postgres;Password=postgres
+      - CEZ_API_BASE_URL=https://cez.wi.pb.edu.pl/
     depends_on:
       db:
         condition: service_healthy

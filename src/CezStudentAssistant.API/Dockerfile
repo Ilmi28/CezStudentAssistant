@@ -4,14 +4,18 @@ ARG BUILD_CONFIGURATION=Debug
 WORKDIR /app
 
 COPY ["src/CezStudentAssistant.API/CezStudentAssistant.API.csproj", "src/CezStudentAssistant.API/"]
+COPY ["src/CezStudentAssistant.Application/CezStudentAssistant.Application/CezStudentAssistant.Application.csproj", "src/CezStudentAssistant.Application/CezStudentAssistant.Application/"]
 COPY ["src/CezStudentAssistant.Domain/CezStudentAssistant.Domain.csproj", "src/CezStudentAssistant.Domain/"]
 COPY ["src/CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj", "src/CezStudentAssistant.Infrastructure/"]
+COPY ["src/ExternalServices/CezStudentAssistant.ExternalServices.Cez/CezStudentAssistant.Cez/CezStudentAssistant.Cez.csproj", "src/ExternalServices/CezStudentAssistant.ExternalServices.Cez/CezStudentAssistant.Cez/"]
 
 RUN dotnet restore "src/CezStudentAssistant.API/CezStudentAssistant.API.csproj"
 
 COPY src/CezStudentAssistant.API/ src/CezStudentAssistant.API/
+COPY src/CezStudentAssistant.Application/ src/CezStudentAssistant.Application/
 COPY src/CezStudentAssistant.Domain/ src/CezStudentAssistant.Domain/
 COPY src/CezStudentAssistant.Infrastructure/ src/CezStudentAssistant.Infrastructure/
+COPY src/ExternalServices/ src/ExternalServices/
 
 WORKDIR "/app/src/CezStudentAssistant.API"
 RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish

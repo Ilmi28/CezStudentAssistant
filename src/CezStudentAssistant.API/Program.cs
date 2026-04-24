@@ -15,13 +15,14 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        DotNetEnv.Env.Load(".env.local");
-
         var builder = WebApplication.CreateBuilder(args);
 
         ConfigureServices(builder);
 
         var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
+            DotNetEnv.Env.Load(".env.local");
 
         ConfigureMiddleware(app);
         MapEndpoints(app);
