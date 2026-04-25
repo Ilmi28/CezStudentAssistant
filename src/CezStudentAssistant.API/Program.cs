@@ -81,7 +81,7 @@ public class Program
                         BadGatewayException => new BadGatewayResponse(appException.ApiMessage),
                         UnauthorizedException => new UnauthorizedResponse(appException.ApiMessage),
                         BadRequestException => new BadRequestResponse(appException.ApiMessage),
-                        _ => new BadRequestResponse(appException.ApiMessage)
+                        _ => new ServerErrorResponse(appException.ApiMessage)
                     },
 
                     _ => new ServerErrorResponse()

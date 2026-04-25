@@ -5,6 +5,14 @@ namespace CezStudentAssistant.Application.Responses;
 
 public class ServerErrorResponse : ApiResponse
 {
+    public ServerErrorResponse(ApiMessage message)
+    {
+        Success = false;
+        StatusCode = HttpStatusCode.InternalServerError;
+        Message = message.Message;
+        ApplicationCode = $"{message.Source}_INTERNAL_SERVER_ERROR";
+    }
+
     public ServerErrorResponse()
     {
         Success = false;
