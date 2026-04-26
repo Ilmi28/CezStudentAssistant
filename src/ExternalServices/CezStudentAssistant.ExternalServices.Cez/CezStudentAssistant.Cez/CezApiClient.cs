@@ -32,7 +32,7 @@ internal class CezApiClient(HttpClient httpClient) : ICezApiClient
                 ?? throw new BadGatewayException(new ApiMessage(this, "CEZ returned an invalid error response."));
 
             if (string.Equals(error.ErrorCode, "missingparam", StringComparison.OrdinalIgnoreCase))
-                throw new BadRequestException(new ApiMessage(this, "Invalid username or password."));
+                throw new BadRequestException(new ApiMessage(this, "Invalid request parameters."));
 
             if (string.Equals(error.ErrorCode, "invalidlogin", StringComparison.OrdinalIgnoreCase))
                 throw new UnauthorizedException(new ApiMessage(this, "Invalid username or password."));

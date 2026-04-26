@@ -41,7 +41,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserSe
         return base.SaveChangesAsync(ct);
     }
 
-    public DbSet<ExampleEntity> ExampleEntities { get; set; }
-
     public DbSet<User> Users { get; set; }
+    public DbSet<CezUser> CezUsers { get; set; }
 }
