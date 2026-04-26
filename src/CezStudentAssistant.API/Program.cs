@@ -16,12 +16,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        if (builder.Environment.IsDevelopment())
+            DotNetEnv.Env.Load();
+
         ConfigureServices(builder);
 
         var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-            DotNetEnv.Env.Load(".env.local");
 
         ConfigureMiddleware(app);
         MapEndpoints(app);
