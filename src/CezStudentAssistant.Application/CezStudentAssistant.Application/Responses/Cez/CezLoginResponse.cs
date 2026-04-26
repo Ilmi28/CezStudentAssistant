@@ -1,8 +1,8 @@
-﻿namespace CezStudentAssistant.Application.Responses.Cez;
+﻿using CezStudentAssistant.Application.Dtos.Cez;
 
-public class CezLoginResponse
+namespace CezStudentAssistant.Application.Responses.Cez;
+
+public class CezLoginResponse : CezResponse<CezTokens>
 {
-    public required string Token { get; set; }
 
-    public required string PrivateToken { get; set; }
 }

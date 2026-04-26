@@ -1,7 +1,7 @@
 ﻿using CezStudentAssistant.Domain.Entities;
 using System.Linq.Expressions;
 
-namespace CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+namespace CezStudentAssistant.Domain.Interfaces.Repositories;
 
 /// <summary>
 /// Defines a generic repository interface for performing standard data access operations on entities of type TEntity.
@@ -79,4 +79,9 @@ public interface IGenericRepository<TEntity>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous delete operation.</returns>
     Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
+
+    Task<TEntity?> GetSingleAsync(
+    Expression<Func<TEntity, bool>> predicate,
+    CancellationToken cancellationToken = default,
+    params Expression<Func<TEntity, object>>[] includes);
 }

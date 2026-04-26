@@ -1,5 +1,4 @@
 ﻿using CezStudentAssistant.Domain.Entities;
-using CezStudentAssistant.Domain.Interfaces.Repositories;
 using CezStudentAssistant.Domain.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,33 +7,34 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService)
     : DbContext(options)
 {
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyDeletedAtFilters();
+    }
+
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
-        foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
-            if (entry.Entity is BaseEntity baseEntity)
+            var baseEntity = entry.Entity;
+
+            switch (entry.State)
             {
-                switch (entry.State)
-                {
-                    case EntityState.Added:
-                        baseEntity.CreatedAt = DateTime.UtcNow;
-                        baseEntity.LastModifiedAt = DateTime.UtcNow;
-                        break;
+                case EntityState.Added:
+                    baseEntity.CreatedAt = DateTime.UtcNow;
+                    baseEntity.LastModifiedAt = DateTime.UtcNow;
+                    break;
 
-                    case EntityState.Modified:
-                        baseEntity.LastModifiedAt = DateTime.UtcNow;
-                        break;
+                case EntityState.Modified:
+                    baseEntity.LastModifiedAt = DateTime.UtcNow;
+                    break;
 
-                    case EntityState.Deleted:
-                        entry.State = EntityState.Modified;
-                        baseEntity.DeletedAt = DateTime.UtcNow;
-                        break;
-                }
-            }
-
-            if (entry.Entity is IAuditableEntity auditable && entry.State == EntityState.Added)
-            {
-                auditable.UserId = currentUserService.UserId;
+                case EntityState.Deleted:
+                    entry.State = EntityState.Modified;
+                    baseEntity.LastModifiedAt = DateTime.UtcNow;
+                    baseEntity.DeletedAt = DateTime.UtcNow;
+                    break;
             }
         }
 

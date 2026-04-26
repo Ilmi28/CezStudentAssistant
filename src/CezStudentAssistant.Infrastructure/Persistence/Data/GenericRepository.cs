@@ -1,5 +1,5 @@
 ﻿using CezStudentAssistant.Domain.Entities;
-using CezStudentAssistant.Domain.Interfaces.Persistence.Data;
+using CezStudentAssistant.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -83,5 +83,23 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
         }
 
         return await query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public async Task<TEntity?> GetSingleAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        IQueryable<TEntity> query = _dbSet.AsNoTracking();
+
+        if (includes != null)
+        {
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+        }
+
+        return await query.FirstOrDefaultAsync(predicate, cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
-﻿using CezStudentAssistant.Application.Exceptions;
+﻿using CezStudentAssistant.Application.Dtos.Cez;
+using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
@@ -20,33 +21,51 @@ internal class CezApiClient(HttpClient httpClient) : ICezApiClient
             $"&password={Uri.EscapeDataString(loginDto.Password)}" +
             $"&service={Service}";
 
-        using var response = await httpClient.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var jsonPayload = ExtractJsonObject(responseBody);
-
-        using var jsonDocument = JsonDocument.Parse(jsonPayload);
-
-        if (jsonDocument.RootElement.TryGetProperty("error", out _))
+        try
         {
-            var error = JsonSerializer.Deserialize<ExternalCezErrorResponse>(jsonPayload)
-                ?? throw new BadGatewayException(new ApiMessage(this, "CEZ returned an invalid error response."));
+            using var response = await httpClient.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var jsonPayload = ExtractJsonObject(responseBody);
 
-            if (string.Equals(error.ErrorCode, "missingparam", StringComparison.OrdinalIgnoreCase))
-                throw new BadRequestException(new ApiMessage(this, "Invalid request parameters."));
+            using var jsonDocument = JsonDocument.Parse(jsonPayload);
 
-            if (string.Equals(error.ErrorCode, "invalidlogin", StringComparison.OrdinalIgnoreCase))
-                throw new UnauthorizedException(new ApiMessage(this, "Invalid username or password."));
-            throw new BadGatewayException(new ApiMessage(this, $"CEZ returned an error: {error.Error}"));
+            if (jsonDocument.RootElement.TryGetProperty("error", out _))
+            {
+                var error = JsonSerializer.Deserialize<ExternalCezErrorResponse>(jsonPayload);
+
+                return new CezLoginResponse
+                {
+                    Success = false,
+                    Error = error?.Error,
+                    ErrorCode = error?.ErrorCode,
+                    Data = null
+                };
+            }
+
+            var loginResponse = JsonSerializer.Deserialize<ExternalCezLoginResponse>(jsonPayload);
+
+            return new CezLoginResponse
+            {
+                Success = true,
+                Error = null,
+                ErrorCode = null,
+                Data = new CezTokens
+                {
+                    Token = loginResponse?.Token ?? string.Empty,
+                    PrivateToken = loginResponse?.PrivateToken ?? string.Empty
+                }
+            };
         }
-
-        var loginResponse = JsonSerializer.Deserialize<ExternalCezLoginResponse>(jsonPayload)
-            ?? throw new BadGatewayException(new ApiMessage(this, "CEZ returned an invalid login response."));
-
-        return new CezLoginResponse
+        catch (Exception)
         {
-            Token = loginResponse.Token,
-            PrivateToken = loginResponse.PrivateToken
-        };
+            return new CezLoginResponse
+            {
+                Success = false,
+                Error = "An error occurred while processing the CEZ login response.",
+                ErrorCode = null,
+                Data = null
+            };
+        }
     }
 
     private static string ExtractJsonObject(string responseBody)

@@ -2,6 +2,6 @@
 
 namespace CezStudentAssistant.Domain.Interfaces.Repositories;
 
-public interface IUserRepository : IGenericRepository<User>
+public interface ICezUserRepository : IGenericRepository<CezUser>
 {
 }
