@@ -6,4 +6,5 @@ namespace CezStudentAssistant.Application.Interfaces.External;
 public interface ICezApiClient
 {
     Task<CezLoginResponse> LoginToCez(CezLoginRequest loginDto);
+    Task<CezGetUserCoursesResponse> GetUserCourses(CezUserRequest request);
 }

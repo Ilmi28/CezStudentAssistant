@@ -4,6 +4,8 @@ using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Responses.Cez;
+using CezStudentAssistant.Cez.Consts;
+using CezStudentAssistant.Cez.Requests;
 using CezStudentAssistant.Cez.Responses;
 using System.Text.Json;
 
@@ -11,15 +13,19 @@ namespace CezStudentAssistant.Cez;
 
 internal class CezApiClient(HttpClient httpClient) : ICezApiClient
 {
-    private const string LoginPath = "login/token.php";
-    private const string Service = "moodle_mobile_app";
 
     public async Task<CezLoginResponse> LoginToCez(CezLoginRequest loginDto)
     {
+        var externalRequest = new ExternalCezLoginRequest
+        {
+            Username = loginDto.UserName,
+            Password = loginDto.Password
+        };
+
         var requestUri =
-            $"{LoginPath}?username={Uri.EscapeDataString(loginDto.UserName)}" +
-            $"&password={Uri.EscapeDataString(loginDto.Password)}" +
-            $"&service={Service}";
+            $"{CezBaseConsts.LoginPath}?username={Uri.EscapeDataString(externalRequest.Username)}" +
+            $"&password={Uri.EscapeDataString(externalRequest.Password)}" +
+            $"&service={CezBaseConsts.Service}";
 
         try
         {
@@ -31,12 +37,12 @@ internal class CezApiClient(HttpClient httpClient) : ICezApiClient
 
             if (jsonDocument.RootElement.TryGetProperty("error", out _))
             {
-                var error = JsonSerializer.Deserialize<ExternalCezErrorResponse>(jsonPayload);
+                var error = JsonSerializer.Deserialize<ExternalCezLoginErrorResponse>(jsonPayload);
 
                 return new CezLoginResponse
                 {
                     Success = false,
-                    Error = error?.Error,
+                    Message = error?.Error,
                     ErrorCode = error?.ErrorCode,
                     Data = null
                 };
@@ -47,7 +53,7 @@ internal class CezApiClient(HttpClient httpClient) : ICezApiClient
             return new CezLoginResponse
             {
                 Success = true,
-                Error = null,
+                Message = null,
                 ErrorCode = null,
                 Data = new CezTokens
                 {
@@ -61,11 +67,16 @@ internal class CezApiClient(HttpClient httpClient) : ICezApiClient
             return new CezLoginResponse
             {
                 Success = false,
-                Error = "An error occurred while processing the CEZ login response.",
+                Message = "An error occurred while processing the CEZ login response.",
                 ErrorCode = null,
                 Data = null
             };
         }
+    }
+
+    public Task<CezGetUserCoursesResponse> GetUserCourses(CezUserRequest request)
+    {
+        throw new NotImplementedException();
     }
 
     private static string ExtractJsonObject(string responseBody)
