@@ -1,18 +1,21 @@
-﻿using CezStudentAssistant.Application.Dtos.Cez;
-using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Requests.Cez;
-using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Cez.Consts;
 using CezStudentAssistant.Cez.Requests;
 using CezStudentAssistant.Cez.Responses;
+using System.Globalization;
 using System.Text.Json;
 
 namespace CezStudentAssistant.Cez;
 
 internal class CezApiClient(HttpClient httpClient) : ICezApiClient
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     public async Task<CezLoginResponse> LoginToCez(CezLoginRequest loginDto)
     {
@@ -22,71 +25,143 @@ internal class CezApiClient(HttpClient httpClient) : ICezApiClient
             Password = loginDto.Password
         };
 
-        var requestUri =
-            $"{CezBaseConsts.LoginPath}?username={Uri.EscapeDataString(externalRequest.Username)}" +
-            $"&password={Uri.EscapeDataString(externalRequest.Password)}" +
-            $"&service={CezBaseConsts.Service}";
+        var requestUri = BuildRequestUri(
+            CezBaseConsts.LoginPath,
+            [
+                new("username", externalRequest.Username),
+                new("password", externalRequest.Password),
+                new("service", CezBaseConsts.Service)
+            ]
+        );
 
-        try
-        {
-            using var response = await httpClient.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var jsonPayload = ExtractJsonObject(responseBody);
-
-            using var jsonDocument = JsonDocument.Parse(jsonPayload);
-
-            if (jsonDocument.RootElement.TryGetProperty("error", out _))
-            {
-                var error = JsonSerializer.Deserialize<ExternalCezLoginErrorResponse>(jsonPayload);
-
-                return new CezLoginResponse
-                {
-                    Success = false,
-                    Message = error?.Error,
-                    ErrorCode = error?.ErrorCode,
-                    Data = null
-                };
-            }
-
-            var loginResponse = JsonSerializer.Deserialize<ExternalCezLoginResponse>(jsonPayload);
-
-            return new CezLoginResponse
-            {
-                Success = true,
-                Message = null,
-                ErrorCode = null,
-                Data = new CezTokens
-                {
-                    Token = loginResponse?.Token ?? string.Empty,
-                    PrivateToken = loginResponse?.PrivateToken ?? string.Empty
-                }
-            };
-        }
-        catch (Exception)
+        var requestResult = await SendGetAsync<ExternalCezLoginResponse>(requestUri);
+        if (requestResult.Error is not null)
         {
             return new CezLoginResponse
             {
                 Success = false,
-                Message = "An error occurred while processing the CEZ login response.",
-                ErrorCode = null,
+                Message = requestResult.Error.Message ?? requestResult.Error.Error,
+                ErrorCode = requestResult.Error.ErrorCode,
                 Data = null
             };
         }
+
+        return new CezLoginResponse
+        {
+            Success = requestResult.Data is not null,
+            Message = null,
+            ErrorCode = null,
+            Data = requestResult.Data is null
+                ? null
+                : new CezTokens
+                {
+                    Token = requestResult.Data.Token,
+                    PrivateToken = requestResult.Data.PrivateToken
+                }
+        };
     }
 
-    public Task<CezGetUserCoursesResponse> GetUserCourses(CezUserRequest request)
+    public async Task<CezGetUserCoursesResponse> GetUserCourses(CezUserRequest request)
     {
-        throw new NotImplementedException();
+        var externalRequest = new ExternalCezUserRequest
+        {
+            Token = request.Token,
+            Function = CezFunctionConsts.GetUserCourses,
+            UserId = request.UserId
+        };
+
+        var requestUri = BuildRequestUri(
+            CezBaseConsts.FunctionsPath,
+            [
+                new("wstoken", externalRequest.Token),
+                new("wsfunction", externalRequest.Function),
+                new("moodlewsrestformat", externalRequest.RestFormat),
+                new("userid", externalRequest.UserId)
+            ]
+        );
+
+        var requestResult = await SendGetAsync<List<ExternalCezGetUserCoursesResponse>>(requestUri);
+        if (requestResult.Error is not null)
+        {
+            return new CezGetUserCoursesResponse
+            {
+                Success = false,
+                Message = requestResult.Error.Message ?? requestResult.Error.Error,
+                ErrorCode = requestResult.Error.ErrorCode
+            };
+        }
+
+        var firstCourse = requestResult.Data?.FirstOrDefault();
+
+        return new CezGetUserCoursesResponse
+        {
+            Success = firstCourse is not null,
+            Message = null,
+            ErrorCode = null,
+            ExternalId = firstCourse?.Id.ToString(CultureInfo.InvariantCulture),
+            ShortName = firstCourse?.ShortName,
+            FullName = firstCourse?.FullName,
+            DisplayName = firstCourse?.DisplayName,
+            CourseImage = firstCourse?.CourseImage
+        };
     }
 
-    private static string ExtractJsonObject(string responseBody)
+    private async Task<CezRequestResult<TData>> SendGetAsync<TData>(string requestUri)
+        where TData : class
     {
-        var start = responseBody.IndexOf('{');
-        var end = responseBody.LastIndexOf('}');
+        using var response = await httpClient.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
+        var responseBody = await response.Content.ReadAsStringAsync();
+        var jsonPayload = ExtractJsonPayload(responseBody);
 
-        if (start < 0 || end < start)
-            throw new BadGatewayException(new ApiMessage(typeof(CezApiClient), "CEZ response did not contain valid JSON."));
+        var error = TryGetError(jsonPayload);
+        if (error is not null)
+        {
+            return new CezRequestResult<TData>(null, error);
+        }
 
-        return responseBody[start..(end + 1)];
+        var data = JsonSerializer.Deserialize<TData>(jsonPayload, JsonOptions);
+        return new CezRequestResult<TData>(data, null);
     }
+
+    private static ExternalCezErrorResponse? TryGetError(string jsonPayload)
+    {
+        using var jsonDocument = JsonDocument.Parse(jsonPayload);
+        var root = jsonDocument.RootElement;
+
+        if (
+            root.TryGetProperty("error", out _) ||
+            root.TryGetProperty("exception", out _) ||
+            root.TryGetProperty("errorcode", out _)
+        )
+        {
+            return JsonSerializer.Deserialize<ExternalCezErrorResponse>(jsonPayload, JsonOptions);
+        }
+
+        return null;
+    }
+
+    private static string BuildRequestUri(string path, IEnumerable<KeyValuePair<string, string>> queryParams)
+    {
+        var query = string.Join(
+            "&",
+            queryParams.Select(param => $"{param.Key}={Uri.EscapeDataString(param.Value)}")
+        );
+
+        return $"{path}?{query}";
+    }
+
+    private static string ExtractJsonPayload(string responseBody)
+    {
+        var objectStart = responseBody.IndexOf('{');
+        var arrayStart = responseBody.IndexOf('[');
+
+        var isArray = arrayStart >= 0 && (objectStart < 0 || arrayStart < objectStart);
+        var start = isArray ? arrayStart : objectStart;
+        var end = isArray ? responseBody.LastIndexOf(']') : responseBody.LastIndexOf('}');
+
+        return start < 0 || end < start ? responseBody : responseBody[start..(end + 1)];
+    }
+
+    private sealed record CezRequestResult<TData>(TData? Data, ExternalCezErrorResponse? Error)
+        where TData : class;
 }

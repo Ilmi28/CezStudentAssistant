@@ -2,18 +2,20 @@
 
 namespace CezStudentAssistant.Cez.Responses;
 
-public class ExternalCezErrorResponse
+internal class ExternalCezErrorResponse
 {
     [JsonPropertyName("exception")]
-    public required string Exception { get; set; }
+    public string? Exception { get; set; }
 
     [JsonPropertyName("errorcode")]
-    public required string ErrorCode { get; set; }
+    public string? ErrorCode { get; set; }
 
     [JsonPropertyName("message")]
-    public required string Message { get; set; }
+    public string? Message { get; set; }
+
+    [JsonPropertyName("error")]
+    public string? Error { get; set; }
 
     [JsonPropertyName("debuginfo")]
-    public required string DebugInfo { get; set; }
-
+    public string? DebugInfo { get; set; }
 }
