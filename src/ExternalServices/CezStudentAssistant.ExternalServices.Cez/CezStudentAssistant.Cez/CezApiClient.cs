@@ -22,18 +22,18 @@ internal class CezApiClient(ICezRequestExecutor requestExecutor) : ICezApiClient
         return await ExecuteRequestAsync<ExternalCezLoginResponse, CezLoginResponse>(
             CezBaseConsts.LoginPath,
             [
-                new("username", externalRequest.Username),
-                new("password", externalRequest.Password),
-                new("service", CezBaseConsts.Service)
+                new(CezParamsConsts.Username, externalRequest.Username),
+                new(CezParamsConsts.Password, externalRequest.Password),
+                new(CezParamsConsts.Service, CezBaseConsts.Service)
             ],
             error => new CezLoginResponse
             {
                 Success = false,
                 Message = error.ErrorCode switch
                 {
-                    CezErrorConsts.MissingParam => "Missing username or password for CEZ login.",
-                    CezErrorConsts.InvalidLogin => "Invalid username or password for CEZ login.",
-                    _ => "Unexpected error during CEZ login."
+                    CezErrorConsts.MissingParam => CezResponseMessageConsts.MissingParam,
+                    CezErrorConsts.InvalidLogin => CezResponseMessageConsts.InvalidLogin,
+                    _ => CezResponseMessageConsts.UnexpectedError
                 },
                 ErrorCode = error.ErrorCode,
                 Data = null
@@ -66,10 +66,10 @@ internal class CezApiClient(ICezRequestExecutor requestExecutor) : ICezApiClient
         return await ExecuteRequestAsync<List<ExternalCezGetUserCoursesResponse>, CezGetUserCoursesResponse>(
             CezBaseConsts.FunctionsPath,
             [
-                new("wstoken", externalRequest.Token),
-                new("wsfunction", externalRequest.Function),
-                new("moodlewsrestformat", externalRequest.RestFormat),
-                new("userid", externalRequest.UserId)
+                new(CezParamsConsts.Token, externalRequest.Token),
+                new(CezParamsConsts.Function, externalRequest.Function),
+                new(CezParamsConsts.RestFormat, externalRequest.RestFormat),
+                new(CezParamsConsts.UserId, externalRequest.UserId)
             ],
             error => new CezGetUserCoursesResponse
             {

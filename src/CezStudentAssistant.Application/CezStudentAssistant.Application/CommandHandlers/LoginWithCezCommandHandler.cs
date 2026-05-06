@@ -1,4 +1,5 @@
 ﻿using CezStudentAssistant.Application.Commands;
+using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
@@ -24,12 +25,11 @@ public class LoginWithCezCommandHandler : ValidatableCommandHandler<LoginWithCez
         _unitOfWork = unitOfWork;
     }
 
-    protected override ApiMessage SuccessMessage => new ApiMessage(this, "Successfully logged in with CEZ.");
+    protected override ApiMessage SuccessMessage => new ApiMessage(this, CezMessagesConsts.LoginSuccess);
 
-    protected override ApiMessage ErrorMessage => new ApiMessage(this, "Failed to log in with CEZ.");
+    protected override ApiMessage ErrorMessage => new ApiMessage(this, CezMessagesConsts.LoginError);
 
-    protected override ApiMessage ValidationMessage => new ApiMessage(this, "Invalid login credentials for CEZ.");
-
+    protected override ApiMessage ValidationMessage => new ApiMessage(this, CezMessagesConsts.LoginValidationError);
     protected override async Task<CezLoginResponse> ExecuteAsync(LoginWithCezCommand command, CancellationToken ct)
     {
         var loginResponse = await _cezApiClient.LoginToCez(new Requests.Cez.CezLoginRequest
@@ -39,7 +39,7 @@ public class LoginWithCezCommandHandler : ValidatableCommandHandler<LoginWithCez
         });
 
         if (!loginResponse.Success)
-            throw new BadRequestException(new ApiMessage(this, loginResponse.Message ?? "Failed to log in with CEZ."));
+            throw new BadRequestException(new ApiMessage(this, loginResponse.Message ?? CezMessagesConsts.LoginError));
 
         var cezUserRepo = _unitOfWork.Repository<ICezUserRepository>();
 
