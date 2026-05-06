@@ -39,16 +39,7 @@ public class LoginWithCezCommandHandler : ValidatableCommandHandler<LoginWithCez
         });
 
         if (!loginResponse.Success)
-        {
-            var errorMessage = loginResponse.ErrorCode switch
-            {
-                "missingparam" => "Missing username or password for CEZ login.",
-                "invalidlogin" => "Invalid username or password for CEZ login.",
-                _ => "Unexpected error during CEZ login."
-            };
-
-            throw new BadRequestException(new ApiMessage(this, errorMessage));
-        }
+            throw new BadRequestException(new ApiMessage(this, loginResponse.Message ?? "Failed to log in with CEZ."));
 
         var cezUserRepo = _unitOfWork.Repository<ICezUserRepository>();
 
