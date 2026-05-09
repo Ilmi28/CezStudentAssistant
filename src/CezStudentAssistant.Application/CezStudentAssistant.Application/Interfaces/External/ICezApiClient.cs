@@ -7,4 +7,5 @@ public interface ICezApiClient
 {
     Task<CezLoginResponse> LoginToCez(CezLoginRequest loginDto);
     Task<CezGetUserCoursesResponse> GetUserCourses(CezUserRequest request);
+    Task<CezGetSiteInfoResponse> GetSiteInfo(CezBaseRequest request);
 }

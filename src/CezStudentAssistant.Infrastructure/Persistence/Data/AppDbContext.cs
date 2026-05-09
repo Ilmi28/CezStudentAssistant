@@ -1,10 +1,9 @@
 ﻿using CezStudentAssistant.Domain.Entities;
-using CezStudentAssistant.Domain.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService)
+public class AppDbContext(DbContextOptions<AppDbContext> options)
     : DbContext(options)
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder)

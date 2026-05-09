@@ -99,6 +99,43 @@ internal class CezApiClient(ICezRequestExecutor requestExecutor) : ICezApiClient
         );
     }
 
+    public async Task<CezGetSiteInfoResponse> GetSiteInfo(CezBaseRequest request)
+    {
+        var externalRequest = new ExternalCezBaseRequest
+        {
+            Token = request.Token,
+            Function = CezFunctionConsts.GetSiteInfo,
+        };
+        return await ExecuteRequestAsync<ExternalGetSiteInfoResponse, CezGetSiteInfoResponse>(
+            CezBaseConsts.FunctionsPath,
+            [
+                new(CezParamsConsts.Token, externalRequest.Token),
+                new(CezParamsConsts.Function, externalRequest.Function),
+                new(CezParamsConsts.RestFormat, externalRequest.RestFormat),
+            ],
+            error => new CezGetSiteInfoResponse
+            {
+                Success = false,
+                Message = error.Message ?? error.Error,
+                ErrorCode = error.ErrorCode
+            },
+            data => new CezGetSiteInfoResponse
+            {
+                Success = data is not null,
+                Message = null,
+                ErrorCode = null,
+                Data = data is null
+                    ? null
+                    : new CezSiteInfo
+                    {
+                        UserName = data.UserName,
+                        FullName = data.FullName,
+                        ExternalUserId = data.UserId
+                    }
+            }
+        );
+    }
+
     private async Task<TResult> ExecuteRequestAsync<TData, TResult>(
         string path,
         IEnumerable<KeyValuePair<string, string>> queryParams,

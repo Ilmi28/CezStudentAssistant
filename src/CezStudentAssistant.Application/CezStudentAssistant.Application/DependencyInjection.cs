@@ -1,6 +1,6 @@
 ﻿using CezStudentAssistant.Application.Decorators;
+using CezStudentAssistant.Application.Validators;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
-using CezStudentAssistant.Domain.Validators;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 

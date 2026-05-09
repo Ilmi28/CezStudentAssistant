@@ -3,10 +3,12 @@ using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Domain.CommandHandlers;
 using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentValidation;
 
@@ -41,23 +43,43 @@ public class LoginWithCezCommandHandler : ValidatableCommandHandler<LoginWithCez
         if (!loginResponse.Success)
             throw new BadRequestException(new ApiMessage(this, loginResponse.Message ?? CezMessagesConsts.LoginError));
 
-        var cezUserRepo = _unitOfWork.Repository<ICezUserRepository>();
+        var userInfoResponse = await _cezApiClient.GetSiteInfo(new CezBaseRequest
+        {
+            Token = loginResponse.Data?.Token ?? string.Empty
+        });
 
-        var existingUser = await cezUserRepo.GetSingleAsync(u => u.UserName == command.UserName);
+        if (!userInfoResponse.Success || userInfoResponse.Data is null)
+            throw new BadRequestException(new ApiMessage(this, userInfoResponse.Message ?? CezMessagesConsts.GetSiteInfoError));
+
+        var userInfoData = userInfoResponse.Data;
+
+        var cezUserRepo = _unitOfWork.Repository<ICezUserRepository>();
+        var userRepo = _unitOfWork.Repository<IUserRepository>();
+
+        var existingUser = await userRepo.GetSingleAsync(u => u.UserName == userInfoData.UserName);
         if (existingUser == null)
         {
+            var user = new User
+            {
+                UserName = userInfoData.UserName ?? command.UserName
+            };
+            await userRepo.AddAsync(user);
             await cezUserRepo.AddAsync(new CezUser
             {
-                UserName = command.UserName,
+                FullName = userInfoData.FullName,
                 Token = loginResponse.Data?.Token ?? string.Empty,
                 PrivateToken = loginResponse.Data?.PrivateToken ?? string.Empty,
+                ExternalUserId = userInfoData.ExternalUserId,
+                User = user
             });
         }
         else
         {
-            existingUser.Token = loginResponse.Data?.Token ?? string.Empty;
-            existingUser.PrivateToken = loginResponse.Data?.PrivateToken ?? string.Empty;
-            await cezUserRepo.UpdateAsync(existingUser);
+            var existingCezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == existingUser.Id)
+                ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+            existingCezUser.Token = loginResponse.Data?.Token ?? string.Empty;
+            existingCezUser.PrivateToken = loginResponse.Data?.PrivateToken ?? string.Empty;
+            await cezUserRepo.UpdateAsync(existingCezUser);
         }
         await _unitOfWork.SaveChangesAsync();
 

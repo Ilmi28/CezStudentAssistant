@@ -1,7 +1,7 @@
-﻿using CezStudentAssistant.Domain.Commands;
+﻿using CezStudentAssistant.Application.Commands;
 using FluentValidation;
 
-namespace CezStudentAssistant.Domain.Validators;
+namespace CezStudentAssistant.Application.Validators;
 
 public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
@@ -11,10 +11,6 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .NotEmpty()
             .MinimumLength(3)
             .MaximumLength(50);
-
-        RuleFor(x => x.Email)
-            .NotEmpty()
-            .EmailAddress();
 
         RuleFor(x => x.Password)
             .NotEmpty()

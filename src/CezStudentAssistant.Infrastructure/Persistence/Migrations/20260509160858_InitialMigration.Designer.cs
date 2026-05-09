@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260426102054_AddedCezUsersTable")]
-    partial class AddedCezUsersTable
+    [Migration("20260509160858_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,6 +37,12 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<long>("ExternalUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -48,11 +54,13 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("CezUsers");
                 });
@@ -69,10 +77,6 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -86,6 +90,22 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.CezUser", b =>
+                {
+                    b.HasOne("CezStudentAssistant.Domain.Entities.User", "User")
+                        .WithOne("CezUser")
+                        .HasForeignKey("CezStudentAssistant.Domain.Entities.CezUser", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.User", b =>
+                {
+                    b.Navigation("CezUser");
                 });
 #pragma warning restore 612, 618
         }

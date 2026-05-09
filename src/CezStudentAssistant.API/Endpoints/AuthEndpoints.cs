@@ -1,6 +1,5 @@
 ﻿using CezStudentAssistant.Application.Commands;
 using CezStudentAssistant.Application.Responses.Cez;
-using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
 
 namespace CezStudentAssistant.API.Endpoints;

@@ -1,8 +1,8 @@
-﻿using CezStudentAssistant.Application.Consts;
+﻿using CezStudentAssistant.Application.Commands;
+using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.CommandHandlers;
-using CezStudentAssistant.Domain.Commands;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Exceptions;
 using CezStudentAssistant.Domain.Interfaces.CQRS;
@@ -35,17 +35,12 @@ public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUser
     {
         var userRepo = _unitOfWork.Repository<IUserRepository>();
 
-        var userWithEmailExists = await userRepo.ExistsAsync(x => x.Email == command.Email, ct);
-        if (userWithEmailExists)
-            throw new ConflictException(new ApiMessage(this, AuthMessagesConsts.RegistrationConflictEmail));
-
         var userWithUserNameExists = await userRepo.ExistsAsync(x => x.UserName == command.UserName, ct);
         if (userWithUserNameExists)
             throw new ConflictException(new ApiMessage(this, AuthMessagesConsts.RegistrationConflictUsername));
         var user = new User
         {
             UserName = command.UserName,
-            Email = command.Email,
             PasswordHash = _passwordService.CreatePasswordHash(command.Password)
         };
 
