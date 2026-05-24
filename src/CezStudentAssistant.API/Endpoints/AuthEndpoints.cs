@@ -102,7 +102,7 @@ public static class AuthEndpoints
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
+            Secure = response.HttpContext.Request.IsHttps,
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(7)
         };
@@ -116,7 +116,7 @@ public static class AuthEndpoints
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
+            Secure = response.HttpContext.Request.IsHttps,
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(-1)
         };

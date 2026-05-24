@@ -4,6 +4,12 @@ namespace CezStudentAssistant.Application.Responses;
 
 public class SuccessResponse<T> : ApiResponse<T>
 {
+    public SuccessResponse() 
+    {
+        Success = true;
+        StatusCode = HttpStatusCode.OK;
+    }
+
     public SuccessResponse(ApiMessage message, T data)
     {
         Success = true;
@@ -16,6 +22,12 @@ public class SuccessResponse<T> : ApiResponse<T>
 
 public class SuccessResponse : ApiResponse
 {
+    public SuccessResponse()
+    {
+        Success = true;
+        StatusCode = HttpStatusCode.OK;
+    }
+
     public SuccessResponse(ApiMessage message)
     {
         Success = true;

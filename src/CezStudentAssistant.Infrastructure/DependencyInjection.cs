@@ -9,67 +9,70 @@ namespace CezStudentAssistant.Infrastructure;
 
 public static class DependencyInjection
 {
-    extension(IServiceCollection services)
+    public static IServiceCollection AddInstrastructure(this IServiceCollection services, bool isDevelopment)
     {
-        public IServiceCollection AddInstrastructure(bool isDevelopment)
+        return services
+            .AddServices()
+            .AddDatabase(loggingEnabled: isDevelopment, detailedErrors: isDevelopment)
+            .AddRepositories();
+    }
+
+    private static IServiceCollection AddDatabase(
+        this IServiceCollection services,
+        bool loggingEnabled = false,
+        bool detailedErrors = false
+    )
+    {
+        var connectionString = Environment.GetEnvironmentVariable(
+            "DB_CONNECTION_STRING"
+        );
+
+        if (string.IsNullOrEmpty(connectionString))
         {
-            return services
-                .AddServices()
-                .AddSqlServer(loggingEnabled: isDevelopment, detailedErrors: isDevelopment)
-                .AddRepositories();
-        }
-        private IServiceCollection AddSqlServer(
-            bool loggingEnabled = false,
-            bool detailedErrors = false
-        )
-        {
-            var connectionString = Environment.GetEnvironmentVariable(
-                "DB_CONNECTION_STRING"
-            );
-
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseNpgsql(connectionString);
-
-                if (loggingEnabled)
-                    options.EnableSensitiveDataLogging();
-                if (detailedErrors)
-                    options.EnableDetailedErrors();
-            });
-
             return services;
         }
 
-        private IServiceCollection AddRepositories()
+        services.AddDbContext<AppDbContext>(options =>
         {
-            var asesmblies = AppDomain.CurrentDomain.GetAssemblies();
-            services.Scan(scan =>
-                scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
-                    .AddClasses(classes => classes.AssignableTo(typeof(IGenericRepository<>)))
-                    .AsImplementedInterfaces()
-                    .WithScopedLifetime()
-            );
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            options.UseNpgsql(connectionString);
 
-            return services;
-        }
+            if (loggingEnabled)
+                options.EnableSensitiveDataLogging();
+            if (detailedErrors)
+                options.EnableDetailedErrors();
+        });
 
-        private IServiceCollection AddServices()
-        {
-            services.Scan(scan =>
-                scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
-                    .AddClasses(classes => classes.AssignableTo(typeof(IScopedService)))
-                    .AsImplementedInterfaces()
-                    .WithScopedLifetime()
-            );
-            services.Scan(scan =>
-                scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
-                    .AddClasses(classes => classes.AssignableTo(typeof(ISingletonService)))
-                    .AsImplementedInterfaces()
-                    .WithSingletonLifetime()
-            );
+        return services;
+    }
 
-            return services;
-        }
+    private static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        services.Scan(scan =>
+            scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
+                .AddClasses(classes => classes.AssignableTo(typeof(IGenericRepository<>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+        );
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.Scan(scan =>
+            scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
+                .AddClasses(classes => classes.AssignableTo(typeof(IScopedService)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+        );
+        services.Scan(scan =>
+            scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
+                .AddClasses(classes => classes.AssignableTo(typeof(ISingletonService)))
+                .AsImplementedInterfaces()
+                .WithSingletonLifetime()
+        );
+
+        return services;
     }
 }
