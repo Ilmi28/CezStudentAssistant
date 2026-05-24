@@ -21,6 +21,15 @@ public static class AuthEndpoints
             }));
 
         group.MapPost(
+            "/login",
+            async (LoginUserRequest request, ICommandHandler<LoginUserCommand, Guid> handler)
+            => await handler.HandleAsync(new LoginUserCommand
+            {
+                UserName = request.UserName,
+                Password = request.Password
+            }));
+
+        group.MapPost(
             "/login-cez",
             async (LoginWithCezRequest request, ICommandHandler<LoginWithCezCommand, CezLoginResponse> handler)
             => await handler.HandleAsync(new LoginWithCezCommand
