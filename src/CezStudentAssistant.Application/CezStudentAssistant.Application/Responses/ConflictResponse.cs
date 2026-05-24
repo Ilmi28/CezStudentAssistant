@@ -1,7 +1,6 @@
-﻿using CezStudentAssistant.Application.Responses;
-using System.Net;
+﻿using System.Net;
 
-namespace CezStudentAssistant.Domain.Responses;
+namespace CezStudentAssistant.Application.Responses;
 
 public class ConflictResponse : ApiResponse
 {

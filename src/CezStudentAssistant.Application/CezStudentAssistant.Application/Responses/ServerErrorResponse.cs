@@ -1,5 +1,4 @@
-﻿using CezStudentAssistant.Domain.Responses;
-using System.Net;
+﻿using System.Net;
 
 namespace CezStudentAssistant.Application.Responses;
 

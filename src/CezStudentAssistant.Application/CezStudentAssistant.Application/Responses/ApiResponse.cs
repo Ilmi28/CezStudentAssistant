@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace CezStudentAssistant.Domain.Responses;
+namespace CezStudentAssistant.Application.Responses;
 
 /// <summary>
 /// Represents a standard response returned by an API, including status information and an optional message.

@@ -1,8 +1,7 @@
 ﻿using CezStudentAssistant.Application.CommandHandlers;
+using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Responses;
-using CezStudentAssistant.Domain.Exceptions;
-using CezStudentAssistant.Domain.Interfaces.CQRS;
-using CezStudentAssistant.Domain.Responses;
 using FluentValidation;
 
 namespace CezStudentAssistant.Domain.CommandHandlers;

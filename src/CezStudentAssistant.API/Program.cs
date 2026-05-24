@@ -3,8 +3,6 @@ using CezStudentAssistant.Application;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Cez;
-using CezStudentAssistant.Domain.Exceptions;
-using CezStudentAssistant.Domain.Responses;
 using CezStudentAssistant.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 

@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Domain.Interfaces.CQRS;
+﻿namespace CezStudentAssistant.Application.Interfaces.CQRS;
 
 /// <summary>
 /// Represents a query operation that can be executed or processed by a handler.

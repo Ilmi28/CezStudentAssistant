@@ -1,8 +1,7 @@
 ﻿using CezStudentAssistant.Application.Responses;
-using CezStudentAssistant.Domain.Responses;
 using FluentValidation.Results;
 
-namespace CezStudentAssistant.Domain.Exceptions;
+namespace CezStudentAssistant.Application.Exceptions;
 
 public class ApiValidationException : AppException
 {

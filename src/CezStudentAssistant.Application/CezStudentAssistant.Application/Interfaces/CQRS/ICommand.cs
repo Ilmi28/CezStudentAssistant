@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Domain.Interfaces.CQRS;
+﻿namespace CezStudentAssistant.Application.Interfaces.CQRS;
 
 /// <summary>
 /// Defines a command in the CQRS pattern.

@@ -1,6 +1,7 @@
-﻿using CezStudentAssistant.Application.Commands;
+﻿using CezStudentAssistant.API.Requests.Auth;
+using CezStudentAssistant.Application.Commands;
+using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Responses.Cez;
-using CezStudentAssistant.Domain.Interfaces.CQRS;
 
 namespace CezStudentAssistant.API.Endpoints;
 
@@ -12,12 +13,20 @@ public static class AuthEndpoints
 
         group.MapPost(
             "/register",
-            async (RegisterUserCommand command, ICommandHandler<RegisterUserCommand, Guid> handler)
-            => await handler.HandleAsync(command));
+            async (RegisterUserRequest request, ICommandHandler<RegisterUserCommand, Guid> handler)
+            => await handler.HandleAsync(new RegisterUserCommand
+            {
+                UserName = request.UserName,
+                Password = request.Password
+            }));
 
         group.MapPost(
             "/login-cez",
-            async (LoginWithCezCommand command, ICommandHandler<LoginWithCezCommand, CezLoginResponse> handler)
-            => await handler.HandleAsync(command));
+            async (LoginWithCezRequest request, ICommandHandler<LoginWithCezCommand, CezLoginResponse> handler)
+            => await handler.HandleAsync(new LoginWithCezCommand
+            {
+                UserName = request.UserName,
+                Password = request.Password
+            }));
     }
 }

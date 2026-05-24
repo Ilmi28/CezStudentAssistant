@@ -1,6 +1,6 @@
-﻿using CezStudentAssistant.Domain.Responses;
+﻿using CezStudentAssistant.Application.Responses;
 
-namespace CezStudentAssistant.Domain.Interfaces.CQRS;
+namespace CezStudentAssistant.Application.Interfaces.CQRS;
 
 /// <summary>
 /// Generic interface for handling queries of a specified type and returning a response asynchronously.

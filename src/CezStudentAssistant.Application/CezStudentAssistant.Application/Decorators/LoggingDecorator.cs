@@ -1,5 +1,5 @@
-﻿using CezStudentAssistant.Domain.Interfaces.CQRS;
-using CezStudentAssistant.Domain.Responses;
+﻿using CezStudentAssistant.Application.Interfaces.CQRS;
+using CezStudentAssistant.Application.Responses;
 using Microsoft.Extensions.Logging;
 
 namespace CezStudentAssistant.Application.Decorators;

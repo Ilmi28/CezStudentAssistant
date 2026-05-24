@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Domain.Interfaces.CQRS;
+﻿using CezStudentAssistant.Application.Interfaces.CQRS;
 
 namespace CezStudentAssistant.Application.Commands;
 

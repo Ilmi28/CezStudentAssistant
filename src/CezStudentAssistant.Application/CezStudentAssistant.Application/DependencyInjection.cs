@@ -1,6 +1,8 @@
 ﻿using CezStudentAssistant.Application.Decorators;
+using CezStudentAssistant.Application.Interfaces.CQRS;
+using CezStudentAssistant.Application.Services;
 using CezStudentAssistant.Application.Validators;
-using CezStudentAssistant.Domain.Interfaces.CQRS;
+using CezStudentAssistant.Domain.Interfaces.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +17,7 @@ public static class DependencyInjection
             return services
                 .AddCqrsHandlers()
                 .AddValidators()
+                .AddServices()
                 .AddLoggingDecorator();
         }
 
@@ -50,6 +53,12 @@ public static class DependencyInjection
             );
             //services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandHandlerDecorator<>));
             //services.Decorate(typeof(IQueryHandler<,>), typeof(LoggingDecorator.QueryHandlerDecorator<,>));
+            return services;
+        }
+
+        private IServiceCollection AddServices()
+        {
+            services.AddScoped<ICezAuthService, CezAuthService>();
             return services;
         }
     }

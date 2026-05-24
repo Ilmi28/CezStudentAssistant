@@ -1,6 +1,4 @@
-﻿using CezStudentAssistant.Domain.Responses;
-
-namespace CezStudentAssistant.Application.Responses;
+﻿namespace CezStudentAssistant.Application.Responses;
 
 public class BadGatewayResponse : ApiResponse
 {

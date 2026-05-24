@@ -1,6 +1,6 @@
 ﻿using CezStudentAssistant.Application.Responses;
 
-namespace CezStudentAssistant.Domain.Exceptions;
+namespace CezStudentAssistant.Application.Exceptions;
 
 public class AppException : Exception
 {
