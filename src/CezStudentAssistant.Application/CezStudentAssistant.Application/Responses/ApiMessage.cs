@@ -1,9 +1,9 @@
 ﻿namespace CezStudentAssistant.Application.Responses;
 
 
-public readonly struct ApiMessage(object source, string message)
+public readonly struct ApiMessage(object? source, string message)
 {
-    public string Source { get; } = source.GetType().Name
+    public string Source { get; } = (source?.GetType().Name ?? "SYSTEM")
         .Replace("CommandHandler", "")
         .Replace("QueryHandler", "")
         .Replace("Command", "")

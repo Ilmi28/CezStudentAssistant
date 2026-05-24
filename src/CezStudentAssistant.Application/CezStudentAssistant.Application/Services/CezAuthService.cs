@@ -50,6 +50,7 @@ public class CezAuthService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) 
         var userRepo = unitOfWork.Repository<IUserRepository>();
 
         var existingUser = await userRepo.GetSingleAsync(u => u.UserName == userInfoData.UserName, ct);
+        Guid finalUserId;
         if (existingUser == null)
         {
             var user = new User
@@ -69,6 +70,8 @@ public class CezAuthService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) 
                 },
                 ct
             );
+            
+            finalUserId = user.Id;
         }
         else
         {
@@ -78,10 +81,13 @@ public class CezAuthService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) 
             existingCezUser.Token = loginResponse.Data?.Token ?? string.Empty;
             existingCezUser.PrivateToken = loginResponse.Data?.PrivateToken ?? string.Empty;
             await cezUserRepo.UpdateAsync(existingCezUser, ct);
+            
+            finalUserId = existingUser.Id;
         }
 
         await unitOfWork.SaveChangesAsync(ct);
-
+        
+        loginResponse.UserId = finalUserId;
         return loginResponse;
     }
 }

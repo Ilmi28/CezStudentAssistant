@@ -1,10 +1,14 @@
+using System.Text;
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.Application;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Infrastructure;
+using CezStudentAssistant.Infrastructure.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CezStudentAssistant.API;
 
@@ -29,6 +33,38 @@ public class Program
 
     private static void ConfigureServices(WebApplicationBuilder builder)
     {
+        builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>();
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings?.Issuer,
+                ValidAudience = jwtSettings?.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Secret ?? string.Empty))
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["accessToken"];
+                    return Task.CompletedTask;
+                }
+            };
+        });
+
+        builder.Services.AddAuthorization();
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddHttpContextAccessor();
@@ -81,5 +117,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
     }
 }
