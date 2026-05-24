@@ -1,18 +1,10 @@
+﻿using CezStudentAssistant.Cez.Interfaces;
 using CezStudentAssistant.Cez.Responses;
 using System.Text.Json;
 
-namespace CezStudentAssistant.Cez;
+namespace CezStudentAssistant.Cez.Services;
 
-internal interface ICezRequestExecutor
-{
-    Task<CezRequestResult<TData>> SendGetAsync<TData>(
-        string path,
-        IEnumerable<KeyValuePair<string, string>> queryParams
-    )
-        where TData : class;
-}
-
-internal class CezRequestExecutor(HttpClient httpClient) : ICezRequestExecutor
+internal class CezRequestService(HttpClient httpClient) : ICezRequestService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
