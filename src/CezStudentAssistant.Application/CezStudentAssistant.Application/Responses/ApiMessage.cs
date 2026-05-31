@@ -9,6 +9,7 @@ public readonly struct ApiMessage(object? source, string message)
         .Replace("Command", "")
         .Replace("Query", "")
         .Replace("Handler", "")
+        .Replace("Service", "")
         .ToUpper();
     public string Message { get; } = message;
 }

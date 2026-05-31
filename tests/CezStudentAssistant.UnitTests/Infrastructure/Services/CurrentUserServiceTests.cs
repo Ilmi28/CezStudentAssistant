@@ -18,9 +18,8 @@ public class CurrentUserServiceTests
     }
 
     [Test]
-    public void UserId_ShouldReturnGuid_WhenClaimExists()
+    public void GetCurrentUserId_ShouldReturnGuid_WhenClaimExists()
     {
-        // Arrange
         var userId = Guid.NewGuid();
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
         var identity = new ClaimsIdentity(claims, "TestAuth");
@@ -28,39 +27,32 @@ public class CurrentUserServiceTests
         var httpContext = new DefaultHttpContext { User = principal };
         _httpContextAccessor.HttpContext.Returns(httpContext);
 
-        // Act
-        var result = _sut.UserId;
+        var result = _sut.GetCurrentUserId();
 
-        // Assert
         result.Should().Be(userId);
     }
 
     [Test]
-    public void UserId_ShouldReturnNull_WhenClaimDoesNotExist()
+    public void GetCurrentUserId_ShouldReturnNull_WhenClaimDoesNotExist()
     {
-        // Arrange
         var httpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) };
         _httpContextAccessor.HttpContext.Returns(httpContext);
 
-        // Act
-        var result = _sut.UserId;
+        var result = _sut.GetCurrentUserId();
 
-        // Assert
         result.Should().BeNull();
     }
 
     [Test]
-    public void IsAuthenticated_ShouldReturnTrue_WhenUserIsAuthenticated()
+    public void SetSession_ShouldAppendCookies()
     {
-        // Arrange
-        var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "test") }, "TestAuth");
-        var httpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) };
+        var httpContext = new DefaultHttpContext();
         _httpContextAccessor.HttpContext.Returns(httpContext);
 
-        // Act
-        var result = _sut.IsAuthenticated;
+        _sut.SetSession("access-token", "refresh-token");
 
-        // Assert
-        result.Should().BeTrue();
+        var setCookieHeader = httpContext.Response.Headers["Set-Cookie"].ToString();
+        setCookieHeader.Should().Contain("accessToken=");
+        setCookieHeader.Should().Contain("refreshToken=");
     }
 }

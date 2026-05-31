@@ -1,4 +1,3 @@
-using System.Text;
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.Application;
 using CezStudentAssistant.Application.Exceptions;
@@ -9,6 +8,7 @@ using CezStudentAssistant.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace CezStudentAssistant.API;
 

@@ -1,4 +1,5 @@
 using CezStudentAssistant.Application.Dtos.Cez;
+using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Requests.Cez;
@@ -19,7 +20,7 @@ public class CezAuthServiceTests
     private IUnitOfWork _unitOfWork = null!;
     private IUserRepository _userRepository = null!;
     private ICezUserRepository _cezUserRepository = null!;
-    private CezAuthService _sut = null!;
+    private CezService _sut = null!;
 
     [SetUp]
     public void SetUp()
@@ -32,7 +33,7 @@ public class CezAuthServiceTests
         _unitOfWork.Repository<IUserRepository>().Returns(_userRepository);
         _unitOfWork.Repository<ICezUserRepository>().Returns(_cezUserRepository);
 
-        _sut = new CezAuthService(_cezApiClient, _unitOfWork);
+        _sut = new CezService(_cezApiClient, _unitOfWork);
     }
 
     [TearDown]
@@ -42,64 +43,129 @@ public class CezAuthServiceTests
     }
 
     [Test]
-    public async Task LoginWithCezAsync_ShouldCreateNewUser_WhenUserDoesNotExist()
+    public async Task LoginWithCezAsync_ShouldReturnUserInfo_WhenCezApiReturnsValidData()
     {
-        // Arrange
         var userName = "cezUser";
         var password = "password";
-        var messageSource = new object();
+        var tokens = new CezTokens { Token = "t", PrivateToken = "pt" };
+        var siteInfo = new CezSiteInfo { UserName = userName, FullName = "Full Name", ExternalUserId = 123 };
 
         _cezApiClient.LoginToCez(Arg.Any<CezLoginRequest>())
-            .Returns(new CezLoginResponse { Success = true, Data = new CezTokens { Token = "t", PrivateToken = "pt" } });
+            .Returns(new CezLoginResponse { Success = true, Data = tokens });
 
         _cezApiClient.GetSiteInfo(Arg.Any<CezBaseRequest>())
             .Returns(new CezGetSiteInfoResponse 
             { 
                 Success = true, 
-                Data = new CezSiteInfo { UserName = userName, FullName = "Full Name", ExternalUserId = 123 } 
+                Data = siteInfo
             });
+
+        var result = await _sut.LoginWithCezAsync(userName, password, CancellationToken.None);
+
+        result.SiteInfo.Should().BeEquivalentTo(siteInfo);
+        result.Tokens.Should().BeEquivalentTo(tokens);
+    }
+
+    [Test]
+    public async Task LoginWithCezAsync_ShouldThrowBadRequest_WhenLoginFails()
+    {
+        var userName = "cezUser";
+        var password = "password";
+
+        _cezApiClient.LoginToCez(Arg.Any<CezLoginRequest>())
+            .Returns(new CezLoginResponse { Success = false, Message = "Invalid credentials" });
+
+        Func<Task> act = () => _sut.LoginWithCezAsync(userName, password, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Test]
+    public async Task LoginWithCezAsync_ShouldThrowBadRequest_WhenSiteInfoFails()
+    {
+        var userName = "cezUser";
+        var password = "password";
+        var tokens = new CezTokens { Token = "t", PrivateToken = "pt" };
+
+        _cezApiClient.LoginToCez(Arg.Any<CezLoginRequest>())
+            .Returns(new CezLoginResponse { Success = true, Data = tokens });
+
+        _cezApiClient.GetSiteInfo(Arg.Any<CezBaseRequest>())
+            .Returns(new CezGetSiteInfoResponse { Success = false, Message = "Bad response" });
+
+        Func<Task> act = () => _sut.LoginWithCezAsync(userName, password, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Test]
+    public async Task SyncCezUser_ShouldCreateNewUser_WhenUserDoesNotExist()
+    {
+        var userName = "cezUser";
+        var cezUserInfo = new CezUserInfo
+        {
+            SiteInfo = new CezSiteInfo { UserName = userName, FullName = "Full Name", ExternalUserId = 123 },
+            Tokens = new CezTokens { Token = "new_t", PrivateToken = "new_pt" }
+        };
 
         _userRepository.GetSingleAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
             .Returns((User?)null);
 
-        // Act
-        var result = await _sut.LoginWithCezAsync(userName, password, messageSource);
+        var result = await _sut.SyncCezUser(cezUserInfo, CancellationToken.None);
 
-        // Assert
-        result.Success.Should().BeTrue();
+        result.Should().NotBe(Guid.Empty);
         await _userRepository.Received(1).AddAsync(Arg.Is<User>(u => u.UserName == userName), Arg.Any<CancellationToken>());
         await _cezUserRepository.Received(1).AddAsync(Arg.Is<CezUser>(cu => cu.FullName == "Full Name"), Arg.Any<CancellationToken>());
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Test]
-    public async Task LoginWithCezAsync_ShouldUpdateExistingUser_WhenUserExists()
+    public async Task SyncCezUser_ShouldThrowNotFound_WhenCezUserIsMissing()
     {
-        // Arrange
         var userName = "cezUser";
         var userId = Guid.NewGuid();
         var user = new User { UserName = userName };
         user.GetType().GetProperty("Id")?.SetValue(user, userId);
 
-        var existingCezUser = new CezUser 
-        { 
-            UserId = userId, 
-            Token = "old", 
-            FullName = "Name", 
-            PrivateToken = "pt", 
+        var cezUserInfo = new CezUserInfo
+        {
+            SiteInfo = new CezSiteInfo { UserName = userName },
+            Tokens = new CezTokens { Token = "new_t", PrivateToken = "new_pt" }
+        };
+
+        _userRepository.GetSingleAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns(user);
+
+        _cezUserRepository.GetSingleAsync(Arg.Any<Expression<Func<CezUser, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns((CezUser?)null);
+
+        Func<Task> act = () => _sut.SyncCezUser(cezUserInfo, CancellationToken.None);
+
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Test]
+    public async Task SyncCezUser_ShouldUpdateExistingUser_WhenUserExists()
+    {
+        var userName = "cezUser";
+        var userId = Guid.NewGuid();
+        var user = new User { UserName = userName };
+        user.GetType().GetProperty("Id")?.SetValue(user, userId);
+
+        var existingCezUser = new CezUser
+        {
+            UserId = userId,
+            Token = "old",
+            FullName = "Name",
+            PrivateToken = "pt",
             ExternalUserId = 1,
             User = user
         };
 
-        _cezApiClient.LoginToCez(Arg.Any<CezLoginRequest>())
-            .Returns(new CezLoginResponse { Success = true, Data = new CezTokens { Token = "new_t", PrivateToken = "new_pt" } });
-
-        _cezApiClient.GetSiteInfo(Arg.Any<CezBaseRequest>())
-            .Returns(new CezGetSiteInfoResponse
-            {
-                Success = true,
-                Data = new CezSiteInfo { UserName = userName }
-            });
+        var cezUserInfo = new CezUserInfo
+        {
+            SiteInfo = new CezSiteInfo { UserName = userName },
+            Tokens = new CezTokens { Token = "new_t", PrivateToken = "new_pt" }
+        };
 
         _userRepository.GetSingleAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(user);
@@ -107,12 +173,10 @@ public class CezAuthServiceTests
         _cezUserRepository.GetSingleAsync(Arg.Any<Expression<Func<CezUser, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(existingCezUser);
 
-        // Act
-        await _sut.LoginWithCezAsync(userName, "pw", new object());
+        var result = await _sut.SyncCezUser(cezUserInfo, CancellationToken.None);
 
-        // Assert
+        result.Should().Be(userId);
         existingCezUser.Token.Should().Be("new_t");
         await _cezUserRepository.Received(1).UpdateAsync(existingCezUser, Arg.Any<CancellationToken>());
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

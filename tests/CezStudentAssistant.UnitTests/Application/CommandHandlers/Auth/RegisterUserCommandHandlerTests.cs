@@ -43,7 +43,6 @@ public class RegisterUserCommandHandlerTests
     [Test]
     public async Task HandleAsync_ShouldReturnUserId_WhenDataIsValid()
     {
-        // Arrange
         var command = new RegisterUserCommand { UserName = "newuser", Password = "Password123!" };
         
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
@@ -54,10 +53,8 @@ public class RegisterUserCommandHandlerTests
 
         _passwordService.CreatePasswordHash(command.Password).Returns("hashedPassword");
 
-        // Act
         var result = await _sut.HandleAsync(command);
 
-        // Assert
         result.Success.Should().BeTrue();
         await _userRepository.Received(1).AddAsync(Arg.Is<User>(u => u.UserName == command.UserName), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync();
@@ -66,7 +63,6 @@ public class RegisterUserCommandHandlerTests
     [Test]
     public async Task HandleAsync_ShouldThrowConflictException_WhenUsernameAlreadyExists()
     {
-        // Arrange
         var command = new RegisterUserCommand { UserName = "existinguser", Password = "Password123!" };
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
@@ -75,10 +71,24 @@ public class RegisterUserCommandHandlerTests
         _userRepository.ExistsAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(true);
 
-        // Act
         Func<Task> act = () => _sut.HandleAsync(command);
 
-        // Assert
         await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Test]
+    public async Task HandleAsync_ShouldThrowValidationException_WhenValidationFails()
+    {
+        var command = new RegisterUserCommand { UserName = "", Password = "Password123!" };
+
+        _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
+            .Returns(new ValidationResult(new[]
+            {
+                new ValidationFailure(nameof(RegisterUserCommand.UserName), "UserName is required")
+            }));
+
+        Func<Task> act = () => _sut.HandleAsync(command);
+
+        await act.Should().ThrowAsync<ApiValidationException>();
     }
 }

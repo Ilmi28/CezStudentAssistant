@@ -15,13 +15,10 @@ public class PasswordServiceTests
     [Test]
     public void CreatePasswordHash_ShouldReturnHash_WhenPasswordProvided()
     {
-        // Arrange
         var password = "TestPassword123!";
 
-        // Act
         var result = _sut.CreatePasswordHash(password);
 
-        // Assert
         result.Should().NotBeNullOrWhiteSpace();
         result.Should().NotBe(password);
     }
@@ -29,29 +26,23 @@ public class PasswordServiceTests
     [Test]
     public void VerifyPassword_ShouldReturnTrue_WhenPasswordMatchesHash()
     {
-        // Arrange
         var password = "TestPassword123!";
         var hash = _sut.CreatePasswordHash(password);
 
-        // Act
         var result = _sut.VerifyPassword(password, hash);
 
-        // Assert
         result.Should().BeTrue();
     }
 
     [Test]
     public void VerifyPassword_ShouldReturnFalse_WhenPasswordDoesNotMatchHash()
     {
-        // Arrange
         var password = "TestPassword123!";
         var wrongPassword = "WrongPassword";
         var hash = _sut.CreatePasswordHash(password);
 
-        // Act
         var result = _sut.VerifyPassword(wrongPassword, hash);
 
-        // Assert
         result.Should().BeFalse();
     }
 }

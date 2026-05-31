@@ -1,7 +1,6 @@
 ﻿using CezStudentAssistant.Application.Commands;
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
-using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.CommandHandlers;
@@ -12,8 +11,7 @@ using FluentValidation;
 
 namespace CezStudentAssistant.Application.CommandHandlers.Auth;
 
-public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUserCommand, Guid>,
-    ICommandHandler<RegisterUserCommand, Guid>
+public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUserCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordService _passwordService;
@@ -31,7 +29,7 @@ public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUser
     protected override ApiMessage SuccessMessage => new ApiMessage(this, AuthMessagesConsts.RegistrationSuccess);
 
     protected override ApiMessage ErrorMessage => new ApiMessage(this, AuthMessagesConsts.RegistrationError);
-    protected async override Task<Guid> ExecuteAsync(RegisterUserCommand command, CancellationToken ct)
+    protected async override Task ExecuteAsync(RegisterUserCommand command, CancellationToken ct)
     {
         var userRepo = _unitOfWork.Repository<IUserRepository>();
 
@@ -46,7 +44,5 @@ public class RegisterUserCommandHandler : ValidatableCommandHandler<RegisterUser
 
         await userRepo.AddAsync(user, ct);
         await _unitOfWork.SaveChangesAsync();
-
-        return user.Id;
     }
 }
