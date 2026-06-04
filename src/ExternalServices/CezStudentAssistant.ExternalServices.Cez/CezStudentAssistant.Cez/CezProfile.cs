@@ -38,7 +38,8 @@ internal class CezProfile : Profile
             .ForMember(dest => dest.Success, opt => opt.MapFrom(src => src.Error == null))
             .ForMember(dest => dest.ErrorCode, opt => opt.MapFrom(src => src.Error != null ? src.Error.ErrorCode : null))
             .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Error != null ? MapLoginErrorCodeToMessage(src.Error.ErrorCode) : null))
-            .ForMember(dest => dest.Data, opt => opt.MapFrom(src => src.Data));
+            .ForMember(dest => dest.Data, opt => opt.MapFrom(src => src.Data))
+            .ForMember(dest => dest.UserId, opt => opt.Ignore());
 
         CreateMap<CezRequestResult<ExternalGetSiteInfoResponse>, CezGetSiteInfoResponse>()
             .ForMember(dest => dest.Success, opt => opt.MapFrom(src => src.Error == null && src.Data != null))

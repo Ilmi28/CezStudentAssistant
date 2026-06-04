@@ -70,7 +70,7 @@ public class LoginWithCezCommandHandlerTests
     [Test]
     public async Task HandleAsync_ShouldThrowValidationException_WhenValidationFails()
     {
-        var command = new LoginWithCezCommand { UserName = null, Password = null };
+        var command = new LoginWithCezCommand { UserName = null!, Password = null! };
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
             .Returns(new ValidationResult(new[]
