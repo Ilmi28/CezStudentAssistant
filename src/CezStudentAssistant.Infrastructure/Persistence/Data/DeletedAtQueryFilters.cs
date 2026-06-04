@@ -1,7 +1,6 @@
 using CezStudentAssistant.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using System.Linq.Expressions;
+using System.Reflection;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Data;
 
@@ -9,21 +8,22 @@ internal static class DeletedAtQueryFilters
 {
     internal static void ApplyDeletedAtFilters(this ModelBuilder modelBuilder)
     {
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        var applyFilterMethod = typeof(DeletedAtQueryFilters)
+            .GetMethod(nameof(ApplyFilter), BindingFlags.NonPublic | BindingFlags.Static);
+
+        var entityTypes = modelBuilder.Model.GetEntityTypes()
+            .Where(e => typeof(BaseEntity).IsAssignableFrom(e.ClrType));
+
+        foreach (var entityType in entityTypes)
         {
-            if (!typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
-            {
-                continue;
-            }
-
-            var parameter = Expression.Parameter(entityType.ClrType, "entity");
-            var deletedAtProperty = Expression.Property(parameter, nameof(BaseEntity.DeletedAt));
-            var deletedAtIsNull = Expression.Equal(
-                deletedAtProperty,
-                Expression.Constant(null, typeof(DateTime?)));
-
-            var filter = Expression.Lambda(deletedAtIsNull, parameter);
-            entityType.SetQueryFilter(filter);
+            applyFilterMethod?
+                .MakeGenericMethod(entityType.ClrType)
+                .Invoke(null, new object[] { modelBuilder });
         }
+    }
+
+    private static void ApplyFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : BaseEntity
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => e.DeletedAt == null);
     }
 }
