@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Application.Consts;
+using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.External;
@@ -6,7 +6,6 @@ using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
-using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 
@@ -14,7 +13,7 @@ namespace CezStudentAssistant.Application.Services;
 
 public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : ICezService
 {
-    public async Task<CezUserInfo> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
+    public async Task<Guid> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
     {
         var loginResponse = await cezApiClient.LoginToCez(new CezLoginRequest
         {
@@ -33,24 +32,77 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
         if (!userInfoResponse.Success || userInfoResponse.Data is null)
             throw new BadRequestException(new ApiMessage(this, userInfoResponse.Message ?? CezMessagesConsts.GetSiteInfoError));
 
-        return new CezUserInfo
+        var cezUserInfo = new CezUserInfo
         {
             SiteInfo = userInfoResponse.Data,
             Tokens = loginResponse.Data
         };
+
+        return await SyncCezUser(cezUserInfo, ct);
     }
 
-    public async Task<CezGetSiteInfoResponse> GetSiteInfoAsync(string token, CancellationToken ct = default)
+    public async Task SyncUserCourses(Guid userId, CancellationToken ct = default)
     {
-        var userInfoResponse = await cezApiClient.GetSiteInfo(new CezBaseRequest
+        var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
+        var cezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == userId, ct)
+            ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+
+        var courseRepo = unitOfWork.Repository<ICourseRepository>();
+        var userCoursesResponse = await cezApiClient.GetUserCourses(new CezUserRequest
         {
-            Token = token
+            Token = cezUser.Token,
+            UserId = cezUser.ExternalUserId
         });
 
-        return userInfoResponse;
+        if (!userCoursesResponse.Success || userCoursesResponse.Data is null)
+            throw new BadRequestException(new ApiMessage(this, userCoursesResponse.Message ?? CezMessagesConsts.GetUserCoursesError));
+
+        var userRepo = unitOfWork.Repository<IUserRepository>();
+
+        var user = await userRepo.GetByIdAsync(userId, ct, x => x.Courses)
+            ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+
+        var userCourses = userCoursesResponse.Data;
+        var incomingExternalIds = userCourses.Select(c => c.ExternalId).ToList();
+        var existingGlobalCourses = await courseRepo.FindAsync(c => c.CezExternalId != null && incomingExternalIds.Contains(c.CezExternalId.Value), ct);
+        var globalCoursesMap = existingGlobalCourses
+            .Where(c => c.CezExternalId.HasValue)
+            .ToDictionary(c => c.CezExternalId!.Value);
+
+        foreach (var course in userCourses)
+        {
+            globalCoursesMap.TryGetValue(course.ExternalId, out var existingCourse);
+
+            if (existingCourse == null)
+            {
+                var newCourse = new Course
+                {
+                    Users = new List<User> { user },
+                    CezExternalId = course.ExternalId,
+                    Name = course.DisplayName!,
+                    Type = Domain.Enums.CourseType.Cez
+                };
+
+                await courseRepo.AddAsync(newCourse, ct);
+                globalCoursesMap[course.ExternalId] = newCourse;
+            }
+            else
+            {
+                existingCourse.Name = course.DisplayName!;
+
+                if (!user.Courses.Any(c => c.CezExternalId == course.ExternalId))
+                {
+                    user.Courses.Add(existingCourse);
+                }
+
+                await courseRepo.UpdateAsync(existingCourse, ct);
+            }
+        }
+
+        await unitOfWork.SaveChangesAsync(ct);
     }
 
-    public async Task<Guid> SyncCezUser(CezUserInfo cezUserInfo, CancellationToken ct = default)
+    private async Task<Guid> SyncCezUser(CezUserInfo cezUserInfo, CancellationToken ct = default)
     {
         var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
         var userRepo = unitOfWork.Repository<IUserRepository>();
@@ -66,7 +118,6 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
                     ?? throw new BadRequestException(new ApiMessage(this, CezMessagesConsts.GetSiteInfoError))
             };
 
-            await userRepo.AddAsync(user, ct);
             await cezUserRepo.AddAsync(
                 new CezUser
                 {
@@ -82,8 +133,20 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
             return user.Id;
         }
 
-        var existingCezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == existingUser.Id, ct)
-                ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+        var existingCezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == existingUser.Id, ct);
+        if (existingCezUser == null)
+        {
+            existingCezUser = new CezUser
+            {
+                FullName = siteInfoData.FullName,
+                Token = tokensData.Token ?? string.Empty,
+                PrivateToken = tokensData.PrivateToken ?? string.Empty,
+                ExternalUserId = siteInfoData.ExternalUserId,
+                UserId = existingUser.Id
+            };
+            await cezUserRepo.AddAsync(existingCezUser, ct);
+            return existingUser.Id;
+        }
 
         existingCezUser.Token = tokensData.Token ?? string.Empty;
         existingCezUser.PrivateToken = tokensData.PrivateToken ?? string.Empty;

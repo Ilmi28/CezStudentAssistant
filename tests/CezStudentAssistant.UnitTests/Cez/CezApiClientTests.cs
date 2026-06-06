@@ -1,7 +1,5 @@
 using AutoMapper;
-using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Requests.Cez;
-using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Cez.Interfaces;
 using CezStudentAssistant.Cez.Responses;
@@ -75,7 +73,7 @@ public class CezApiClientTests
     public async Task GetUserCourses_ShouldReturnCourses_WhenSuccessful()
     {
         // Arrange
-        var request = new CezUserRequest { Token = "token", UserId = "123" };
+        var request = new CezUserRequest { Token = "token", UserId = 123 };
         var externalResponse = new List<ExternalCezGetUserCoursesResponse>
         {
             new() { Id = 1, FullName = "Course 1" }
@@ -92,7 +90,7 @@ public class CezApiClientTests
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Data.Should().HaveCount(1);
-        result.Data!.First().ExternalId.Should().Be("1");
+        result.Data!.First().ExternalId.Should().Be(1);
     }
 
     [Test]

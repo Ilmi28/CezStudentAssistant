@@ -36,8 +36,7 @@ public class LoginWithCezCommandHandler : ValidatableCommandHandler<LoginWithCez
 
     protected override async Task ExecuteAsync(LoginWithCezCommand command, CancellationToken ct)
     {
-        var cezUserInfo = await _cezService.LoginWithCezAsync(command.UserName, command.Password, ct);
-        var userId = await _cezService.SyncCezUser(cezUserInfo, ct);
+        var userId = await _cezService.LoginWithCezAsync(command.UserName, command.Password, ct);
 
         var refreshToken = await _tokenService.HandleRefreshToken(userId, ct);
         var accessToken = _tokenService.GenerateAccessToken(userId);

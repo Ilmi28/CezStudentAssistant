@@ -4,7 +4,6 @@ using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Cez.Consts;
 using CezStudentAssistant.Cez.Responses;
 using CezStudentAssistant.Cez.Services;
-using System.Globalization;
 
 namespace CezStudentAssistant.Cez;
 
@@ -15,7 +14,7 @@ internal class CezProfile : Profile
         CreateMap<ExternalCezGetUserCoursesResponse, CezCourse>()
             .ForMember(
                 dest => dest.ExternalId,
-                opt => opt.MapFrom(src => src.Id.ToString(CultureInfo.InvariantCulture))
+                opt => opt.MapFrom(src => src.Id)
             );
 
         CreateMap<ExternalGetSiteInfoResponse, CezSiteInfo>()

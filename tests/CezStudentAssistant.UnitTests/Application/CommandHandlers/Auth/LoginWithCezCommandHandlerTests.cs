@@ -40,19 +40,12 @@ public class LoginWithCezCommandHandlerTests
     public async Task HandleAsync_ShouldCallCezAuthService_WhenDataIsValid()
     {
         var command = new LoginWithCezCommand { UserName = "cez", Password = "pw" };
-        var cezUserInfo = new CezUserInfo
-        {
-            SiteInfo = new CezSiteInfo { ExternalUserId = 1, UserName = "cez" },
-            Tokens = new CezTokens { Token = "token", PrivateToken = "private" }
-        };
         var userId = Guid.NewGuid();
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
             .Returns(new ValidationResult());
 
         _cezAuthService.LoginWithCezAsync(command.UserName, command.Password, Arg.Any<CancellationToken>())
-            .Returns(cezUserInfo);
-        _cezAuthService.SyncCezUser(cezUserInfo, Arg.Any<CancellationToken>())
             .Returns(userId);
         _tokenService.HandleRefreshToken(userId, Arg.Any<CancellationToken>())
             .Returns("refresh-token");
@@ -62,7 +55,6 @@ public class LoginWithCezCommandHandlerTests
 
         result.Success.Should().BeTrue();
         await _cezAuthService.Received(1).LoginWithCezAsync(command.UserName, command.Password, Arg.Any<CancellationToken>());
-        await _cezAuthService.Received(1).SyncCezUser(cezUserInfo, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         _currentUserService.Received(1).SetSession("access-token", "refresh-token");
     }

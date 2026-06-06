@@ -2,5 +2,5 @@
 
 internal class ExternalCezUserRequest : ExternalCezBaseRequest
 {
-    public required string UserId { get; set; }
+    public long UserId { get; set; }
 }

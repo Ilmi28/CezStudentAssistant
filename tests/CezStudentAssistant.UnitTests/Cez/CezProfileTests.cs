@@ -1,9 +1,7 @@
 using AutoMapper;
 using CezStudentAssistant.Application.Dtos.Cez;
-using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Cez.Responses;
-using CezStudentAssistant.Cez.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -37,7 +35,7 @@ public class CezProfileTests
         var result = _mapper.Map<CezCourse>(source);
 
         // Assert
-        result.ExternalId.Should().Be("1");
+        result.ExternalId.Should().Be(1);
         result.FullName.Should().Be("Course Name");
     }
 

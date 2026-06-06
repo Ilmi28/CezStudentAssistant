@@ -46,7 +46,7 @@ internal class CezApiClient(ICezRequestService requestService, IMapper mapper) :
                 new(CezParamsConsts.Token, externalRequest.Token),
                 new(CezParamsConsts.Function, externalRequest.Function),
                 new(CezParamsConsts.RestFormat, externalRequest.RestFormat),
-                new(CezParamsConsts.UserId, externalRequest.UserId)
+                new(CezParamsConsts.UserId, externalRequest.UserId.ToString())
             ]
         );
 

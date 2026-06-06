@@ -123,32 +123,60 @@ public class AuthEndpointsTests
     }
 
     [Test]
-    public async Task LoginCez_ShouldReturnSuccess_WhenCezApiReturnsValidData()
+    public async Task LoginCez_ShouldCreateNewUser_WhenUserDoesNotExist()
     {
-        var request = new LoginWithCezRequest { UserName = "cezuser", Password = "cezpassword" };
-        
-        _factory.CezApiClientMock.LoginToCez(Arg.Any<CezLoginRequest>())
-            .Returns(new CezLoginResponse 
-            { 
-                Success = true, 
-                Data = new CezTokens { Token = "token_value", PrivateToken = "private_token_value" } 
-            });
+        // Arrange
+        var request = new LoginWithCezRequest { UserName = "newcezuser", Password = "password" };
+        SetupCezMock("newcezuser", "New CEZ User", 123);
 
-        _factory.CezApiClientMock.GetSiteInfo(Arg.Any<CezBaseRequest>())
-            .Returns(new CezGetSiteInfoResponse 
-            { 
-                Success = true, 
-                Data = new CezSiteInfo { UserName = "cezuser", FullName = "CEZ User", ExternalUserId = 123 } 
-            });
-
+        // Act
         var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
 
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
-        
         response.Headers.Contains("Set-Cookie").Should().BeTrue();
+    }
+
+    [Test]
+    public async Task LoginCez_ShouldLinkToExistingUser_WhenUserExistsByUsername()
+    {
+        // Arrange
+        var username = "existinguser";
+        await SeedUser(username);
+        var request = new LoginWithCezRequest { UserName = username, Password = "password" };
+        SetupCezMock(username, "Existing User Full Name", 456);
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content!.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task LoginCez_ShouldUpdateCezUser_WhenCezUserAlreadyLinked()
+    {
+        // Arrange
+        var username = "returningcezuser";
+        // First login to create both User and CezUser
+        var request = new LoginWithCezRequest { UserName = username, Password = "password" };
+        SetupCezMock(username, "Returning User", 789, "token1", "ptoken1");
+        await _client.PostAsJsonAsync("/auth/login-cez", request);
+
+        // Setup mock for second login with new tokens
+        SetupCezMock(username, "Returning User", 789, "token2", "ptoken2");
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content!.Success.Should().BeTrue();
     }
 
     [Test]
@@ -165,5 +193,28 @@ public class AuthEndpointsTests
 
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeFalse();
+    }
+
+    private void SetupCezMock(string username, string fullName, int externalId, string token = "t", string ptoken = "pt")
+    {
+        _factory.CezApiClientMock.LoginToCez(Arg.Any<CezLoginRequest>())
+            .Returns(new CezLoginResponse
+            {
+                Success = true,
+                Data = new CezTokens { Token = token, PrivateToken = ptoken }
+            });
+
+        _factory.CezApiClientMock.GetSiteInfo(Arg.Any<CezBaseRequest>())
+            .Returns(new CezGetSiteInfoResponse
+            {
+                Success = true,
+                Data = new CezSiteInfo { UserName = username, FullName = fullName, ExternalUserId = externalId }
+            });
+    }
+
+    private async Task SeedUser(string username)
+    {
+        var request = new RegisterUserRequest { UserName = username, Password = "Password123!" };
+        await _client.PostAsJsonAsync("/auth/register", request);
     }
 }
