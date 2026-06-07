@@ -1,10 +1,11 @@
-﻿using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Responses;
+using MediatR;
 
 namespace CezStudentAssistant.Application.CommandHandlers;
 
-public abstract class BaseCommandHandler<TCommand> : ICommandHandler<TCommand>
+public abstract class BaseCommandHandler<TCommand> : IRequestHandler<TCommand, ApiResponse>
     where TCommand : ICommand
 {
     protected abstract ApiMessage SuccessMessage { get; }
@@ -14,7 +15,7 @@ public abstract class BaseCommandHandler<TCommand> : ICommandHandler<TCommand>
     protected abstract Task ExecuteAsync(TCommand command, CancellationToken ct);
 
 
-    public async virtual Task<ApiResponse> HandleAsync(TCommand command, CancellationToken cancellationToken = default)
+    public async virtual Task<ApiResponse> Handle(TCommand command, CancellationToken cancellationToken)
     {
         try
         {
@@ -29,8 +30,8 @@ public abstract class BaseCommandHandler<TCommand> : ICommandHandler<TCommand>
     }
 }
 
-public abstract class BaseCommandHandler<TCommand, TResponse> : ICommandHandler<TCommand, TResponse>
-    where TCommand : ICommand
+public abstract class BaseCommandHandler<TCommand, TResponse> : IRequestHandler<TCommand, ApiResponse<TResponse>>
+    where TCommand : ICommand<TResponse>
 {
     protected abstract ApiMessage SuccessMessage { get; }
 
@@ -38,7 +39,7 @@ public abstract class BaseCommandHandler<TCommand, TResponse> : ICommandHandler<
 
     protected abstract Task<TResponse> ExecuteAsync(TCommand command, CancellationToken ct);
 
-    public async virtual Task<ApiResponse<TResponse>> HandleAsync(TCommand command, CancellationToken cancellationToken = default)
+    public async virtual Task<ApiResponse<TResponse>> Handle(TCommand command, CancellationToken cancellationToken)
     {
         try
         {

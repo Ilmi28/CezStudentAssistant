@@ -1,11 +1,12 @@
-﻿using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Responses;
+using MediatR;
 
-namespace CezStudentAssistant.Domain.QueryHandlers;
+namespace CezStudentAssistant.Application.QueryHandlers;
 
-public abstract class BaseQueryHandler<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
-    where TQuery : IQuery
+public abstract class BaseQueryHandler<TQuery, TResponse> : IRequestHandler<TQuery, ApiResponse<TResponse>>
+    where TQuery : IQuery<TResponse>
 {
     protected abstract ApiMessage SuccessMessage { get; }
 
@@ -13,7 +14,7 @@ public abstract class BaseQueryHandler<TQuery, TResponse> : IQueryHandler<TQuery
 
     protected abstract Task<TResponse> ExecuteAsync(TQuery query, CancellationToken ct);
 
-    public async Task<ApiResponse<TResponse>> HandleAsync(TQuery query, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<TResponse>> Handle(TQuery query, CancellationToken cancellationToken)
     {
         try
         {
