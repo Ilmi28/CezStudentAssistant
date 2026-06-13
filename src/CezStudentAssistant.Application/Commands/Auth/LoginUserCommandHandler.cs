@@ -1,13 +1,14 @@
-using CezStudentAssistant.Application.Commands;
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
-using CezStudentAssistant.Domain.Interfaces.Services;
 
-namespace CezStudentAssistant.Application.CommandHandlers.Auth;
+namespace CezStudentAssistant.Application.Commands.Auth;
+
+public sealed record LoginUserCommand(string UserName, string Password) : ICommand { }
 
 public class LoginUserCommandHandler(
     IUnitOfWork unitOfWork,

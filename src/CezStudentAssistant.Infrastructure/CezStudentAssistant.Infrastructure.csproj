@@ -25,7 +25,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-    <ProjectReference Include="..\CezStudentAssistant.Application\CezStudentAssistant.Application\CezStudentAssistant.Application.csproj" />
+    <ProjectReference Include="..\CezStudentAssistant.Application\CezStudentAssistant.Application.csproj" />
     <ProjectReference Include="..\CezStudentAssistant.Domain\CezStudentAssistant.Domain.csproj" />
   </ItemGroup>
 

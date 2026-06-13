@@ -1,11 +1,9 @@
-using CezStudentAssistant.Application.CommandHandlers.Auth;
-using CezStudentAssistant.Application.Commands;
+using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
-using CezStudentAssistant.Domain.Interfaces.Services;
 using FluentAssertions;
 using NSubstitute;
 using System.Linq.Expressions;
@@ -44,7 +42,7 @@ public class LoginUserCommandHandlerTests
     [Test]
     public async Task Handle_ShouldSetSession_WhenCredentialsAreValid()
     {
-        var command = new LoginUserCommand { UserName = "testuser", Password = "password123" };
+        var command = new LoginUserCommand("testuser", "password123");
         var userId = Guid.NewGuid();
         var user = new User { UserName = "testuser", PasswordHash = "hashedPassword" };
         user.GetType().GetProperty("Id")?.SetValue(user, userId);
@@ -66,7 +64,7 @@ public class LoginUserCommandHandlerTests
     [Test]
     public async Task Handle_ShouldThrowUnauthorizedException_WhenUserDoesNotExist()
     {
-        var command = new LoginUserCommand { UserName = "nonexistent", Password = "password123" };
+        var command = new LoginUserCommand("nonexistent", "password123");
 
         _userRepository.GetSingleAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
             .Returns((User?)null);
@@ -79,7 +77,7 @@ public class LoginUserCommandHandlerTests
     [Test]
     public async Task Handle_ShouldThrowUnauthorizedException_WhenPasswordIsIncorrect()
     {
-        var command = new LoginUserCommand { UserName = "testuser", Password = "wrongpassword" };
+        var command = new LoginUserCommand("testuser", "wrongpassword");
         var user = new User { UserName = "testuser", PasswordHash = "hashedPassword" };
 
         _userRepository.GetSingleAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())

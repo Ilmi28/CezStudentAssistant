@@ -1,9 +1,10 @@
-using CezStudentAssistant.Application.CommandHandlers.Auth;
-using CezStudentAssistant.Application.Commands;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using FluentAssertions;
+using MediatR;
 using NSubstitute;
+using CezStudentAssistant.Application.Commands.Auth;
+using CezStudentAssistant.Application.Notifications.Auth;
 
 namespace CezStudentAssistant.UnitTests.Application.CommandHandlers.Auth;
 
@@ -13,6 +14,7 @@ public class LoginWithCezCommandHandlerTests
     private ITokenService _tokenService = null!;
     private ICurrentUserService _currentUserService = null!;
     private IUnitOfWork _unitOfWork = null!;
+    private IPublisher _publisher = null!;
     private LoginWithCezCommandHandler _sut = null!;
 
     [SetUp]
@@ -22,7 +24,8 @@ public class LoginWithCezCommandHandlerTests
         _tokenService = Substitute.For<ITokenService>();
         _currentUserService = Substitute.For<ICurrentUserService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _sut = new LoginWithCezCommandHandler(_cezAuthService, _tokenService, _currentUserService, _unitOfWork);
+        _publisher = Substitute.For<IPublisher>();
+        _sut = new LoginWithCezCommandHandler(_cezAuthService, _tokenService, _currentUserService, _unitOfWork, _publisher);
     }
 
     [TearDown]
@@ -34,7 +37,7 @@ public class LoginWithCezCommandHandlerTests
     [Test]
     public async Task Handle_ShouldCallCezAuthService_WhenDataIsValid()
     {
-        var command = new LoginWithCezCommand { UserName = "cez", Password = "pw" };
+        var command = new LoginWithCezCommand("cez", "pw");
         var userId = Guid.NewGuid();
 
         _cezAuthService.LoginWithCezAsync(command.UserName, command.Password, Arg.Any<CancellationToken>())
@@ -48,6 +51,7 @@ public class LoginWithCezCommandHandlerTests
         result.Success.Should().BeTrue();
         await _cezAuthService.Received(1).LoginWithCezAsync(command.UserName, command.Password, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _publisher.Received(1).Publish(Arg.Is<CezLoginSucceededNotification>(n => n.UserId == userId), Arg.Any<CancellationToken>());
         _currentUserService.Received(1).SetSession("access-token", "refresh-token");
     }
 }

@@ -1,5 +1,5 @@
-﻿using CezStudentAssistant.Application.Interfaces.Persistence;
-using CezStudentAssistant.Domain.Interfaces.Common;
+﻿using CezStudentAssistant.Application.Interfaces.Common;
+using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;

@@ -1,10 +1,9 @@
-using CezStudentAssistant.Application.CommandHandlers.Auth;
-using CezStudentAssistant.Application.Commands;
+using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
-using CezStudentAssistant.Domain.Interfaces.Services;
 using FluentAssertions;
 using NSubstitute;
 using System.Linq.Expressions;
@@ -39,7 +38,7 @@ public class RegisterUserCommandHandlerTests
     [Test]
     public async Task Handle_ShouldReturnSuccessResponse_WhenDataIsValid()
     {
-        var command = new RegisterUserCommand { UserName = "newuser", Password = "Password123!" };
+        var command = new RegisterUserCommand("newuser", "Password123!");
         
         _userRepository.ExistsAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(false);
@@ -56,7 +55,7 @@ public class RegisterUserCommandHandlerTests
     [Test]
     public async Task Handle_ShouldThrowConflictException_WhenUsernameAlreadyExists()
     {
-        var command = new RegisterUserCommand { UserName = "existinguser", Password = "Password123!" };
+        var command = new RegisterUserCommand("existinguser", "Password123!");
 
         _userRepository.ExistsAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(true);

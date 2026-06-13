@@ -1,16 +1,21 @@
-﻿using CezStudentAssistant.Application.Commands;
 using CezStudentAssistant.Application.Consts;
+using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
+using CezStudentAssistant.Application.Notifications.Auth;
 using CezStudentAssistant.Application.Responses;
+using MediatR;
 
-namespace CezStudentAssistant.Application.CommandHandlers.Auth;
+namespace CezStudentAssistant.Application.Commands.Auth;
+
+public sealed record LoginWithCezCommand(string UserName, string Password) : ICommand { }
 
 public class LoginWithCezCommandHandler(
     ICezService cezService,
     ITokenService tokenService,
     ICurrentUserService currentUserService,
-    IUnitOfWork unitOfWork) : BaseCommandHandler<LoginWithCezCommand>
+    IUnitOfWork unitOfWork,
+    IPublisher publisher) : BaseCommandHandler<LoginWithCezCommand>
 {
     protected override ApiMessage SuccessMessage => new ApiMessage(this, CezMessagesConsts.LoginSuccess);
 
@@ -23,6 +28,7 @@ public class LoginWithCezCommandHandler(
         var refreshToken = await tokenService.HandleRefreshToken(userId, ct);
         var accessToken = tokenService.GenerateAccessToken(userId);
         await unitOfWork.SaveChangesAsync(ct);
+        await publisher.Publish(new CezLoginSucceededNotification(userId), ct);
 
         currentUserService.SetSession(accessToken, refreshToken);
     }

@@ -1,7 +1,7 @@
+using CezStudentAssistant.Application.Interfaces.Common;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Entities;
-using CezStudentAssistant.Domain.Interfaces.Common;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using CezStudentAssistant.Infrastructure.Settings;
 using Microsoft.Extensions.Options;

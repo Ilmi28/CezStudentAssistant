@@ -15,11 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CezStudentAssistant.Domain\CezStudentAssistant.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Queries\" />
+    <ProjectReference Include="..\CezStudentAssistant.Domain\CezStudentAssistant.Domain.csproj" />
   </ItemGroup>
 
 </Project>

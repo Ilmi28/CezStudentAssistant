@@ -1,5 +1,5 @@
-﻿using CezStudentAssistant.Domain.Interfaces.Common;
-using CezStudentAssistant.Domain.Interfaces.Services;
+﻿using CezStudentAssistant.Application.Interfaces.Common;
+using CezStudentAssistant.Application.Interfaces.Services;
 
 namespace CezStudentAssistant.Infrastructure.Services;
 

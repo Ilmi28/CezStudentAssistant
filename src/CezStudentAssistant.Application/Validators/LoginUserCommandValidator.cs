@@ -1,4 +1,4 @@
-using CezStudentAssistant.Application.Commands;
+using CezStudentAssistant.Application.Commands.Auth;
 using FluentValidation;
 
 namespace CezStudentAssistant.Application.Validators;

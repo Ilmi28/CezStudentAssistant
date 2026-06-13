@@ -210,6 +210,13 @@ public class AuthEndpointsTests
                 Success = true,
                 Data = new CezSiteInfo { UserName = username, FullName = fullName, ExternalUserId = externalId }
             });
+
+        _factory.CezApiClientMock.GetUserCourses(Arg.Any<CezUserRequest>())
+            .Returns(new CezGetUserCoursesResponse
+            {
+                Success = true,
+                Data = []
+            });
     }
 
     private async Task SeedUser(string username)

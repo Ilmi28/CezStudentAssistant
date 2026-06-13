@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Domain.Interfaces.Services;
+﻿namespace CezStudentAssistant.Application.Interfaces.Services;
 
 public interface IPasswordService
 {

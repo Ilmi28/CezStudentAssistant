@@ -3,7 +3,7 @@ using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Responses;
 using MediatR;
 
-namespace CezStudentAssistant.Application.CommandHandlers;
+namespace CezStudentAssistant.Application.Commands;
 
 public abstract class BaseCommandHandler<TCommand> : IRequestHandler<TCommand, ApiResponse>
     where TCommand : ICommand

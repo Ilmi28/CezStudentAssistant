@@ -3,7 +3,7 @@ using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Responses;
 using MediatR;
 
-namespace CezStudentAssistant.Application.QueryHandlers;
+namespace CezStudentAssistant.Application.Queries;
 
 public abstract class BaseQueryHandler<TQuery, TResponse> : IRequestHandler<TQuery, ApiResponse<TResponse>>
     where TQuery : IQuery<TResponse>

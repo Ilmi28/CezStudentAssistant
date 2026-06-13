@@ -11,7 +11,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/CezStudentAssistant.API/CezStudentAssistant.API.csproj" />
-    <Project Path="src/CezStudentAssistant.Application/CezStudentAssistant.Application/CezStudentAssistant.Application.csproj" Id="1777243a-dbe1-4090-8d62-0b5722a4c405" />
+    <Project Path="src/CezStudentAssistant.Application/CezStudentAssistant.Application.csproj" />
     <Project Path="src/CezStudentAssistant.Domain/CezStudentAssistant.Domain.csproj" />
     <Project Path="src/CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj" />
     <Project Path="src/CezStudentAssistant.Worker/CezStudentAssistant.Worker.csproj" />

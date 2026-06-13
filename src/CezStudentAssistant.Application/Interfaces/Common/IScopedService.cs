@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Domain.Interfaces.Common;
+﻿namespace CezStudentAssistant.Application.Interfaces.Common;
 
 /// <summary>
 /// Defines a contract for services that are intended to be instantiated once per scope, such as per web request or per

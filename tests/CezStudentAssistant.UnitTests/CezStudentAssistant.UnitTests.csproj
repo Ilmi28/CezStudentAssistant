@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CezStudentAssistant.Application\CezStudentAssistant.Application\CezStudentAssistant.Application.csproj" />
+    <ProjectReference Include="..\..\src\CezStudentAssistant.Application\CezStudentAssistant.Application.csproj" />
     <ProjectReference Include="..\..\src\CezStudentAssistant.Infrastructure\CezStudentAssistant.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\CezStudentAssistant.Domain\CezStudentAssistant.Domain.csproj" />
     <ProjectReference Include="..\..\src\ExternalServices\CezStudentAssistant.ExternalServices.Cez\CezStudentAssistant.Cez\CezStudentAssistant.Cez.csproj" />
