@@ -181,7 +181,7 @@ public class CezServiceTests
         };
 
         var tokens = new CezTokens { Token = "new_t", PrivateToken = "new_pt" };
-        var siteInfo = new CezSiteInfo { UserName = userName };
+        var siteInfo = new CezSiteInfo { UserName = userName, FullName = "New Name", ExternalUserId = 2 };
         SetupCezApiMocks(userName, tokens, siteInfo);
 
         _userRepository.GetSingleAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
@@ -195,7 +195,10 @@ public class CezServiceTests
         result.Should().Be(userId);
         existingCezUser.Token.Should().Be("new_t");
         existingCezUser.PrivateToken.Should().Be("new_pt");
-        await _cezUserRepository.Received(1).UpdateAsync(existingCezUser, Arg.Any<CancellationToken>());
+        existingCezUser.FullName.Should().Be("New Name");
+        existingCezUser.ExternalUserId.Should().Be(2);
+
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -312,7 +315,6 @@ public class CezServiceTests
 
         // Existing Course Update
         existingCourse.Name.Should().Be("Updated Course Name");
-        await _courseRepository.Received(1).UpdateAsync(existingCourse, Arg.Any<CancellationToken>());
         user.Courses.Should().Contain(existingCourse);
 
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -349,6 +351,5 @@ public class CezServiceTests
 
         // Assert
         user.Courses.Count.Should().Be(1);
-        await _courseRepository.Received(1).UpdateAsync(existingCourse, Arg.Any<CancellationToken>());
     }
 }

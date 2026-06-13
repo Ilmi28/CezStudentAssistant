@@ -5,6 +5,8 @@ using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Responses.Cez;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using System.Net;
 using System.Net.Http.Json;
@@ -26,7 +28,7 @@ public class AuthEndpointsTests
         {
             HandleCookies = true // This should handle them, but let's be explicit if needed
         });
-        
+
         // Actually, WebApplicationFactoryClientOptions.HandleCookies is true by default.
         // The problem might be the base address or something else.
         // Let's use a DelegatingHandler or just manually manage it for reliability if it fails.
@@ -53,7 +55,7 @@ public class AuthEndpointsTests
         var response = await _client.PostAsJsonAsync("/auth/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        
+
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
     }
@@ -93,16 +95,16 @@ public class AuthEndpointsTests
     {
         var registerRequest = new RegisterUserRequest { UserName = "loginuser", Password = "Password123!" };
         await _client.PostAsJsonAsync("/auth/register", registerRequest);
-        
+
         var loginRequest = new LoginUserRequest { UserName = "loginuser", Password = "Password123!" };
 
         var response = await _client.PostAsJsonAsync("/auth/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        
+
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
-        
+
         response.Headers.Contains("Set-Cookie").Should().BeTrue();
     }
 
@@ -177,6 +179,60 @@ public class AuthEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task LoginCez_ShouldSyncCourses_WhenLoginSucceeds()
+    {
+        // Arrange
+        var username = "synccourseuser";
+        var request = new LoginWithCezRequest { UserName = username, Password = "password" };
+
+        var incomingCourses = new List<CezCourse>
+        {
+            new CezCourse { ExternalId = 101, DisplayName = "Calculus I" },
+            new CezCourse { ExternalId = 102, DisplayName = "Physics II" }
+        };
+
+        _factory.CezApiClientMock.LoginToCez(Arg.Any<CezLoginRequest>())
+            .Returns(new CezLoginResponse
+            {
+                Success = true,
+                Data = new CezTokens { Token = "t", PrivateToken = "pt" }
+            });
+
+        _factory.CezApiClientMock.GetSiteInfo(Arg.Any<CezBaseRequest>())
+            .Returns(new CezGetSiteInfoResponse
+            {
+                Success = true,
+                Data = new CezSiteInfo { UserName = username, FullName = "Sync User", ExternalUserId = 1000 }
+            });
+
+        _factory.CezApiClientMock.GetUserCourses(Arg.Any<CezUserRequest>())
+            .Returns(new CezGetUserCoursesResponse
+            {
+                Success = true,
+                Data = incomingCourses
+            });
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verify database state
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+
+        var user = await db.Users
+            .Include(u => u.Courses)
+            .FirstOrDefaultAsync(u => u.UserName == username);
+
+        user.Should().NotBeNull();
+        user!.Courses.Should().HaveCount(2);
+        user.Courses.Should().Contain(c => c.CezExternalId == 101 && c.Name == "Calculus I");
+        user.Courses.Should().Contain(c => c.CezExternalId == 102 && c.Name == "Physics II");
     }
 
     [Test]

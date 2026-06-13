@@ -88,14 +88,12 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
             }
             else
             {
-                existingCourse.Name = course.DisplayName!;
+                existingCourse.Name = course.DisplayName ?? existingCourse.Name;
 
                 if (!user.Courses.Any(c => c.CezExternalId == course.ExternalId))
                 {
                     user.Courses.Add(existingCourse);
                 }
-
-                await courseRepo.UpdateAsync(existingCourse, ct);
             }
         }
 
@@ -148,9 +146,12 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
             return existingUser.Id;
         }
 
+        existingCezUser.FullName = siteInfoData.FullName;
         existingCezUser.Token = tokensData.Token ?? string.Empty;
         existingCezUser.PrivateToken = tokensData.PrivateToken ?? string.Empty;
-        await cezUserRepo.UpdateAsync(existingCezUser, ct);
+        existingCezUser.ExternalUserId = siteInfoData.ExternalUserId;
+
+        await unitOfWork.SaveChangesAsync(ct);
 
         return existingUser.Id;
     }

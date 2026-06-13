@@ -52,6 +52,29 @@ public class CezRequestServiceTests
     }
 
     [Test]
+    public async Task SendGetAsync_ShouldReturnData_WhenResponseIsArray()
+    {
+        // Arrange
+        var jsonResponse = "[{\"name\": \"Test1\"}, {\"name\": \"Test2\"}]";
+        
+        _httpMessageHandler.Sender = (req, ct) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(jsonResponse)
+        });
+
+        // Act
+        var result = await _sut.SendGetAsync<List<TestData>>("path", []);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Error.Should().BeNull();
+        result.Data.Should().NotBeNull();
+        result.Data.Should().HaveCount(2);
+        result.Data![0].Name.Should().Be("Test1");
+        result.Data![1].Name.Should().Be("Test2");
+    }
+
+    [Test]
     public async Task SendGetAsync_ShouldReturnError_WhenResponseContainsCezError()
     {
         // Arrange

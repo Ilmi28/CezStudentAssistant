@@ -38,6 +38,11 @@ internal class CezRequestService(HttpClient httpClient) : ICezRequestService
         using var jsonDocument = JsonDocument.Parse(jsonPayload);
         var root = jsonDocument.RootElement;
 
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
         if (
             root.TryGetProperty("error", out _) ||
             root.TryGetProperty("exception", out _) ||

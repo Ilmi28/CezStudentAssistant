@@ -38,7 +38,7 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
         CancellationToken cancellationToken = default,
         params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> query = _dbSet.AsNoTracking();
+        IQueryable<TEntity> query = _dbSet.AsQueryable();
 
         if (includes != null)
         {
@@ -55,7 +55,7 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
 
     public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> query = _dbSet.AsNoTracking();
+        IQueryable<TEntity> query = _dbSet.AsQueryable();
 
         if (includes != null)
         {
@@ -90,7 +90,7 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
         CancellationToken cancellationToken = default,
         params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> query = _dbSet.AsNoTracking();
+        IQueryable<TEntity> query = _dbSet.AsQueryable();
 
         if (includes != null)
         {

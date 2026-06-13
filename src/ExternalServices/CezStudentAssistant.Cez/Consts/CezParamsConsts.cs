@@ -8,6 +8,6 @@ internal static class CezParamsConsts
     public const string Token = "wstoken";
     public const string Function = "wsfunction";
     public const string RestFormat = "moodlewsrestformat";
-    public const string UserId = "userId";
+    public const string UserId = "userid";
     public const string CourseId = "courseid";
 }

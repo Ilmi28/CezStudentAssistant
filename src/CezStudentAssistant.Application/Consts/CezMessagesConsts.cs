@@ -8,4 +8,5 @@ internal static class CezMessagesConsts
     public const string GetSiteInfoError = "Failed to retrieve user information from CEZ.";
     public const string CezUserNotFound = "No user found with the given CEZ credentials.";
     public const string GetUserCoursesError = "Failed to retrieve user courses from CEZ.";
+    public const string SyncCoursesSuccess = "Successfully synchronized user courses.";
 }
