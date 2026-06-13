@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CezStudentAssistant.API\CezStudentAssistant.API.csproj" />
+    <ProjectReference Include="..\..\src\ExternalServices\CezStudentAssistant.Cez\CezStudentAssistant.Cez.csproj" />
   </ItemGroup>
 
 </Project>
