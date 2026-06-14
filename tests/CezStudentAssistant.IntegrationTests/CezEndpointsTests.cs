@@ -1,3 +1,4 @@
+using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
@@ -24,7 +25,11 @@ public class CezEndpointsTests
     public void OneTimeSetUp()
     {
         _factory = new CustomWebApplicationFactory();
-        _client = _factory.CreateClient();
+        _client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+            HandleCookies = true
+        });
     }
 
     [SetUp]
@@ -44,8 +49,13 @@ public class CezEndpointsTests
     public async Task SyncCourses_ShouldSyncCourses_WhenUserExists()
     {
         // Arrange
-        var userId = await CreateUserAndCezUser("testuser", 12345);
+        var username = "testuser";
+        var password = "Password123!";
+        await RegisterAndLogin(username, password);
         
+        var userId = await GetCurrentUserIdFromDb(username);
+        await LinkCezUser(userId, 12345);
+
         var incomingCourses = new List<CezCourse>
         {
             new CezCourse { ExternalId = 201, DisplayName = "Data Structures" },
@@ -60,7 +70,7 @@ public class CezEndpointsTests
             });
 
         // Act
-        var response = await _client.PostAsync($"/cez/sync-courses?userId={userId}", null);
+        var response = await _client.PostAsync("/cez/sync-courses", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -81,20 +91,29 @@ public class CezEndpointsTests
     }
 
     [Test]
-    public async Task SyncCourses_ShouldReturnNotFound_WhenUserDoesNotExist()
+    public async Task SyncCourses_ShouldReturnUnauthorized_WhenNotLoggedIn()
     {
+        // Arrange - use a fresh client without cookies
+        var unauthorizedClient = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            HandleCookies = false
+        });
+
         // Act
-        var response = await _client.PostAsync($"/cez/sync-courses?userId={Guid.NewGuid()}", null);
+        var response = await unauthorizedClient.PostAsync("/cez/sync-courses", null);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
     public async Task SyncCourses_ShouldReturnBadRequest_WhenCezApiReturnsError()
     {
         // Arrange
-        var userId = await CreateUserAndCezUser("erroruser", 54321);
+        var username = "erroruser";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+        await LinkCezUser(userId, 54321);
 
         _factory.CezApiClientMock.GetUserCourses(Arg.Any<CezUserRequest>())
             .Returns(new CezGetUserCoursesResponse
@@ -104,7 +123,7 @@ public class CezEndpointsTests
             });
 
         // Act
-        var response = await _client.PostAsync($"/cez/sync-courses?userId={userId}", null);
+        var response = await _client.PostAsync("/cez/sync-courses", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -113,25 +132,38 @@ public class CezEndpointsTests
         content.Message.Should().Contain("External API Error");
     }
 
-    private async Task<Guid> CreateUserAndCezUser(string username, long externalUserId)
+    private async Task RegisterAndLogin(string username, string password)
+    {
+        var registerResponse = await _client.PostAsJsonAsync("/auth/register", new RegisterUserCommand(username, password));
+        registerResponse.EnsureSuccessStatusCode();
+
+        var loginResponse = await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, password));
+        loginResponse.EnsureSuccessStatusCode();
+    }
+
+    private async Task<Guid> GetCurrentUserIdFromDb(string username)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+        var user = await db.Users.FirstAsync(u => u.UserName == username);
+        return user.Id;
+    }
+
+    private async Task LinkCezUser(Guid userId, long externalUserId)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
 
-        var user = new User { UserName = username };
         var cezUser = new CezUser
         {
-            User = user,
+            UserId = userId,
             Token = "test-token",
             PrivateToken = "test-private-token",
             ExternalUserId = externalUserId,
             FullName = "Test User"
         };
 
-        await db.Users.AddAsync(user);
         await db.CezUsers.AddAsync(cezUser);
         await db.SaveChangesAsync();
-
-        return user.Id;
     }
 }

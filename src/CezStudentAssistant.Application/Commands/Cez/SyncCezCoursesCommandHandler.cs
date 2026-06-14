@@ -5,7 +5,10 @@ using CezStudentAssistant.Application.Responses;
 
 namespace CezStudentAssistant.Application.Commands.Cez;
 
-public sealed record SyncCezCoursesCommand(Guid UserId) : ICommand;
+public sealed class SyncCezCoursesCommand : ICommand, IUserRequest
+{
+    public Guid UserId { get; set; }
+}
 
 public class SyncCezCoursesCommandHandler(ICezService cezService) : BaseCommandHandler<SyncCezCoursesCommand>
 {

@@ -11,10 +11,10 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor)
     private ClaimsPrincipal? User => httpContextAccessor.HttpContext?.User;
     private HttpResponse Response => httpContextAccessor.HttpContext.Response;
 
-    private readonly CookieOptions CookieOptions = new CookieOptions
+    private CookieOptions CookieOptions => new()
     {
         HttpOnly = true,
-        Secure = true,
+        Secure = httpContextAccessor.HttpContext?.Request.IsHttps ?? false,
         SameSite = SameSiteMode.Strict,
         Expires = DateTime.UtcNow.AddDays(7)
     };

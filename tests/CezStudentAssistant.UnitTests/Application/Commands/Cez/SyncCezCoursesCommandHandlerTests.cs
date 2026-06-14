@@ -23,7 +23,7 @@ public class SyncCezCoursesCommandHandlerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var command = new SyncCezCoursesCommand(userId);
+        var command = new SyncCezCoursesCommand { UserId = userId };
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -39,7 +39,7 @@ public class SyncCezCoursesCommandHandlerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var command = new SyncCezCoursesCommand(userId);
+        var command = new SyncCezCoursesCommand { UserId = userId };
         _cezService.When(x => x.SyncUserCourses(userId, Arg.Any<CancellationToken>()))
             .Do(x => throw new Exception("API Error"));
 
