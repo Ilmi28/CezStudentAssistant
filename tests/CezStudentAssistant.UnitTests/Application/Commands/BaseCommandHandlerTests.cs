@@ -4,7 +4,7 @@ using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Responses;
 using FluentAssertions;
 
-namespace CezStudentAssistant.UnitTests.Application.CommandHandlers;
+namespace CezStudentAssistant.UnitTests.Application.Commands;
 
 public class BaseCommandHandlerTests
 {

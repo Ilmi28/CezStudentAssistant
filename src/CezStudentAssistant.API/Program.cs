@@ -77,6 +77,7 @@ public class Program
     {
         app.MapAuthEndpoints();
         app.MapUserEndpoints();
+        app.MapCezEndpoints();
     }
 
     private static void ConfigureMiddleware(WebApplication app)

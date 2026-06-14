@@ -270,7 +270,7 @@ public class CezServiceTests
         _cezApiClient.GetUserCourses(Arg.Any<CezUserRequest>())
             .Returns(new CezGetUserCoursesResponse { Success = true, Data = new List<CezCourse>() });
 
-        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), Arg.Any<Expression<Func<User, object>>[]>())
+        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), includes: Arg.Any<Expression<Func<User, object>>[]>())
             .Returns((User?)null);
 
         Func<Task> act = () => _sut.SyncUserCourses(userId, CancellationToken.None);
@@ -300,7 +300,7 @@ public class CezServiceTests
         _cezApiClient.GetUserCourses(Arg.Any<CezUserRequest>())
             .Returns(new CezGetUserCoursesResponse { Success = true, Data = incomingCourses });
 
-        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), Arg.Any<Expression<Func<User, object>>[]>())
+        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), includes: Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
         _courseRepository.FindAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())
@@ -340,7 +340,7 @@ public class CezServiceTests
         _cezApiClient.GetUserCourses(Arg.Any<CezUserRequest>())
             .Returns(new CezGetUserCoursesResponse { Success = true, Data = incomingCourses });
 
-        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), Arg.Any<Expression<Func<User, object>>[]>())
+        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), includes: Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
         _courseRepository.FindAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())

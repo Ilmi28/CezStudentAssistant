@@ -36,16 +36,17 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
     public async Task<IEnumerable<TEntity>> FindAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
+        bool asNoTracking = false,
         params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet.AsQueryable();
 
-        if (includes != null)
+        if (asNoTracking)
+            query = query.AsNoTracking();
+
+        foreach (var include in includes)
         {
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
+            query = query.Include(include);
         }
 
         query = query.Where(predicate);
@@ -53,29 +54,27 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes)
+    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet.AsQueryable();
 
-        if (includes != null)
+        if (asNoTracking)
+            query = query.AsNoTracking();
+
+        foreach (var include in includes)
         {
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
+            query = query.Include(include);
         }
 
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes)
+    public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default, bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes)
     {
-        if (includes == null || includes.Length == 0)
-        {
-            return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
-        }
-
         IQueryable<TEntity> query = _dbSet.AsQueryable();
+
+        if (asNoTracking)
+            query = query.AsNoTracking();
 
         foreach (var include in includes)
         {
@@ -88,16 +87,17 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
     public async Task<TEntity?> GetSingleAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
+        bool asNoTracking = false,
         params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet.AsQueryable();
 
-        if (includes != null)
+        if (asNoTracking)
+            query = query.AsNoTracking();
+
+        foreach (var include in includes)
         {
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
+            query = query.Include(include);
         }
 
         return await query.FirstOrDefaultAsync(predicate, cancellationToken);

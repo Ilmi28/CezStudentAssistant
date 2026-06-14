@@ -1,5 +1,4 @@
-﻿using CezStudentAssistant.API.Requests.Auth;
-using CezStudentAssistant.Application.Commands.Auth;
+﻿using CezStudentAssistant.Application.Commands.Auth;
 using MediatR;
 
 namespace CezStudentAssistant.API.Endpoints;
@@ -12,27 +11,27 @@ public static class AuthEndpoints
 
         group.MapPost(
             "/register",
-            async (RegisterUserRequest request, IMediator mediator) =>
+            async (RegisterUserCommand command, IMediator mediator) =>
             {
-                var response = await mediator.Send(new RegisterUserCommand(request.UserName, request.Password));
+                var response = await mediator.Send(command);
 
                 return Results.Ok(response);
             });
 
         group.MapPost(
             "/login",
-            async (LoginUserRequest request, IMediator mediator) =>
+            async (LoginUserCommand command, IMediator mediator) =>
             {
-                var response = await mediator.Send(new LoginUserCommand(request.UserName, request.Password));
+                var response = await mediator.Send(command);
 
                 return Results.Ok(response);
             });
 
         group.MapPost(
             "/login-cez",
-            async (LoginWithCezRequest request, IMediator mediator) =>
+            async (LoginWithCezCommand command, IMediator mediator) =>
             {
-                var response = await mediator.Send(new LoginWithCezCommand(request.UserName, request.Password));
+                var response = await mediator.Send(command);
 
                 return Results.Ok(response);
             });

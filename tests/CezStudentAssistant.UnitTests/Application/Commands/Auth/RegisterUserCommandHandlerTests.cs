@@ -8,7 +8,7 @@ using FluentAssertions;
 using NSubstitute;
 using System.Linq.Expressions;
 
-namespace CezStudentAssistant.UnitTests.Application.CommandHandlers.Auth;
+namespace CezStudentAssistant.UnitTests.Application.Commands.Auth;
 
 public class RegisterUserCommandHandlerTests
 {

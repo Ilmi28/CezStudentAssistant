@@ -4,7 +4,7 @@ using CezStudentAssistant.Application.Responses;
 using FluentAssertions;
 using NSubstitute;
 
-namespace CezStudentAssistant.UnitTests.Application.CommandHandlers.Cez;
+namespace CezStudentAssistant.UnitTests.Application.Commands.Cez;
 
 public class SyncCezCoursesCommandHandlerTests
 {

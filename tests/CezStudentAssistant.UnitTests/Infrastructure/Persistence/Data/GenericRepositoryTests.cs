@@ -58,16 +58,16 @@ public class GenericRepositoryTests
     public async Task GetByIdAsync_ShouldReturnEntityWithIncludes()
     {
         var id = Guid.NewGuid();
-        var user = new User 
-        { 
-            Id = id, 
+        var user = new User
+        {
+            Id = id,
             UserName = "testuser",
             RefreshTokens = new List<RefreshToken> { new() { Token = "token", ExpiryTime = DateTime.UtcNow.AddDays(1) } }
         };
         await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetByIdAsync(id, CancellationToken.None, u => u.RefreshTokens);
+        var result = await _sut.GetByIdAsync(id, CancellationToken.None, includes: u => u.RefreshTokens);
 
         result.Should().NotBeNull();
         result!.RefreshTokens.Should().NotBeEmpty();
@@ -118,7 +118,7 @@ public class GenericRepositoryTests
         var deletedUser = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == user.Id);
         deletedUser.Should().NotBeNull();
         deletedUser!.DeletedAt.Should().NotBeNull();
-        
+
         // Query filter should hide it by default (assuming ApplyDeletedAtFilters works)
         var exists = await _context.Users.AnyAsync(u => u.Id == user.Id);
         exists.Should().BeFalse();

@@ -1,4 +1,4 @@
-using CezStudentAssistant.API.Requests.Auth;
+using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
@@ -50,9 +50,9 @@ public class AuthEndpointsTests
     [Test]
     public async Task Register_ShouldCreateUserAndSetCookies_WhenDataIsValid()
     {
-        var request = new RegisterUserRequest { UserName = "testuser", Password = "Password123!" };
+        var command = new RegisterUserCommand("testuser", "Password123!");
 
-        var response = await _client.PostAsJsonAsync("/auth/register", request);
+        var response = await _client.PostAsJsonAsync("/auth/register", command);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -63,9 +63,9 @@ public class AuthEndpointsTests
     [Test]
     public async Task Register_ShouldReturnBadRequest_WhenValidationFails()
     {
-        var request = new RegisterUserRequest { UserName = "ab", Password = "short" };
+        var command = new RegisterUserCommand("ab", "short");
 
-        var response = await _client.PostAsJsonAsync("/auth/register", request);
+        var response = await _client.PostAsJsonAsync("/auth/register", command);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -79,10 +79,10 @@ public class AuthEndpointsTests
     [Test]
     public async Task Register_ShouldReturnConflict_WhenUsernameAlreadyExists()
     {
-        var request = new RegisterUserRequest { UserName = "testuser", Password = "Password123!" };
+        var command = new RegisterUserCommand("testuser", "Password123!");
 
-        await _client.PostAsJsonAsync("/auth/register", request);
-        var response = await _client.PostAsJsonAsync("/auth/register", request);
+        await _client.PostAsJsonAsync("/auth/register", command);
+        var response = await _client.PostAsJsonAsync("/auth/register", command);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
@@ -93,12 +93,12 @@ public class AuthEndpointsTests
     [Test]
     public async Task Login_ShouldReturnSuccess_WhenCredentialsAreValid()
     {
-        var registerRequest = new RegisterUserRequest { UserName = "loginuser", Password = "Password123!" };
-        await _client.PostAsJsonAsync("/auth/register", registerRequest);
+        var registerCommand = new RegisterUserCommand("loginuser", "Password123!");
+        await _client.PostAsJsonAsync("/auth/register", registerCommand);
 
-        var loginRequest = new LoginUserRequest { UserName = "loginuser", Password = "Password123!" };
+        var command = new LoginUserCommand("loginuser", "Password123!");
 
-        var response = await _client.PostAsJsonAsync("/auth/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/auth/login", command);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -111,12 +111,12 @@ public class AuthEndpointsTests
     [Test]
     public async Task Login_ShouldReturnUnauthorized_WhenCredentialsAreInvalid()
     {
-        var registerRequest = new RegisterUserRequest { UserName = "loginuser", Password = "Password123!" };
-        await _client.PostAsJsonAsync("/auth/register", registerRequest);
+        var registerCommand = new RegisterUserCommand("loginuser", "Password123!");
+        await _client.PostAsJsonAsync("/auth/register", registerCommand);
 
-        var loginRequest = new LoginUserRequest { UserName = "loginuser", Password = "WrongPassword123!" };
+        var command = new LoginUserCommand("loginuser", "WrongPassword123!");
 
-        var response = await _client.PostAsJsonAsync("/auth/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/auth/login", command);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
@@ -128,11 +128,11 @@ public class AuthEndpointsTests
     public async Task LoginCez_ShouldCreateNewUser_WhenUserDoesNotExist()
     {
         // Arrange
-        var request = new LoginWithCezRequest { UserName = "newcezuser", Password = "password" };
+        var command = new LoginWithCezCommand("newcezuser", "password");
         SetupCezMock("newcezuser", "New CEZ User", 123);
 
         // Act
-        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -147,11 +147,11 @@ public class AuthEndpointsTests
         // Arrange
         var username = "existinguser";
         await SeedUser(username);
-        var request = new LoginWithCezRequest { UserName = username, Password = "password" };
+        var command = new LoginWithCezCommand(username, "password");
         SetupCezMock(username, "Existing User Full Name", 456);
 
         // Act
-        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -165,15 +165,15 @@ public class AuthEndpointsTests
         // Arrange
         var username = "returningcezuser";
         // First login to create both User and CezUser
-        var request = new LoginWithCezRequest { UserName = username, Password = "password" };
+        var command = new LoginWithCezCommand(username, "password");
         SetupCezMock(username, "Returning User", 789, "token1", "ptoken1");
-        await _client.PostAsJsonAsync("/auth/login-cez", request);
+        await _client.PostAsJsonAsync("/auth/login-cez", command);
 
         // Setup mock for second login with new tokens
         SetupCezMock(username, "Returning User", 789, "token2", "ptoken2");
 
         // Act
-        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -186,7 +186,7 @@ public class AuthEndpointsTests
     {
         // Arrange
         var username = "synccourseuser";
-        var request = new LoginWithCezRequest { UserName = username, Password = "password" };
+        var command = new LoginWithCezCommand(username, "password");
 
         var incomingCourses = new List<CezCourse>
         {
@@ -216,7 +216,7 @@ public class AuthEndpointsTests
             });
 
         // Act
-        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -238,12 +238,12 @@ public class AuthEndpointsTests
     [Test]
     public async Task LoginCez_ShouldReturnBadRequest_WhenCezApiReturnsError()
     {
-        var request = new LoginWithCezRequest { UserName = "cezuser", Password = "cezpassword" };
+        var command = new LoginWithCezCommand("cezuser", "cezpassword");
 
         _factory.CezApiClientMock.LoginToCez(Arg.Any<CezLoginRequest>())
             .Returns(new CezLoginResponse { Success = false, Message = "Invalid credentials" });
 
-        var response = await _client.PostAsJsonAsync("/auth/login-cez", request);
+        var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -277,7 +277,7 @@ public class AuthEndpointsTests
 
     private async Task SeedUser(string username)
     {
-        var request = new RegisterUserRequest { UserName = username, Password = "Password123!" };
-        await _client.PostAsJsonAsync("/auth/register", request);
+        var command = new RegisterUserCommand(username, "Password123!");
+        await _client.PostAsJsonAsync("/auth/register", command);
     }
 }

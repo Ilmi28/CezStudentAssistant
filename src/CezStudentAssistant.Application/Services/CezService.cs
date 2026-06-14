@@ -59,7 +59,7 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
 
         var userRepo = unitOfWork.Repository<IUserRepository>();
 
-        var user = await userRepo.GetByIdAsync(userId, ct, x => x.Courses)
+        var user = await userRepo.GetByIdAsync(userId, ct, includes: x => x.Courses)
             ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
 
         var userCourses = userCoursesResponse.Data;

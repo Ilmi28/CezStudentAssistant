@@ -6,7 +6,7 @@ using NSubstitute;
 using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Notifications.Auth;
 
-namespace CezStudentAssistant.UnitTests.Application.CommandHandlers.Auth;
+namespace CezStudentAssistant.UnitTests.Application.Commands.Auth;
 
 public class LoginWithCezCommandHandlerTests
 {
