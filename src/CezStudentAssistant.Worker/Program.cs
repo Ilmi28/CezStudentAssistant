@@ -1,31 +1,48 @@
-namespace CezStudentAssistant.Worker;
+using CezStudentAssistant.Application;
+using CezStudentAssistant.Cez;
+using CezStudentAssistant.Infrastructure;
+using Hangfire.Dashboard;
+using Hangfire;
+using Hangfire.PostgreSql;
 
-public class Program
-{
-    public static void Main(string[] args)
+var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+    DotNetEnv.Env.Load();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddApplication();
+builder.Services.AddInstrastructure(builder.Environment.IsDevelopment());
+builder.Services.AddCez();
+
+var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options =>
     {
-        var builder = WebApplication.CreateBuilder(args);
+        options.UseNpgsqlConnection(connectionString);
+    }));
 
-        // Add services to the container.
+builder.Services.AddHangfireServer();
 
-        builder.Services.AddControllers();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
+var app = builder.Build();
 
-        var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [new AllowAllDashboardAuthorizationFilter()]
+});
+app.Run();
 
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-        app.MapControllers();
-
-        app.Run();
-    }
+sealed class AllowAllDashboardAuthorizationFilter : IDashboardAuthorizationFilter
+{
+    public bool Authorize(DashboardContext context) => true;
 }

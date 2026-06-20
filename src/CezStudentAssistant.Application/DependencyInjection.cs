@@ -3,7 +3,6 @@ using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Services;
 using CezStudentAssistant.Application.Validators;
 using FluentValidation;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CezStudentAssistant.Application;

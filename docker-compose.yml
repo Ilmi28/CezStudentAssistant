@@ -31,6 +31,20 @@ services:
     depends_on:
       - api
 
+  worker:
+    container_name: cez-student-assistant-worker
+    build:
+      context: .
+      dockerfile: src/CezStudentAssistant.Worker/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_CONNECTION_STRING=Host=db;Port=5432;Database=CezStudentAssistantDb;Username=postgres;Password=postgres
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:16-alpine
     container_name: cez-student-assistant-db

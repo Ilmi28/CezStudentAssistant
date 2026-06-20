@@ -1,3 +1,4 @@
+using CezStudentAssistant.API.Consts;
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.Application;
 using CezStudentAssistant.Application.Exceptions;
@@ -59,6 +60,27 @@ public class Program
                 {
                     context.Token = context.Request.Cookies["accessToken"];
                     return Task.CompletedTask;
+                },
+                OnChallenge = async context =>
+                {
+                    context.HandleResponse();
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    context.Response.ContentType = "application/json";
+
+                    var message = new ApiMessage(null, MessageConsts.NotAuthenticated);
+                    var response = new UnauthorizedResponse(message);
+
+                    await context.Response.WriteAsJsonAsync(response);
+                },
+                OnForbidden = async context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "application/json";
+
+                    var message = new ApiMessage(null, MessageConsts.Forbidden);
+                    var response = new ForbiddenResponse(message);
+
+                    await context.Response.WriteAsJsonAsync(response);
                 }
             };
         });
