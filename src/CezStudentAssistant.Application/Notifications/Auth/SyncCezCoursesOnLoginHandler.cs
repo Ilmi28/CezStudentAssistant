@@ -5,9 +5,13 @@ namespace CezStudentAssistant.Application.Notifications.Auth;
 
 public sealed record CezLoginSucceededNotification(Guid UserId) : INotification;
 
-public sealed class SyncCezCoursesOnLoginHandler(ICezService cezService)
+public sealed class SyncCezCoursesOnLoginHandler(IJobScheduler jobScheduler)
     : INotificationHandler<CezLoginSucceededNotification>
 {
     public Task Handle(CezLoginSucceededNotification notification, CancellationToken cancellationToken)
-        => cezService.SyncUserCourses(notification.UserId, cancellationToken);
+    {
+        jobScheduler.Enqueue<ICezService>((cezService) => cezService.SyncUserCourses(notification.UserId, cancellationToken));
+
+        return Task.CompletedTask;
+    }
 }

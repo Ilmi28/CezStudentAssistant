@@ -1,19 +1,14 @@
 using CezStudentAssistant.Application;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Infrastructure;
-using Hangfire.Dashboard;
 using Hangfire;
+using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsDevelopment())
     DotNetEnv.Env.Load();
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddApplication();
-builder.Services.AddInstrastructure(builder.Environment.IsDevelopment());
-builder.Services.AddCez();
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
@@ -28,6 +23,10 @@ builder.Services.AddHangfire(configuration => configuration
     }));
 
 builder.Services.AddHangfireServer();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddApplication();
+builder.Services.AddInstrastructure(builder.Environment.IsDevelopment());
+builder.Services.AddCez();
 
 var app = builder.Build();
 
