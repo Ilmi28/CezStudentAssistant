@@ -1,5 +1,8 @@
 using CezStudentAssistant.API;
+using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Interfaces.External;
+using CezStudentAssistant.Application.Interfaces.Services;
+using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -14,10 +17,23 @@ namespace CezStudentAssistant.IntegrationTests;
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     public ICezApiClient CezApiClientMock { get; } = Substitute.For<ICezApiClient>();
+    public static IReadOnlyList<CezCourse> DefaultCezCourses { get; } = new List<CezCourse>
+    {
+        new() { ExternalId = 101, DisplayName = "Calculus I" },
+        new() { ExternalId = 102, DisplayName = "Physics II" }
+    };
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         Environment.SetEnvironmentVariable("DB_CONNECTION_STRING", "");
+        Environment.SetEnvironmentVariable("CEZ_API_BASE_URL", "https://cez.test/");
+
+        CezApiClientMock.GetUserCourses(Arg.Any<CezStudentAssistant.Application.Requests.Cez.CezUserRequest>())
+            .Returns(new CezGetUserCoursesResponse
+            {
+                Success = true,
+                Data = DefaultCezCourses.ToList()
+            });
 
         builder.ConfigureServices(services =>
         {
@@ -37,6 +53,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             // Mock External CEZ API
             services.AddSingleton(CezApiClientMock);
+            services.AddScoped<IJobScheduler, ScopedImmediateJobScheduler>();
         });
 
         builder.UseEnvironment("Development");

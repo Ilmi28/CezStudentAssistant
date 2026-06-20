@@ -139,6 +139,8 @@ public class AuthEndpointsTests
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
         response.Headers.Contains("Set-Cookie").Should().BeTrue();
+
+        await AssertUserCoursesAsync("newcezuser", CustomWebApplicationFactory.DefaultCezCourses);
     }
 
     [Test]
@@ -157,6 +159,8 @@ public class AuthEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
+
+        await AssertUserCoursesAsync(username, CustomWebApplicationFactory.DefaultCezCourses);
     }
 
     [Test]
@@ -179,6 +183,8 @@ public class AuthEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
+
+        await AssertUserCoursesAsync(username, CustomWebApplicationFactory.DefaultCezCourses);
     }
 
     [Test]
@@ -251,7 +257,13 @@ public class AuthEndpointsTests
         content!.Success.Should().BeFalse();
     }
 
-    private void SetupCezMock(string username, string fullName, int externalId, string token = "t", string ptoken = "pt")
+    private void SetupCezMock(
+        string username,
+        string fullName,
+        int externalId,
+        string token = "t",
+        string ptoken = "pt",
+        IReadOnlyList<CezCourse>? courses = null)
     {
         _factory.CezApiClientMock.LoginToCez(Arg.Any<CezLoginRequest>())
             .Returns(new CezLoginResponse
@@ -271,8 +283,25 @@ public class AuthEndpointsTests
             .Returns(new CezGetUserCoursesResponse
             {
                 Success = true,
-                Data = []
+                Data = (courses ?? CustomWebApplicationFactory.DefaultCezCourses).ToList()
             });
+    }
+
+    private async Task AssertUserCoursesAsync(string username, IReadOnlyList<CezCourse> expectedCourses)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+
+        var user = await db.Users
+            .Include(u => u.Courses)
+            .FirstOrDefaultAsync(u => u.UserName == username);
+
+        user.Should().NotBeNull();
+        user!.Courses.Should().HaveCount(expectedCourses.Count);
+        foreach (var course in expectedCourses)
+        {
+            user.Courses.Should().Contain(c => c.CezExternalId == course.ExternalId && c.Name == course.DisplayName);
+        }
     }
 
     private async Task SeedUser(string username)
