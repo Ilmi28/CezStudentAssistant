@@ -10,8 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 if (builder.Environment.IsDevelopment())
     DotNetEnv.Env.Load();
 
-var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -25,8 +24,8 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddHangfireServer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddApplication();
-builder.Services.AddInstrastructure(builder.Environment.IsDevelopment());
-builder.Services.AddCez();
+builder.Services.AddInstrastructure(builder.Configuration, builder.Environment.IsDevelopment());
+builder.Services.AddCez(builder.Configuration);
 
 var app = builder.Build();
 

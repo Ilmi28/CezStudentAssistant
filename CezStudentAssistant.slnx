@@ -6,7 +6,6 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".dockerignore" />
-    <File Path="docker-compose.prod.yml" />
     <File Path="docker-compose.yml" />
   </Folder>
   <Folder Name="/src/">

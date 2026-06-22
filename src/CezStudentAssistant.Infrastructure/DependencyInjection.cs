@@ -1,31 +1,36 @@
-﻿using CezStudentAssistant.Application.Interfaces.Common;
+﻿using Azure.Storage.Blobs;
+using CezStudentAssistant.Application.Interfaces.Common;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CezStudentAssistant.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInstrastructure(this IServiceCollection services, bool isDevelopment)
+    public static IServiceCollection AddInstrastructure(this IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
         return services
             .AddServices()
-            .AddDatabase(loggingEnabled: isDevelopment, detailedErrors: isDevelopment)
-            .AddRepositories();
+            .AddDatabase(configuration, loggingEnabled: isDevelopment, detailedErrors: isDevelopment)
+            .AddRepositories()
+            .AddHangfireConfiguration(configuration)
+            .AddAzureBlobStorage(configuration);
     }
 
     private static IServiceCollection AddDatabase(
         this IServiceCollection services,
+        IConfiguration configuration,
         bool loggingEnabled = false,
         bool detailedErrors = false
     )
     {
-        var connectionString = Environment.GetEnvironmentVariable(
-            "DB_CONNECTION_STRING"
-        );
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         if (string.IsNullOrEmpty(connectionString))
         {
@@ -72,6 +77,31 @@ public static class DependencyInjection
                 .AsImplementedInterfaces()
                 .WithSingletonLifetime()
         );
+
+        return services;
+    }
+
+    private static IServiceCollection AddHangfireConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(options =>
+            {
+                options.UseNpgsqlConnection(connectionString);
+            }));
+
+        return services;
+    }
+
+    private static IServiceCollection AddAzureBlobStorage(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+
+        services.AddSingleton(x => new BlobServiceClient(connectionString));
 
         return services;
     }

@@ -6,8 +6,6 @@ using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Infrastructure;
 using CezStudentAssistant.Infrastructure.Settings;
-using Hangfire;
-using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
@@ -20,9 +18,6 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
-        if (builder.Environment.IsDevelopment())
-            DotNetEnv.Env.Load();
 
         ConfigureServices(builder);
 
@@ -91,20 +86,10 @@ public class Program
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddHangfire(configuration => configuration
-            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-            .UseSimpleAssemblyNameTypeSerializer()
-            .UseRecommendedSerializerSettings()
-            .UsePostgreSqlStorage(options =>
-            {
-                options.UseNpgsqlConnection(
-                    Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-                    ?? builder.Configuration.GetConnectionString("DefaultConnection"));
-            }));
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddApplication();
-        builder.Services.AddInstrastructure(builder.Environment.IsDevelopment());
-        builder.Services.AddCez();
+        builder.Services.AddInstrastructure(builder.Configuration, builder.Environment.IsDevelopment());
+        builder.Services.AddCez(builder.Configuration);
     }
 
     private static void MapEndpoints(WebApplication app)

@@ -1,50 +1,13 @@
 services:
-  api:
-    container_name: cez-student-assistant-api
-    build:
-      context: .
-      dockerfile: src/CezStudentAssistant.API/Dockerfile
-      args:
-        - BUILD_CONFIGURATION=Debug
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: azure-blob-storage-emulator
+    restart: unless-stopped
+    command: azurite-blob --loose --blobHost 0.0.0.0 --blobPort 10000 --location /data
     ports:
-      - "8080:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - DB_CONNECTION_STRING=Host=db;Port=5432;Database=CezStudentAssistantDb;Username=postgres;Password=postgres
-      - CEZ_API_BASE_URL=https://cez.wi.pb.edu.pl/
-    depends_on:
-      db:
-        condition: service_healthy
-
-  frontend:
-    container_name: cez-student-assistant-frontend
-    build:
-      context: ./src/cez-student-assistant-app
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
+      - "10000:10000" 
     volumes:
-      - ./src/cez-student-assistant-app:/app:Z
-      - /app/node_modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    depends_on:
-      - api
-
-  worker:
-    container_name: cez-student-assistant-worker
-    build:
-      context: .
-      dockerfile: src/CezStudentAssistant.Worker/Dockerfile
-    ports:
-      - "8082:8082"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - DB_CONNECTION_STRING=Host=db;Port=5432;Database=CezStudentAssistantDb;Username=postgres;Password=postgres
-    depends_on:
-      db:
-        condition: service_healthy
-
+      - azurite-data:/data
   db:
     image: postgres:16-alpine
     container_name: cez-student-assistant-db
@@ -61,6 +24,6 @@ services:
       retries: 5
     ports:
         - "5432:5432"
-
 volumes:
   postgres_data:
+  azurite-data:
