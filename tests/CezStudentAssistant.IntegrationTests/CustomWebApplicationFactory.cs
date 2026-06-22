@@ -6,16 +6,27 @@ using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using System.Data.Common;
+using Testcontainers.PostgreSql;
 
 namespace CezStudentAssistant.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private static readonly PostgreSqlContainer DatabaseContainer = new PostgreSqlBuilder("postgres:17-alpine")
+        .WithDatabase("cezstudentassistant_integration_tests")
+        .WithUsername("postgres")
+        .WithPassword("postgres")
+        .Build();
+
+    static CustomWebApplicationFactory()
+    {
+        DatabaseContainer.StartAsync().GetAwaiter().GetResult();
+    }
+
     public ICezApiClient CezApiClientMock { get; } = Substitute.For<ICezApiClient>();
     public static IReadOnlyList<CezCourse> DefaultCezCourses { get; } = new List<CezCourse>
     {
@@ -25,8 +36,15 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        Environment.SetEnvironmentVariable("DB_CONNECTION_STRING", "");
-        Environment.SetEnvironmentVariable("CEZ_API_BASE_URL", "https://cez.test/");
+        builder.UseEnvironment("Development");
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] = DatabaseContainer.GetConnectionString(),
+                ["Cez:ApiBaseUrl"] = "https://cez.test/"
+            });
+        });
 
         CezApiClientMock.GetUserCourses(Arg.Any<CezStudentAssistant.Application.Requests.Cez.CezUserRequest>())
             .Returns(new CezGetUserCoursesResponse
@@ -37,26 +55,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // Create open SQLite connection so it isn't closed between calls
-            services.AddSingleton<DbConnection>(container =>
-            {
-                var connection = new SqliteConnection("DataSource=:memory:");
-                connection.Open();
-                return connection;
-            });
-
-            services.AddDbContext<AppDbContext>((container, options) =>
-            {
-                var connection = container.GetRequiredService<DbConnection>();
-                options.UseSqlite(connection);
-            });
-
             // Mock External CEZ API
             services.AddSingleton(CezApiClientMock);
             services.AddScoped<IJobScheduler, ScopedImmediateJobScheduler>();
         });
-
-        builder.UseEnvironment("Development");
     }
 
     public void ResetDatabase()
@@ -64,6 +66,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureDeleted();
-        db.Database.EnsureCreated();
+        db.Database.Migrate();
     }
 }
