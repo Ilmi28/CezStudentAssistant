@@ -97,7 +97,12 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
                     user.Courses.Add(existingCourse);
                 }
             }
+        }
 
+        await unitOfWork.SaveChangesAsync(ct);
+
+        foreach (var course in userCourses)
+        {
             var cezCourseRequest = new CezCourseRequest
             {
                 Token = cezUser.Token,
@@ -105,8 +110,6 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
             };
             jobScheduler.Enqueue<ICezService>(job => job.SyncCourseContent(cezCourseRequest, ct));
         }
-
-        await unitOfWork.SaveChangesAsync(ct);
     }
 
     public async Task SyncCourseContent(CezCourseRequest courseRequest, CancellationToken cancellationToken)

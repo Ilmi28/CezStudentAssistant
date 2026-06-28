@@ -4,6 +4,8 @@ using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Application.Enums;
+using System.IO;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -165,5 +167,96 @@ public class CezEndpointsTests
 
         await db.CezUsers.AddAsync(cezUser);
         await db.SaveChangesAsync();
+    }
+
+    [Test]
+    public async Task SyncCourses_ShouldSyncCourseContent_WhenContentsExist()
+    {
+        // Arrange
+        var username = "contentsyncuser";
+        var password = "Password123!";
+        await RegisterAndLogin(username, password);
+        
+        var userId = await GetCurrentUserIdFromDb(username);
+        await LinkCezUser(userId, 12345);
+
+        var incomingCourses = new List<CezCourse>
+        {
+            new CezCourse { ExternalId = 301, DisplayName = "Advanced Database Systems" }
+        };
+
+        _factory.CezApiClientMock.GetUserCourses(Arg.Is<CezUserRequest>(r => r.UserId == 12345))
+            .Returns(new CezGetUserCoursesResponse
+            {
+                Success = true,
+                Data = incomingCourses
+            });
+
+        var timeCreated = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var timeModified = new DateTime(2026, 1, 1, 13, 0, 0, DateTimeKind.Utc);
+        var courseContents = new List<CezCourseContent>
+        {
+            new CezCourseContent
+            {
+                FileName = "syllabus.pdf",
+                Type = CezResourceType.File,
+                MimeType = "application/pdf",
+                FileUrl = "https://cez.test/files/syllabus.pdf",
+                ModuleId = 999,
+                TimeCreated = timeCreated,
+                TimeModified = timeModified
+            }
+        };
+
+        _factory.CezApiClientMock.GetCourseContent(Arg.Is<CezCourseRequest>(r => r.CourseId == 301))
+            .Returns(new CezCourseContentResponse
+            {
+                Success = true,
+                Data = courseContents
+            });
+
+        var fileStream = new MemoryStream(new byte[] { 4, 5, 6 });
+        _factory.CezApiClientMock.DownloadCezFile(Arg.Is<CezFileRequest>(r => r.FileUrl == "https://cez.test/files/syllabus.pdf"))
+            .Returns(fileStream);
+
+        // Act
+        var response = await _client.PostAsync("/cez/sync-courses", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verify the database has the course
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+
+        var course = await db.Courses
+            .FirstOrDefaultAsync(c => c.CezExternalId == 301);
+        course.Should().NotBeNull();
+
+        // Verify the database has the CezResource
+        var resource = await db.Set<CezResource>()
+            .FirstOrDefaultAsync(r => r.CourseId == course!.Id);
+        resource.Should().NotBeNull();
+        resource!.DisplayName.Should().Be("syllabus.pdf");
+        resource.MimeType.Should().Be("application/pdf");
+        resource.CezLastModified.Should().Be(timeModified);
+
+        // Verify file actually exists in the Azurite blob storage
+        var blobServiceClient = scope.ServiceProvider.GetRequiredService<Azure.Storage.Blobs.BlobServiceClient>();
+        var containerClient = blobServiceClient.GetBlobContainerClient("course-files");
+        var blobs = new List<string>();
+        await foreach (var blob in containerClient.GetBlobsAsync())
+        {
+            blobs.Add(blob.Name);
+        }
+        blobs.Should().Contain(name => name.StartsWith($"{course!.Id}/999_") && name.EndsWith(".pdf"));
+
+        // Download and verify content of the uploaded blob
+        var resourceName = blobs.First(name => name.StartsWith($"{course!.Id}/999_") && name.EndsWith(".pdf"));
+        var blobClient = containerClient.GetBlobClient(resourceName);
+        using var downloadStream = new MemoryStream();
+        await blobClient.DownloadToAsync(downloadStream);
+        var uploadedBytes = downloadStream.ToArray();
+        uploadedBytes.Should().Equal(new byte[] { 4, 5, 6 });
     }
 }
