@@ -11,7 +11,7 @@ using CezStudentAssistant.Domain.Interfaces.Repositories;
 
 namespace CezStudentAssistant.Application.Services;
 
-public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : ICezService
+public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFileService fileService) : ICezService
 {
     public async Task<Guid> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
     {
@@ -89,6 +89,7 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
             else
             {
                 existingCourse.Name = course.DisplayName ?? existingCourse.Name;
+                existingCourse.LastSynched = DateTime.Now;
 
                 if (!user.Courses.Any(c => c.CezExternalId == course.ExternalId))
                 {
@@ -98,6 +99,11 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork) : IC
         }
 
         await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    private async Task SyncCourseContent(Guid userId, CezCourseRequest courseRequest)
+    {
+
     }
 
     private async Task<Guid> SyncCezUser(CezUserInfo cezUserInfo, CancellationToken ct = default)

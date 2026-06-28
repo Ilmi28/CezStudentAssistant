@@ -7,9 +7,15 @@ namespace CezStudentAssistant.Infrastructure.Services;
 
 public class HangfireJobScheduler(IBackgroundJobClient backgroundJobClient) : IJobScheduler, IScopedService
 {
-    public void Enqueue(Expression<Action> methodCall) =>
+    public string Enqueue(Expression<Action> methodCall) =>
         backgroundJobClient.Enqueue(methodCall);
 
-    public void Enqueue<T>(Expression<Action<T>> methodCall) =>
+    public string Enqueue<T>(Expression<Action<T>> methodCall) =>
         backgroundJobClient.Enqueue<T>(methodCall);
+
+    public string ContinueWith<T>(string parentJobId, Expression<Action<T>> methodCall) =>
+        backgroundJobClient.ContinueJobWith<T>(parentJobId, methodCall);
+
+    public string ContinueWith(string parentJobId, Expression<Action> methodCall) =>
+        backgroundJobClient.ContinueJobWith(parentJobId, methodCall);
 }

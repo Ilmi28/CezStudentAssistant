@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Cez.Consts;
@@ -45,6 +45,12 @@ internal class CezProfile : Profile
             .ForMember(dest => dest.ErrorCode, opt => opt.MapFrom(src => src.Error != null ? src.Error.ErrorCode : null))
             .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Error != null ? src.Error.Message ?? src.Error.Error : null))
             .ForMember(dest => dest.Data, opt => opt.MapFrom(src => src.Data));
+
+        CreateMap<CezRequestResult<List<ExternalCezCourseSection>>, CezCourseContentResponse>()
+            .ForMember(dest => dest.Success, opt => opt.MapFrom(src => src.Error == null && src.Data != null))
+            .ForMember(dest => dest.ErrorCode, opt => opt.MapFrom(src => src.Error != null ? src.Error.ErrorCode : null))
+            .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Error != null ? src.Error.Message ?? src.Error.Error : null))
+            .ForMember(dest => dest.Data, opt => opt.MapFrom(src => FlattenCourseContents(src.Data)));
     }
 
     private static string MapLoginErrorCodeToMessage(string? errorCode) => errorCode switch
@@ -53,4 +59,18 @@ internal class CezProfile : Profile
         CezErrorConsts.InvalidLogin => CezResponseMessageConsts.InvalidLogin,
         _ => CezResponseMessageConsts.UnexpectedError
     };
+
+    private static List<CezCourseContent>? FlattenCourseContents(List<ExternalCezCourseSection>? sections)
+    {
+        return sections?
+            .SelectMany(section => section.Modules)
+            .SelectMany(module => module.Contents.Select(content => new CezCourseContent
+            {
+                Id = content.Id,
+                Type = content.Type,
+                FileUrl = content.FileUrl,
+                ModuleId = module.Id
+            }))
+            .ToList();
+    }
 }

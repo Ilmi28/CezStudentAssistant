@@ -4,7 +4,7 @@ using FluentAssertions;
 using MediatR;
 using NSubstitute;
 using CezStudentAssistant.Application.Commands.Auth;
-using CezStudentAssistant.Application.Notifications.Auth;
+using CezStudentAssistant.Application.Notifications;
 
 namespace CezStudentAssistant.UnitTests.Application.Commands.Auth;
 

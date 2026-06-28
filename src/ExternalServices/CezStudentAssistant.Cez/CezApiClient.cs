@@ -71,4 +71,26 @@ internal class CezApiClient(ICezRequestService requestService, IMapper mapper) :
 
         return mapper.Map<CezGetSiteInfoResponse>(requestResult);
     }
+
+    public async Task<CezCourseContentResponse> GetCourseContent(CezCourseRequest request)
+    {
+        var externalRequest = new ExternalCezCourseRequest
+        {
+            Token = request.Token,
+            Function = CezFunctionConsts.GetCourseContents,
+            CourseId = request.CourseId
+        };
+
+        var requestResult = await requestService.SendGetAsync<List<ExternalCezCourseSection>>(
+            CezBaseConsts.FunctionsPath,
+            [
+                new(CezParamsConsts.Token, externalRequest.Token),
+                new(CezParamsConsts.Function, externalRequest.Function),
+                new(CezParamsConsts.RestFormat, externalRequest.RestFormat),
+                new(CezParamsConsts.CourseId, externalRequest.CourseId.ToString())
+            ]
+        );
+
+        return mapper.Map<CezCourseContentResponse>(requestResult);
+    }
 }
