@@ -9,4 +9,5 @@ public interface ICezApiClient
     Task<CezGetUserCoursesResponse> GetUserCourses(CezUserRequest request);
     Task<CezGetSiteInfoResponse> GetSiteInfo(CezBaseRequest request);
     Task<CezCourseContentResponse> GetCourseContent(CezCourseRequest request);
+    Task<Stream> DownloadCezFile(CezFileRequest request);
 }

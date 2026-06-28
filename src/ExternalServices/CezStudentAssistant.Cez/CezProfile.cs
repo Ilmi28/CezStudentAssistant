@@ -1,5 +1,6 @@
 using AutoMapper;
 using CezStudentAssistant.Application.Dtos.Cez;
+using CezStudentAssistant.Application.Enums;
 using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Cez.Consts;
 using CezStudentAssistant.Cez.Responses;
@@ -66,11 +67,25 @@ internal class CezProfile : Profile
             .SelectMany(section => section.Modules)
             .SelectMany(module => module.Contents.Select(content => new CezCourseContent
             {
-                Id = content.Id,
-                Type = content.Type,
+                FileName = content.FileName,
+                Type = MapResourceType(content.Type),
                 FileUrl = content.FileUrl,
-                ModuleId = module.Id
+                MimeType = content.MimeType ?? MimeTypes.GetMimeType(content.FileName),
+                ModuleId = module.Id,
+                TimeCreated = content.TimeCreated.HasValue ? DateTimeOffset.FromUnixTimeSeconds(content.TimeCreated.Value).UtcDateTime
+                    : DateTimeOffset.FromUnixTimeSeconds(content.TimeModified).UtcDateTime,
+                TimeModified = DateTimeOffset.FromUnixTimeSeconds(content.TimeModified).UtcDateTime
             }))
             .ToList();
+    }
+
+    private static CezResourceType MapResourceType(string type)
+    {
+        return type switch
+        {
+            "file" => CezResourceType.File,
+            "url" => CezResourceType.Url,
+            _ => CezResourceType.File
+        };
     }
 }

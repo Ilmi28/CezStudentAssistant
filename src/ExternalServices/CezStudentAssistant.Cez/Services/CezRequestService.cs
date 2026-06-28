@@ -1,5 +1,6 @@
 ﻿using CezStudentAssistant.Cez.Interfaces;
 using CezStudentAssistant.Cez.Responses;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Text.Json;
 
 namespace CezStudentAssistant.Cez.Services;
@@ -31,6 +32,18 @@ internal class CezRequestService(HttpClient httpClient) : ICezRequestService
 
         var data = JsonSerializer.Deserialize<TData>(jsonPayload, JsonOptions);
         return new CezRequestResult<TData>(data, null);
+    }
+
+    public async Task<Stream> DownloadFileAsync(string fullUrl, string token, CancellationToken cancellationToken = default)
+    {
+        var urlWithToken = QueryHelpers.AddQueryString(fullUrl, "token", token);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, urlWithToken);
+        var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadAsStreamAsync(cancellationToken);
     }
 
     private static ExternalCezErrorResponse? TryGetError(string jsonPayload)

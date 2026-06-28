@@ -10,8 +10,13 @@
     <InternalsVisibleTo Include="CezStudentAssistant.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     <PackageReference Include="AutoMapper" Version="16.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.6" />
+    <PackageReference Include="MimeTypes" Version="2.5.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

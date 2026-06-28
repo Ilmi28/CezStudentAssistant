@@ -12,7 +12,6 @@ public sealed class SyncCezCoursesOnLoginHandler(IJobScheduler jobScheduler)
     {
         var jobId = jobScheduler.Enqueue<ICezService>((cezService) => cezService.SyncUserCourses(notification.UserId, cancellationToken));
 
-
         return Task.CompletedTask;
     }
 }

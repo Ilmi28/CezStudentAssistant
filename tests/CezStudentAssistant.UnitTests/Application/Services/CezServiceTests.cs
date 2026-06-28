@@ -22,6 +22,7 @@ public class CezServiceTests
     private ICezUserRepository _cezUserRepository = null!;
     private ICourseRepository _courseRepository = null!;
     private IFileService _fileService = null!;
+    private IJobScheduler _jobScheduler = null!;
     private CezService _sut = null!;
 
     [SetUp]
@@ -33,12 +34,13 @@ public class CezServiceTests
         _userRepository = Substitute.For<IUserRepository>();
         _cezUserRepository = Substitute.For<ICezUserRepository>();
         _courseRepository = Substitute.For<ICourseRepository>();
+        _jobScheduler = Substitute.For<IJobScheduler>();
 
         _unitOfWork.Repository<IUserRepository>().Returns(_userRepository);
         _unitOfWork.Repository<ICezUserRepository>().Returns(_cezUserRepository);
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
 
-        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService);
+        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler);
     }
 
     [TearDown]

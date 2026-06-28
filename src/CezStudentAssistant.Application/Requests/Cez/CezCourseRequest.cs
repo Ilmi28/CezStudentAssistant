@@ -2,5 +2,5 @@
 
 public class CezCourseRequest : CezBaseRequest
 {
-    public required string CourseId { get; set; }
+    public long CourseId { get; set; }
 }

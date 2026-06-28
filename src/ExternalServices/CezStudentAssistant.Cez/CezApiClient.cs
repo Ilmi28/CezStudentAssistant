@@ -93,4 +93,15 @@ internal class CezApiClient(ICezRequestService requestService, IMapper mapper) :
 
         return mapper.Map<CezCourseContentResponse>(requestResult);
     }
+
+    public async Task<Stream> DownloadCezFile(CezFileRequest request)
+    {
+        var externalRequest = new ExternalCezDownloadFileRequest
+        {
+            Token = request.Token,
+            FileUrl = request.FileUrl
+        };
+
+        return await requestService.DownloadFileAsync(externalRequest.FileUrl, externalRequest.Token);
+    }
 }

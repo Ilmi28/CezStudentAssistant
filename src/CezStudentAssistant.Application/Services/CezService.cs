@@ -8,10 +8,11 @@ using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
+using HeyRed.Mime;
 
 namespace CezStudentAssistant.Application.Services;
 
-public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFileService fileService) : ICezService
+public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFileService fileService, IJobScheduler jobScheduler) : ICezService
 {
     public async Task<Guid> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
     {
@@ -96,15 +97,59 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
                     user.Courses.Add(existingCourse);
                 }
             }
+
+            var cezCourseRequest = new CezCourseRequest
+            {
+                Token = cezUser.Token,
+                CourseId = course.ExternalId
+            };
+            jobScheduler.Enqueue<ICezService>(job => job.SyncCourseContent(cezCourseRequest, ct));
         }
 
         await unitOfWork.SaveChangesAsync(ct);
     }
 
-    private async Task SyncCourseContent(Guid userId, CezCourseRequest courseRequest)
+    public async Task SyncCourseContent(CezCourseRequest courseRequest, CancellationToken cancellationToken)
     {
         var courseContentResponse = await cezApiClient.GetCourseContent(courseRequest);
 
+        if (!courseContentResponse.Success)
+            throw new BadRequestException(new ApiMessage(this, courseContentResponse.Message ?? CezMessagesConsts.GetCourseContentsError));
+
+        if (courseContentResponse.Data is null || courseContentResponse.Data.Count == 0)
+            return;
+
+        var courseRepo = unitOfWork.Repository<ICourseRepository>();
+        var course = await courseRepo.GetSingleAsync(x => x.CezExternalId == courseRequest.CourseId, cancellationToken)
+                    ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezCourseNotFound));
+
+        var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
+        var fileContents = courseContentResponse.Data.Where(x => x.Type == Enums.CezResourceType.File);
+        foreach (var content in fileContents)
+        {
+            var contentName = $"{content.ModuleId}_{((DateTimeOffset)content.TimeCreated).ToUnixTimeSeconds()}.{MimeTypesMap.GetExtension(content.MimeType)}";
+            var existingResource = await resourceRepo.GetSingleAsync(r => r.Name == contentName, cancellationToken);
+            if (existingResource == null || existingResource.CezLastModified != content.TimeModified)
+            {
+                var newResource = new CezResource
+                {
+                    Name = contentName,
+                    DisplayName = content.FileName,
+                    CezLastModified = content.TimeModified,
+                    MimeType = content.MimeType,
+                    CourseId = course.Id
+                };
+                await resourceRepo.AddAsync(newResource, cancellationToken);
+                var fileContent = await cezApiClient.DownloadCezFile(new CezFileRequest
+                {
+                    Token = courseRequest.Token,
+                    FileUrl = content.FileUrl
+                });
+                await fileService.UploadAsync(fileContent, $"{course.Id}/{contentName}", ContainerNameConsts.CourseFilesContainer, content.MimeType, cancellationToken);
+            }
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<Guid> SyncCezUser(CezUserInfo cezUserInfo, CancellationToken ct = default)
