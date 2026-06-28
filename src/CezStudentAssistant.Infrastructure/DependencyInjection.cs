@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using CezStudentAssistant.Application.Interfaces.Common;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
@@ -45,6 +45,8 @@ public static class DependencyInjection
                 options.EnableSensitiveDataLogging();
             if (detailedErrors)
                 options.EnableDetailedErrors();
+
+            options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         });
 
         return services;

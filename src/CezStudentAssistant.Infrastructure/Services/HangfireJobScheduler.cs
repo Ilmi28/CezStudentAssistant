@@ -12,10 +12,4 @@ public class HangfireJobScheduler(IBackgroundJobClient backgroundJobClient) : IJ
 
     public string Enqueue<T>(Expression<Action<T>> methodCall) =>
         backgroundJobClient.Enqueue<T>(methodCall);
-
-    public string ContinueWith<T>(string parentJobId, Expression<Action<T>> methodCall) =>
-        backgroundJobClient.ContinueJobWith<T>(parentJobId, methodCall);
-
-    public string ContinueWith(string parentJobId, Expression<Action> methodCall) =>
-        backgroundJobClient.ContinueJobWith(parentJobId, methodCall);
 }

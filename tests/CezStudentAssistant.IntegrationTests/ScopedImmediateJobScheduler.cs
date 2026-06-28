@@ -1,23 +1,24 @@
 using CezStudentAssistant.Application.Interfaces.Services;
-using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq.Expressions;
 
 namespace CezStudentAssistant.IntegrationTests;
 
 internal sealed class ScopedImmediateJobScheduler(IServiceScopeFactory scopeFactory) : IJobScheduler
 {
-    public void Enqueue(Expression<Action> methodCall) => Invoke(methodCall, null);
+    public string Enqueue(Expression<Action> methodCall) => Invoke(methodCall, null);
 
-    public void Enqueue<T>(Expression<Action<T>> methodCall) => InvokeInScope(methodCall);
+    public string Enqueue<T>(Expression<Action<T>> methodCall) => InvokeInScope(methodCall);
 
-    private void InvokeInScope<T>(Expression<Action<T>> methodCall)
+    private string InvokeInScope<T>(Expression<Action<T>> methodCall)
     {
         using var scope = scopeFactory.CreateScope();
         var target = scope.ServiceProvider.GetRequiredService(typeof(T));
         Invoke(methodCall, target);
+        return Guid.NewGuid().ToString();
     }
 
-    private static void Invoke(LambdaExpression methodCall, object? target)
+    private static string Invoke(LambdaExpression methodCall, object? target)
     {
         if (methodCall.Body is not MethodCallExpression call)
         {
@@ -36,5 +37,7 @@ internal sealed class ScopedImmediateJobScheduler(IServiceScopeFactory scopeFact
         {
             task.GetAwaiter().GetResult();
         }
+
+        return Guid.NewGuid().ToString();
     }
 }

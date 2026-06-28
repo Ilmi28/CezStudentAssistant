@@ -2,7 +2,7 @@ using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
-using CezStudentAssistant.Application.Notifications.Auth;
+using CezStudentAssistant.Application.Notifications;
 using CezStudentAssistant.Application.Responses;
 using MediatR;
 

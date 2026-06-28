@@ -2,6 +2,7 @@ using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Application.Services;
@@ -20,6 +21,7 @@ public class CezServiceTests
     private IUserRepository _userRepository = null!;
     private ICezUserRepository _cezUserRepository = null!;
     private ICourseRepository _courseRepository = null!;
+    private IFileService _fileService = null!;
     private CezService _sut = null!;
 
     [SetUp]
@@ -27,6 +29,7 @@ public class CezServiceTests
     {
         _cezApiClient = Substitute.For<ICezApiClient>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
+        _fileService = Substitute.For<IFileService>();
         _userRepository = Substitute.For<IUserRepository>();
         _cezUserRepository = Substitute.For<ICezUserRepository>();
         _courseRepository = Substitute.For<ICourseRepository>();
@@ -35,7 +38,7 @@ public class CezServiceTests
         _unitOfWork.Repository<ICezUserRepository>().Returns(_cezUserRepository);
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
 
-        _sut = new CezService(_cezApiClient, _unitOfWork);
+        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService);
     }
 
     [TearDown]

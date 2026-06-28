@@ -89,7 +89,7 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
             else
             {
                 existingCourse.Name = course.DisplayName ?? existingCourse.Name;
-                existingCourse.LastSynched = DateTime.Now;
+                existingCourse.LastSynched = DateTime.UtcNow;
 
                 if (!user.Courses.Any(c => c.CezExternalId == course.ExternalId))
                 {
@@ -103,6 +103,7 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
 
     private async Task SyncCourseContent(Guid userId, CezCourseRequest courseRequest)
     {
+        var courseContentResponse = await cezApiClient.GetCourseContent(courseRequest);
 
     }
 
