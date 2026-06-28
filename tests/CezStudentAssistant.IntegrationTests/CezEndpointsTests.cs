@@ -259,4 +259,112 @@ public class CezEndpointsTests
         var uploadedBytes = downloadStream.ToArray();
         uploadedBytes.Should().Equal(new byte[] { 4, 5, 6 });
     }
+
+    [Test]
+    public async Task SyncCourses_ShouldUpdateCourseContent_WhenResourceExistsWithDifferentModifiedTime()
+    {
+        // Arrange
+        var username = "updateuser";
+        var password = "Password123!";
+        await RegisterAndLogin(username, password);
+        
+        var userId = await GetCurrentUserIdFromDb(username);
+        await LinkCezUser(userId, 12345);
+
+        var incomingCourses = new List<CezCourse>
+        {
+            new CezCourse { ExternalId = 401, DisplayName = "Compiler Design" }
+        };
+
+        _factory.CezApiClientMock.GetUserCourses(Arg.Is<CezUserRequest>(r => r.UserId == 12345))
+            .Returns(new CezGetUserCoursesResponse
+            {
+                Success = true,
+                Data = incomingCourses
+            });
+
+        // Insert the course and the old version of the resource to the database first
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var course = new Course
+            {
+                CezExternalId = 401,
+                Name = "Compiler Design",
+                Type = CezStudentAssistant.Domain.Enums.CourseType.Cez
+            };
+            db.Courses.Add(course);
+            await db.SaveChangesAsync();
+
+            // Created timestamp determines the content name: e.g. 1767272400
+            var timeCreated = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+            var contentName = $"888_{((DateTimeOffset)timeCreated).ToUnixTimeSeconds()}.pdf";
+            var oldResource = new CezResource
+            {
+                CourseId = course.Id,
+                Name = contentName,
+                DisplayName = "syllabus_v1.pdf",
+                MimeType = "application/pdf",
+                CezLastModified = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc)
+            };
+            db.Set<CezResource>().Add(oldResource);
+            await db.SaveChangesAsync();
+        }
+
+        // Mock incoming Cez API responses with the updated file modification time
+        var newTimeModified = new DateTime(2026, 1, 2, 12, 0, 0, DateTimeKind.Utc);
+        var courseContents = new List<CezCourseContent>
+        {
+            new CezCourseContent
+            {
+                FileName = "syllabus_v2.pdf",
+                Type = CezResourceType.File,
+                MimeType = "application/pdf",
+                FileUrl = "https://cez.test/files/syllabus.pdf",
+                ModuleId = 888,
+                TimeCreated = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc), // determines the same contentName
+                TimeModified = newTimeModified // triggers the update
+            }
+        };
+
+        _factory.CezApiClientMock.GetCourseContent(Arg.Is<CezCourseRequest>(r => r.CourseId == 401))
+            .Returns(new CezCourseContentResponse
+            {
+                Success = true,
+                Data = courseContents
+            });
+
+        var fileStream = new MemoryStream(new byte[] { 10, 11, 12 });
+        _factory.CezApiClientMock.DownloadCezFile(Arg.Is<CezFileRequest>(r => r.FileUrl == "https://cez.test/files/syllabus.pdf"))
+            .Returns(fileStream);
+
+        // Act
+        var response = await _client.PostAsync("/cez/sync-courses", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verify the database has the updated CezResource
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var course = await db.Courses.FirstAsync(c => c.CezExternalId == 401);
+            
+            var resource = await db.Set<CezResource>()
+                .FirstOrDefaultAsync(r => r.CourseId == course.Id);
+            resource.Should().NotBeNull();
+            resource!.DisplayName.Should().Be("syllabus_v2.pdf");
+            resource.CezLastModified.Should().Be(newTimeModified);
+
+            // Verify file actually exists and was updated in Azurite blob storage
+            var blobServiceClient = scope.ServiceProvider.GetRequiredService<Azure.Storage.Blobs.BlobServiceClient>();
+            var containerClient = blobServiceClient.GetBlobContainerClient("course-files");
+            
+            var blobClient = containerClient.GetBlobClient($"{course.Id}/{resource.Name}");
+            using var downloadStream = new MemoryStream();
+            await blobClient.DownloadToAsync(downloadStream);
+            var uploadedBytes = downloadStream.ToArray();
+            uploadedBytes.Should().Equal(new byte[] { 10, 11, 12 });
+        }
+    }
 }

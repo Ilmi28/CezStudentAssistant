@@ -158,4 +158,57 @@ public class CezRequestServiceTests
             return Sender(request, cancellationToken);
         }
     }
+    [Test]
+    public async Task DownloadFileAsync_ShouldReturnStream_WhenResponseIsSuccessful()
+    {
+        // Arrange
+        _httpMessageHandler.Sender = (req, ct) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("file content")
+        });
+
+        // Act
+        var result = await _sut.DownloadFileAsync("https://example.com/file", "token123");
+
+        // Assert
+        result.Should().NotBeNull();
+        using var reader = new StreamReader(result);
+        var content = await reader.ReadToEndAsync();
+        content.Should().Be("file content");
+    }
+
+    [Test]
+    public async Task DownloadFileAsync_ShouldAppendTokenToUrl()
+    {
+        // Arrange
+        HttpRequestMessage? capturedRequest = null;
+        _httpMessageHandler.Sender = (req, ct) => 
+        {
+            capturedRequest = req;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("file content")
+            });
+        };
+
+        // Act
+        await _sut.DownloadFileAsync("https://example.com/file", "token123");
+
+        // Assert
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.RequestUri!.ToString().Should().Be("https://example.com/file?token=token123");
+    }
+
+    [Test]
+    public async Task DownloadFileAsync_ShouldThrowException_WhenResponseIsUnsuccessful()
+    {
+        // Arrange
+        _httpMessageHandler.Sender = (req, ct) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        // Act
+        Func<Task> act = () => _sut.DownloadFileAsync("https://example.com/file", "token123");
+
+        // Assert
+        await act.Should().ThrowAsync<HttpRequestException>();
+    }
 }

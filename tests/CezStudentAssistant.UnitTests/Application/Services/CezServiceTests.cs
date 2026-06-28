@@ -510,4 +510,58 @@ public class CezServiceTests
         await _fileService.DidNotReceiveWithAnyArgs().UploadAsync(null!, null!, null!, null!, default);
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
+    [Test]
+    public async Task SyncCourseContent_ShouldUpdateResourceAndUploadFile_WhenResourceExistsWithDifferentModifiedTime()
+    {
+        // Arrange
+        var request = new CezCourseRequest { CourseId = 1, Token = "token" };
+        var timeCreated = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var oldTimeModified = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var newTimeModified = new DateTime(2026, 1, 2, 12, 0, 0, DateTimeKind.Utc);
+        var incomingContent = new List<CezCourseContent>
+        {
+            new CezCourseContent 
+            { 
+                FileName = "file_updated.pdf", 
+                Type = CezResourceType.File, 
+                MimeType = "application/pdf", 
+                FileUrl = "url", 
+                ModuleId = 123,
+                TimeCreated = timeCreated,
+                TimeModified = newTimeModified
+            }
+        };
+        _cezApiClient.GetCourseContent(request)
+            .Returns(new CezCourseContentResponse { Success = true, Data = incomingContent });
+
+        var course = new Course { Id = Guid.NewGuid(), Name = "Course", CezExternalId = 1 };
+        _courseRepository.GetSingleAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns(course);
+
+        var existingResource = new CezResource { Name = "123_1767272400.pdf", DisplayName = "file.pdf", MimeType = "application/pdf", CezLastModified = oldTimeModified, CourseId = course.Id };
+        _cezResourceRepository.GetSingleAsync(Arg.Any<Expression<Func<CezResource, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns(existingResource);
+
+        var fileStream = new System.IO.MemoryStream(new byte[] { 4, 5, 6 });
+        _cezApiClient.DownloadCezFile(Arg.Any<CezFileRequest>())
+            .Returns(fileStream);
+
+        // Act
+        await _sut.SyncCourseContent(request, CancellationToken.None);
+
+        // Assert
+        await _cezResourceRepository.DidNotReceiveWithAnyArgs().AddAsync(null!, default);
+        
+        existingResource.DisplayName.Should().Be("file_updated.pdf");
+        existingResource.CezLastModified.Should().Be(newTimeModified);
+
+        await _fileService.Received(1).UploadAsync(
+            fileStream, 
+            Arg.Is<string>(s => s.StartsWith($"{course.Id}/123_")), 
+            "course-files", 
+            "application/pdf", 
+            Arg.Any<CancellationToken>());
+
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
 }

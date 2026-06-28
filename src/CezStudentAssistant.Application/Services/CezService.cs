@@ -134,15 +134,24 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
             var existingResource = await resourceRepo.GetSingleAsync(r => r.Name == contentName, cancellationToken);
             if (existingResource == null || existingResource.CezLastModified != content.TimeModified)
             {
-                var newResource = new CezResource
+                if (existingResource != null)
                 {
-                    Name = contentName,
-                    DisplayName = content.FileName,
-                    CezLastModified = content.TimeModified,
-                    MimeType = content.MimeType,
-                    CourseId = course.Id
-                };
-                await resourceRepo.AddAsync(newResource, cancellationToken);
+                    existingResource.DisplayName = content.FileName;
+                    existingResource.CezLastModified = content.TimeModified;
+                    existingResource.MimeType = content.MimeType;
+                }
+                else
+                {
+                    var newResource = new CezResource
+                    {
+                        Name = contentName,
+                        DisplayName = content.FileName,
+                        CezLastModified = content.TimeModified,
+                        MimeType = content.MimeType,
+                        CourseId = course.Id
+                    };
+                    await resourceRepo.AddAsync(newResource, cancellationToken);
+                }
                 var fileContent = await cezApiClient.DownloadCezFile(new CezFileRequest
                 {
                     Token = courseRequest.Token,

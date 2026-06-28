@@ -112,4 +112,42 @@ public class CezApiClientTests
         result.Success.Should().BeTrue();
         result.Data!.ExternalUserId.Should().Be(123);
     }
+    [Test]
+    public async Task GetCourseContent_ShouldReturnCourseContent_WhenSuccessful()
+    {
+        // Arrange
+        var request = new CezCourseRequest { Token = "token", CourseId = 401 };
+        var externalResponse = new List<ExternalCezCourseSection>
+        {
+            new() { Id = 1 }
+        };
+        var requestResult = new CezRequestResult<List<ExternalCezCourseSection>>(externalResponse, null);
+
+        _requestService.SendGetAsync<List<ExternalCezCourseSection>>(Arg.Any<string>(), Arg.Any<IEnumerable<KeyValuePair<string, string>>>())
+            .Returns(requestResult);
+
+        // Act
+        var result = await _sut.GetCourseContent(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task DownloadCezFile_ShouldReturnStream_WhenSuccessful()
+    {
+        // Arrange
+        var request = new CezFileRequest { Token = "token", FileUrl = "https://example.com/file" };
+        var stream = new System.IO.MemoryStream();
+
+        _requestService.DownloadFileAsync(request.FileUrl, request.Token)
+            .Returns(stream);
+
+        // Act
+        var result = await _sut.DownloadCezFile(request);
+
+        // Assert
+        result.Should().BeSameAs(stream);
+    }
 }
