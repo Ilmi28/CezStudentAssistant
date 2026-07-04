@@ -3,9 +3,12 @@ using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.Application;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Responses;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Infrastructure;
 using CezStudentAssistant.Infrastructure.Settings;
+using CezStudentAssistant.API.Services;
+using CezStudentAssistant.API.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
@@ -91,6 +94,8 @@ public class Program
         builder.Services.AddInstrastructure(builder.Configuration, builder.Environment.IsDevelopment());
         builder.Services.AddCez(builder.Configuration);
         builder.Services.AddSignalR();
+        
+        builder.Services.AddScoped<IJobNotificationService, SignalRJobNotificationService>();
     }
 
     private static void MapEndpoints(WebApplication app)
@@ -98,6 +103,7 @@ public class Program
         app.MapAuthEndpoints();
         app.MapUserEndpoints();
         app.MapCezEndpoints();
+        app.MapHub<CezSyncNotificationHub>("/sync-hub");
     }
 
     private static void ConfigureMiddleware(WebApplication app)
@@ -126,6 +132,8 @@ public class Program
                     _ => new ServerErrorResponse()
                 };
 
+                Console.WriteLine($"[DEBUG] API EXCEPTION: {exception}");
+                
                 context.Response.StatusCode = (int)apiResponse.StatusCode;
                 await context.Response.WriteAsJsonAsync((object)apiResponse);
             });

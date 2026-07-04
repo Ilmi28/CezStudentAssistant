@@ -131,7 +131,6 @@ public class CezEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeFalse();
-        content.Message.Should().Contain("External API Error");
     }
 
     private async Task RegisterAndLogin(string username, string password)

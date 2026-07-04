@@ -14,16 +14,19 @@ public sealed class SyncCezCoursesOnLoginHandler(IJobScheduler jobScheduler, IUn
 {
     public async Task Handle(CezLoginSucceededNotification notification, CancellationToken cancellationToken)
     {
-        var jobId = jobScheduler.Enqueue<ICezService>((cezService) => cezService.SyncUserCourses(notification.UserId, cancellationToken));
-
         var syncJob = new CezSyncJob
         {
             UserId = notification.UserId,
-            JobId = jobId,
+            JobId = string.Empty,
             Status = JobStatus.Enqueued
         };
 
         await unitOfWork.Repository<ICezSyncJobRepository>().AddAsync(syncJob, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var jobId = jobScheduler.Enqueue<ICezService>((cezService) => cezService.SyncUserCourses(notification.UserId, cancellationToken));
+
+        syncJob.JobId = jobId;
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

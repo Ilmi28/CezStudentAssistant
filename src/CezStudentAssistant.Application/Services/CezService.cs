@@ -18,7 +18,8 @@ public class CezService(
     ICezApiClient cezApiClient,
     IUnitOfWork unitOfWork,
     IFileService fileService,
-    IJobScheduler jobScheduler) : ICezService
+    IJobScheduler jobScheduler,
+    IJobNotificationService notificationService) : ICezService
 {
     public async Task<Guid> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
     {
@@ -50,7 +51,12 @@ public class CezService(
 
     public async Task SyncUserCourses(Guid userId, CancellationToken ct = default)
     {
-        var job = await UpdateJobStatusAsync(userId, JobStatus.Processing, ct);
+        var cezJobRepo = unitOfWork.Repository<ICezSyncJobRepository>();
+        var job = await cezJobRepo.Find(j => j.UserId == userId).OrderByDescending(j => j.CreatedAt).FirstOrDefaultAsync(ct);
+        if (job == null)
+            throw new AppException(new ApiMessage(null, CezMessagesConsts.SyncCoursesError));
+
+        await UpdateJobStatusAsync(userId, job, JobStatus.Processing, ct);
 
         try
         {
@@ -62,30 +68,21 @@ public class CezService(
 
             EnqueueCourseSyncJobs(cezUser.Token, externalCourses, ct);
 
-            await UpdateJobStatusAsync(job, JobStatus.Succeeded, ct);
+            await UpdateJobStatusAsync(userId, job, JobStatus.Succeeded, ct);
         }
         catch
         {
-            await UpdateJobStatusAsync(job, JobStatus.Failed, ct);
+            await UpdateJobStatusAsync(userId, job, JobStatus.Failed, ct);
+            throw;
         }
     }
 
-    private async Task<CezSyncJob> UpdateJobStatusAsync(Guid userId, JobStatus status, CancellationToken ct)
-    {
-        var repo = unitOfWork.Repository<ICezSyncJobRepository>();
-        var job = await repo.Find(j => j.UserId == userId)
-                            .OrderByDescending(j => j.CreatedAt)
-                            .FirstAsync(ct);
-
-        job.Status = status;
-        await unitOfWork.SaveChangesAsync(ct);
-        return job;
-    }
-
-    private async Task UpdateJobStatusAsync(CezSyncJob job, JobStatus status, CancellationToken ct)
+    private async Task UpdateJobStatusAsync(Guid userId, CezSyncJob job, JobStatus status, CancellationToken ct)
     {
         job.Status = status;
         await unitOfWork.SaveChangesAsync(ct);
+
+        await notificationService.SendJobStatusUpdateAsync(userId, job.JobId, status, ct);
     }
 
     private async Task<CezUser> GetCezUserAsync(Guid userId, CancellationToken ct)

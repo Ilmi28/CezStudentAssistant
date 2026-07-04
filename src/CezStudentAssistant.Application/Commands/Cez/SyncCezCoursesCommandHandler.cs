@@ -15,7 +15,8 @@ public sealed class SyncCezCoursesCommand : ICommand, IUserRequest
 
 public class SyncCezCoursesCommandHandler(
     IJobScheduler jobScheduler,
-    IUnitOfWork unitOfWork) : BaseCommandHandler<SyncCezCoursesCommand>
+    IUnitOfWork unitOfWork,
+    IJobNotificationService notificationService) : BaseCommandHandler<SyncCezCoursesCommand>
 {
     protected override ApiMessage SuccessMessage => new(this, CezMessagesConsts.SyncCoursesSuccess);
 
@@ -23,16 +24,21 @@ public class SyncCezCoursesCommandHandler(
 
     protected override async Task ExecuteAsync(SyncCezCoursesCommand command, CancellationToken ct)
     {
-        var jobId = jobScheduler.Enqueue<ICezService>(service => service.SyncUserCourses(command.UserId, ct));
-
         var syncJob = new CezSyncJob
         {
             UserId = command.UserId,
-            JobId = jobId,
+            JobId = "pending", // Will be updated after enqueue
             Status = Domain.Enums.JobStatus.Enqueued
         };
 
         await unitOfWork.Repository<ICezSyncJobRepository>().AddAsync(syncJob, ct);
         await unitOfWork.SaveChangesAsync(ct);
+
+        var jobId = jobScheduler.Enqueue<ICezService>(service => service.SyncUserCourses(command.UserId, ct));
+
+        syncJob.JobId = jobId;
+        await unitOfWork.SaveChangesAsync(ct);
+        
+        await notificationService.SendJobStatusUpdateAsync(command.UserId, jobId, Domain.Enums.JobStatus.Enqueued, ct);
     }
 }

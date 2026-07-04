@@ -11,4 +11,5 @@ internal static class CezMessagesConsts
     public const string GetUserCoursesError = "Failed to retrieve user courses from CEZ.";
     public const string SyncCoursesSuccess = "Successfully synchronized user courses.";
     public const string GetCourseContentsError = "Failed to retrieve course contents from CEZ.";
+    public const string SyncCoursesError = "Failed to synchronize user courses.";
 }

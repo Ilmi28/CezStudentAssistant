@@ -11,6 +11,7 @@ using CezStudentAssistant.Application.Services;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
+using MockQueryable.NSubstitute;
 using NSubstitute;
 using System.Linq.Expressions;
 
@@ -26,6 +27,8 @@ public class CezServiceTests
     private ICezResourceRepository _cezResourceRepository = null!;
     private IFileService _fileService = null!;
     private IJobScheduler _jobScheduler = null!;
+    private IJobNotificationService _notificationService = null!;
+    private ICezSyncJobRepository _cezSyncJobRepository = null!;
     private CezService _sut = null!;
 
     [SetUp]
@@ -39,13 +42,21 @@ public class CezServiceTests
         _courseRepository = Substitute.For<ICourseRepository>();
         _cezResourceRepository = Substitute.For<ICezResourceRepository>();
         _jobScheduler = Substitute.For<IJobScheduler>();
+        _notificationService = Substitute.For<IJobNotificationService>();
+        _cezSyncJobRepository = Substitute.For<ICezSyncJobRepository>();
 
         _unitOfWork.Repository<IUserRepository>().Returns(_userRepository);
         _unitOfWork.Repository<ICezUserRepository>().Returns(_cezUserRepository);
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_cezResourceRepository);
+        _unitOfWork.Repository<ICezSyncJobRepository>().Returns(_cezSyncJobRepository);
 
-        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler);
+        var existingJob = new CezSyncJob { JobId = "test-job-id", UserId = Guid.NewGuid(), Status = Domain.Enums.JobStatus.Enqueued };
+        var mockJobDbSet = new List<CezSyncJob> { existingJob }.BuildMockDbSet();
+        _cezSyncJobRepository.Find(Arg.Any<Expression<Func<CezSyncJob, bool>>>())
+            .Returns(x => mockJobDbSet);
+
+        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler, _notificationService);
     }
 
     [TearDown]
@@ -251,6 +262,9 @@ public class CezServiceTests
         Func<Task> act = () => _sut.SyncUserCourses(userId, CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
+        
+        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
+        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Failed, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -267,6 +281,9 @@ public class CezServiceTests
         Func<Task> act = () => _sut.SyncUserCourses(userId, CancellationToken.None);
 
         await act.Should().ThrowAsync<BadRequestException>();
+        
+        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
+        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Failed, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -313,8 +330,9 @@ public class CezServiceTests
         _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), includes: Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
+        var mockCourseDbSet = new List<Course> { existingCourse }.BuildMockDbSet();
         _courseRepository.Find(Arg.Any<Expression<Func<Course, bool>>>())
-            .Returns(new List<Course> { existingCourse }.AsQueryable());
+            .Returns(x => mockCourseDbSet);
 
         // Act
         await _sut.SyncUserCourses(userId, CancellationToken.None);
@@ -327,7 +345,10 @@ public class CezServiceTests
         existingCourse.Name.Should().Be("Updated Course Name");
         user.Courses.Should().Contain(existingCourse);
 
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _unitOfWork.Received().SaveChangesAsync(Arg.Any<CancellationToken>());
+        
+        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
+        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Succeeded, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -353,8 +374,9 @@ public class CezServiceTests
         _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), includes: Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
+        var mockCourseDbSet = new List<Course> { existingCourse }.BuildMockDbSet();
         _courseRepository.Find(Arg.Any<Expression<Func<Course, bool>>>())
-            .Returns(new List<Course> { existingCourse }.AsQueryable());
+            .Returns(x => mockCourseDbSet);
 
         // Act
         await _sut.SyncUserCourses(userId, CancellationToken.None);
