@@ -90,6 +90,7 @@ public class Program
         builder.Services.AddApplication();
         builder.Services.AddInstrastructure(builder.Configuration, builder.Environment.IsDevelopment());
         builder.Services.AddCez(builder.Configuration);
+        builder.Services.AddSignalR();
     }
 
     private static void MapEndpoints(WebApplication app)

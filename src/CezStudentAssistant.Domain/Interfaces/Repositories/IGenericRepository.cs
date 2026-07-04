@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Domain.Entities;
 using System.Linq.Expressions;
 
 namespace CezStudentAssistant.Domain.Interfaces.Repositories;
@@ -14,29 +14,25 @@ public interface IGenericRepository<TEntity>
     where TEntity : BaseEntity
 {
     /// <summary>
-    /// Asynchronously retrieves all entities of type TEntity from the data source.
+    /// Synchronously retrieves a queryable collection of all entities of type TEntity from the data source.
     /// </summary>
     /// <remarks>Use the includes parameter to specify related data that should be loaded along with the main
     /// entities. If no includes are specified, only the main entities are retrieved.</remarks>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <param name="asNoTracking">A boolean value indicating whether the entities should be tracked by the context.</param>
     /// <param name="includes">An array of expressions specifying related entities to include in the query results. Each expression identifies
     /// a navigation property to be eagerly loaded.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable collection of all
-    /// entities of type TEntity.</returns>
-    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes);
+    /// <returns>An IQueryable collection of all entities of type TEntity.</returns>
+    IQueryable<TEntity> GetAll(bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes);
 
     /// <summary>
-    /// Asynchronously retrieves entities that satisfy the specified predicate.
+    /// Synchronously retrieves a queryable collection of entities that satisfy the specified predicate.
     /// </summary>
     /// <param name="predicate">An expression that defines the conditions the returned entities must satisfy.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <param name="asNoTracking">A boolean value indicating whether the entities should be tracked by the context.</param>
     /// <param name="includes">One or more expressions specifying related entities to include in the query results. Use to eagerly load
     /// navigation properties.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a collection of entities that match
-    /// the specified predicate. The collection is empty if no entities are found.</returns>
-    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes);
+    /// <returns>An IQueryable collection of entities that match the specified predicate.</returns>
+    IQueryable<TEntity> Find(Expression<Func<TEntity, bool>> predicate, bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes);
 
     /// <summary>
     /// Asynchronously determines whether any entities satisfy the specified predicate.

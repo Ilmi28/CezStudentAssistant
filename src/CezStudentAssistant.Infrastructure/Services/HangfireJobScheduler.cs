@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Application.Interfaces.Common;
+using CezStudentAssistant.Application.Interfaces.Common;
 using CezStudentAssistant.Application.Interfaces.Services;
 using Hangfire;
 using System.Linq.Expressions;

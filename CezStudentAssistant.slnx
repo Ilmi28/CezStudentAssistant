@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Scripts/">
+    <File Path="rollback.bat" />
     <File Path="scripts/add-migration.bat" />
     <File Path="scripts/remove-migration.bat" />
     <File Path="scripts/update-db.bat" />

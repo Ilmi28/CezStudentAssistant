@@ -7,12 +7,18 @@ using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using HeyRed.Mime;
+using Microsoft.EntityFrameworkCore;
 
 namespace CezStudentAssistant.Application.Services;
 
-public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFileService fileService, IJobScheduler jobScheduler) : ICezService
+public class CezService(
+    ICezApiClient cezApiClient,
+    IUnitOfWork unitOfWork,
+    IFileService fileService,
+    IJobScheduler jobScheduler) : ICezService
 {
     public async Task<Guid> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
     {
@@ -44,37 +50,90 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
 
     public async Task SyncUserCourses(Guid userId, CancellationToken ct = default)
     {
-        var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
-        var cezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == userId, ct)
-            ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+        var job = await UpdateJobStatusAsync(userId, JobStatus.Processing, ct);
 
-        var courseRepo = unitOfWork.Repository<ICourseRepository>();
-        var userCoursesResponse = await cezApiClient.GetUserCourses(new CezUserRequest
+        try
+        {
+            var cezUser = await GetCezUserAsync(userId, ct);
+            var externalCourses = await FetchExternalCoursesAsync(cezUser, ct);
+            var localUser = await GetUserWithCoursesAsync(userId, ct);
+
+            await SynchronizeCoursesAsync(localUser, externalCourses, ct);
+
+            EnqueueCourseSyncJobs(cezUser.Token, externalCourses, ct);
+
+            await UpdateJobStatusAsync(job, JobStatus.Succeeded, ct);
+        }
+        catch
+        {
+            await UpdateJobStatusAsync(job, JobStatus.Failed, ct);
+        }
+    }
+
+    private async Task<CezSyncJob> UpdateJobStatusAsync(Guid userId, JobStatus status, CancellationToken ct)
+    {
+        var repo = unitOfWork.Repository<ICezSyncJobRepository>();
+        var job = await repo.Find(j => j.UserId == userId)
+                            .OrderByDescending(j => j.CreatedAt)
+                            .FirstAsync(ct);
+
+        job.Status = status;
+        await unitOfWork.SaveChangesAsync(ct);
+        return job;
+    }
+
+    private async Task UpdateJobStatusAsync(CezSyncJob job, JobStatus status, CancellationToken ct)
+    {
+        job.Status = status;
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    private async Task<CezUser> GetCezUserAsync(Guid userId, CancellationToken ct)
+    {
+        var repo = unitOfWork.Repository<ICezUserRepository>();
+        return await repo.GetSingleAsync(cu => cu.UserId == userId, ct)
+            ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+    }
+
+    private async Task<List<CezCourse>> FetchExternalCoursesAsync(CezUser cezUser, CancellationToken ct)
+    {
+        var request = new CezUserRequest
         {
             Token = cezUser.Token,
             UserId = cezUser.ExternalUserId
-        });
+        };
 
-        if (!userCoursesResponse.Success || userCoursesResponse.Data is null)
-            throw new BadRequestException(new ApiMessage(this, userCoursesResponse.Message ?? CezMessagesConsts.GetUserCoursesError));
+        var response = await cezApiClient.GetUserCourses(request);
 
-        var userRepo = unitOfWork.Repository<IUserRepository>();
+        if (!response.Success || response.Data is null)
+            throw new BadRequestException(new ApiMessage(this, response.Message ?? CezMessagesConsts.GetUserCoursesError));
 
-        var user = await userRepo.GetByIdAsync(userId, ct, includes: x => x.Courses)
+        return response.Data.ToList();
+    }
+
+    private async Task<User> GetUserWithCoursesAsync(Guid userId, CancellationToken ct)
+    {
+        var repo = unitOfWork.Repository<IUserRepository>();
+        return await repo.GetByIdAsync(userId, ct, includes: x => x.Courses)
             ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+    }
 
-        var userCourses = userCoursesResponse.Data;
-        var incomingExternalIds = userCourses.Select(c => c.ExternalId).ToList();
-        var existingGlobalCourses = await courseRepo.FindAsync(c => c.CezExternalId != null && incomingExternalIds.Contains(c.CezExternalId.Value), ct);
+    private async Task SynchronizeCoursesAsync(User user, List<CezCourse> externalCourses, CancellationToken ct)
+    {
+        var courseRepo = unitOfWork.Repository<ICourseRepository>();
+        var incomingExternalIds = externalCourses.Select(c => c.ExternalId).ToList();
+
+        var existingGlobalCourses = await courseRepo
+            .Find(c => c.CezExternalId != null && incomingExternalIds.Contains(c.CezExternalId.Value))
+            .ToListAsync(ct);
+
         var globalCoursesMap = existingGlobalCourses
             .Where(c => c.CezExternalId.HasValue)
             .ToDictionary(c => c.CezExternalId!.Value);
 
-        foreach (var course in userCourses)
+        foreach (var course in externalCourses)
         {
-            globalCoursesMap.TryGetValue(course.ExternalId, out var existingCourse);
-
-            if (existingCourse == null)
+            if (!globalCoursesMap.TryGetValue(course.ExternalId, out var existingCourse))
             {
                 var newCourse = new Course
                 {
@@ -100,15 +159,18 @@ public class CezService(ICezApiClient cezApiClient, IUnitOfWork unitOfWork, IFil
         }
 
         await unitOfWork.SaveChangesAsync(ct);
+    }
 
-        foreach (var course in userCourses)
+    private void EnqueueCourseSyncJobs(string token, List<CezCourse> externalCourses, CancellationToken ct)
+    {
+        foreach (var course in externalCourses)
         {
-            var cezCourseRequest = new CezCourseRequest
+            var request = new CezCourseRequest
             {
-                Token = cezUser.Token,
+                Token = token,
                 CourseId = course.ExternalId
             };
-            jobScheduler.Enqueue<ICezService>(job => job.SyncCourseContent(cezCourseRequest, ct));
+            jobScheduler.Enqueue<ICezService>(job => job.SyncCourseContent(request, ct));
         }
     }
 

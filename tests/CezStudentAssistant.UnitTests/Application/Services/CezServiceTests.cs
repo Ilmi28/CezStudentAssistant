@@ -313,8 +313,8 @@ public class CezServiceTests
         _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), includes: Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
-        _courseRepository.FindAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<Course> { existingCourse });
+        _courseRepository.Find(Arg.Any<Expression<Func<Course, bool>>>())
+            .Returns(new List<Course> { existingCourse }.AsQueryable());
 
         // Act
         await _sut.SyncUserCourses(userId, CancellationToken.None);
@@ -353,8 +353,8 @@ public class CezServiceTests
         _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), includes: Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
-        _courseRepository.FindAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())
-            .Returns(new List<Course> { existingCourse });
+        _courseRepository.Find(Arg.Any<Expression<Func<Course, bool>>>())
+            .Returns(new List<Course> { existingCourse }.AsQueryable());
 
         // Act
         await _sut.SyncUserCourses(userId, CancellationToken.None);

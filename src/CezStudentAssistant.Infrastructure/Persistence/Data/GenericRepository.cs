@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -33,9 +33,8 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
         return await _dbSet.AnyAsync(predicate, cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> FindAsync(
+    public IQueryable<TEntity> Find(
         Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken = default,
         bool asNoTracking = false,
         params Expression<Func<TEntity, object>>[] includes)
     {
@@ -49,12 +48,10 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
             query = query.Include(include);
         }
 
-        query = query.Where(predicate);
-
-        return await query.ToListAsync(cancellationToken);
+        return query.Where(predicate);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes)
+    public IQueryable<TEntity> GetAll(bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet.AsQueryable();
 
@@ -66,7 +63,7 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
             query = query.Include(include);
         }
 
-        return await query.ToListAsync(cancellationToken);
+        return query;
     }
 
     public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default, bool asNoTracking = false, params Expression<Func<TEntity, object>>[] includes)

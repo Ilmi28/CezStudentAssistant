@@ -83,7 +83,7 @@ public class GenericRepositoryTests
         );
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetAllAsync();
+        var result = await _sut.GetAll().ToListAsync();
 
         result.Should().HaveCount(2);
     }
@@ -146,7 +146,7 @@ public class GenericRepositoryTests
         );
         await _context.SaveChangesAsync();
 
-        var result = await _sut.FindAsync(u => u.UserName.StartsWith("match"));
+        var result = await _sut.Find(u => u.UserName.StartsWith("match")).ToListAsync();
 
         result.Should().HaveCount(2);
     }

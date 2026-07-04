@@ -53,6 +53,11 @@
       "commandName": "Executable",
       "executablePath": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts\\update-db.bat",
       "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts"
+    },
+    "Rollback": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts\\rollback.bat",
+      "workingDirectory": "C:\\Users\\Ilmi\\Source\\Repos\\CezStudentAssistant\\scripts"
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"
