@@ -1,4 +1,4 @@
-using CezStudentAssistant.API.Consts;
+using CezStudentAssistant.API.Consts;
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.Application;
 using CezStudentAssistant.Application.Exceptions;
@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Hangfire.Dashboard;
 
 namespace CezStudentAssistant.API;
 
@@ -96,6 +99,17 @@ public class Program
         builder.Services.AddSignalR();
         
         builder.Services.AddScoped<IJobNotificationService, SignalRJobNotificationService>();
+
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        builder.Services.AddHangfire(configuration => configuration
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(options =>
+            {
+                options.UseNpgsqlConnection(connectionString);
+            }));
+        builder.Services.AddHangfireServer();
     }
 
     private static void MapEndpoints(WebApplication app)
@@ -149,5 +163,15 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+        
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = [new AllowAllDashboardAuthorizationFilter()]
+        });
     }
+}
+
+sealed class AllowAllDashboardAuthorizationFilter : IDashboardAuthorizationFilter
+{
+    public bool Authorize(DashboardContext context) => true;
 }

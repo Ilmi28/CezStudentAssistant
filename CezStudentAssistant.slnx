@@ -14,7 +14,6 @@
     <Project Path="src/CezStudentAssistant.Application/CezStudentAssistant.Application.csproj" />
     <Project Path="src/CezStudentAssistant.Domain/CezStudentAssistant.Domain.csproj" />
     <Project Path="src/CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj" />
-    <Project Path="src/CezStudentAssistant.Worker/CezStudentAssistant.Worker.csproj" />
   </Folder>
   <Folder Name="/src/ExternalServices/">
     <Project Path="src/ExternalServices/CezStudentAssistant.Cez/CezStudentAssistant.Cez.csproj" />
