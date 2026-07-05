@@ -21,8 +21,4 @@
     <ProjectReference Include="..\CezStudentAssistant.Domain\CezStudentAssistant.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Commands\Course\" />
-  </ItemGroup>
-
 </Project>

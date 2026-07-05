@@ -1,21 +1,21 @@
 using CezStudentAssistant.API.Consts;
 using CezStudentAssistant.API.Endpoints;
+using CezStudentAssistant.API.Hubs;
+using CezStudentAssistant.API.Services;
 using CezStudentAssistant.Application;
 using CezStudentAssistant.Application.Exceptions;
-using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Interfaces.Services;
+using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Cez;
 using CezStudentAssistant.Infrastructure;
 using CezStudentAssistant.Infrastructure.Settings;
-using CezStudentAssistant.API.Services;
-using CezStudentAssistant.API.Hubs;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Hangfire;
-using Hangfire.PostgreSql;
-using Hangfire.Dashboard;
 
 namespace CezStudentAssistant.API;
 
@@ -97,7 +97,7 @@ public class Program
         builder.Services.AddInstrastructure(builder.Configuration, builder.Environment.IsDevelopment());
         builder.Services.AddCez(builder.Configuration);
         builder.Services.AddSignalR();
-        
+
         builder.Services.AddScoped<IJobNotificationService, SignalRJobNotificationService>();
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -117,6 +117,7 @@ public class Program
         app.MapAuthEndpoints();
         app.MapUserEndpoints();
         app.MapCezEndpoints();
+        app.MapCourseEndpoints();
         app.MapHub<CezSyncNotificationHub>("/sync-hub");
     }
 
@@ -147,7 +148,7 @@ public class Program
                 };
 
                 Console.WriteLine($"[DEBUG] API EXCEPTION: {exception}");
-                
+
                 context.Response.StatusCode = (int)apiResponse.StatusCode;
                 await context.Response.WriteAsJsonAsync((object)apiResponse);
             });
@@ -163,7 +164,7 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-        
+
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
             Authorization = [new AllowAllDashboardAuthorizationFilter()]

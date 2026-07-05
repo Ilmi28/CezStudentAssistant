@@ -13,7 +13,7 @@ public static class CezEndpoints
         {
             var command = new SyncCezCoursesCommand();
             var result = await mediator.Send(command);
-            return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+            return Results.Ok(result);
         }).WithName("SyncCezCourses").RequireAuthorization();
     }
 }

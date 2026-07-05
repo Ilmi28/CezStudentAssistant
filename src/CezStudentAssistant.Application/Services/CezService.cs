@@ -57,7 +57,6 @@ public class CezService(
             throw new AppException(new ApiMessage(null, CezMessagesConsts.SyncCoursesError));
 
         await UpdateJobStatusAsync(userId, job, JobStatus.Processing, ct);
-
         try
         {
             var cezUser = await GetCezUserAsync(userId, ct);
