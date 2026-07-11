@@ -48,6 +48,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<QuestionOption> QuestionOptions { get; set; }
     public DbSet<QuizAttempt> QuizAttempts { get; set; }
     public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
-    public DbSet<CezResource> CezResources { get; set; }
+    public DbSet<Resource> Resources { get; set; }
     public DbSet<CezSyncJob> CezSyncJobs { get; set; }
 }

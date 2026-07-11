@@ -2,6 +2,6 @@
 
 namespace CezStudentAssistant.Domain.Interfaces.Repositories;
 
-public interface ICezResourceRepository : IGenericRepository<CezResource>
+public interface ICezResourceRepository : IGenericRepository<Resource>
 {
 }

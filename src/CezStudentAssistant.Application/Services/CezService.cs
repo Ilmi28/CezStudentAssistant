@@ -200,7 +200,7 @@ public class CezService(
                 }
                 else
                 {
-                    var newResource = new CezResource
+                    var newResource = new Resource
                     {
                         Name = contentName,
                         DisplayName = content.FileName,

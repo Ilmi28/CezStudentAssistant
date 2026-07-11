@@ -4,7 +4,7 @@ using CezStudentAssistant.Infrastructure.Persistence.Data;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Repositories;
 
-public class CezResourceRepository : GenericRepository<CezResource>, ICezResourceRepository
+public class CezResourceRepository : GenericRepository<Resource>, ICezResourceRepository
 {
     public CezResourceRepository(AppDbContext context) : base(context)
     {

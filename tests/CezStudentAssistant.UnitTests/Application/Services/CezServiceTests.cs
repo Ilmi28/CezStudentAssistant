@@ -466,8 +466,8 @@ public class CezServiceTests
         _courseRepository.GetSingleAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(course);
 
-        _cezResourceRepository.GetSingleAsync(Arg.Any<Expression<Func<CezResource, bool>>>(), Arg.Any<CancellationToken>())
-            .Returns((CezResource)null!);
+        _cezResourceRepository.GetSingleAsync(Arg.Any<Expression<Func<Resource, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns((Resource)null!);
 
         var fileStream = new System.IO.MemoryStream(new byte[] { 1, 2, 3 });
         _cezApiClient.DownloadCezFile(Arg.Any<CezFileRequest>())
@@ -477,7 +477,7 @@ public class CezServiceTests
         await _sut.SyncCourseContent(request, CancellationToken.None);
 
         // Assert
-        await _cezResourceRepository.Received(1).AddAsync(Arg.Is<CezResource>(r => 
+        await _cezResourceRepository.Received(1).AddAsync(Arg.Is<Resource>(r => 
             r.DisplayName == "file.pdf" && 
             r.MimeType == "application/pdf" && 
             r.CourseId == course.Id && 
@@ -520,8 +520,8 @@ public class CezServiceTests
         _courseRepository.GetSingleAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(course);
 
-        var existingResource = new CezResource { Name = "123_1767272400.pdf", DisplayName = "file.pdf", MimeType = "application/pdf", CezLastModified = timeModified };
-        _cezResourceRepository.GetSingleAsync(Arg.Any<Expression<Func<CezResource, bool>>>(), Arg.Any<CancellationToken>())
+        var existingResource = new Resource { Name = "123_1767272400.pdf", DisplayName = "file.pdf", MimeType = "application/pdf", CezLastModified = timeModified };
+        _cezResourceRepository.GetSingleAsync(Arg.Any<Expression<Func<Resource, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(existingResource);
 
         // Act
@@ -560,8 +560,8 @@ public class CezServiceTests
         _courseRepository.GetSingleAsync(Arg.Any<Expression<Func<Course, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(course);
 
-        var existingResource = new CezResource { Name = "123_1767272400.pdf", DisplayName = "file.pdf", MimeType = "application/pdf", CezLastModified = oldTimeModified, CourseId = course.Id };
-        _cezResourceRepository.GetSingleAsync(Arg.Any<Expression<Func<CezResource, bool>>>(), Arg.Any<CancellationToken>())
+        var existingResource = new Resource { Name = "123_1767272400.pdf", DisplayName = "file.pdf", MimeType = "application/pdf", CezLastModified = oldTimeModified, CourseId = course.Id };
+        _cezResourceRepository.GetSingleAsync(Arg.Any<Expression<Func<Resource, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(existingResource);
 
         var fileStream = new System.IO.MemoryStream(new byte[] { 4, 5, 6 });

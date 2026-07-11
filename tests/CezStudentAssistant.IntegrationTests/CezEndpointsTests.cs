@@ -233,7 +233,7 @@ public class CezEndpointsTests
         course.Should().NotBeNull();
 
         // Verify the database has the CezResource
-        var resource = await db.Set<CezResource>()
+        var resource = await db.Set<Resource>()
             .FirstOrDefaultAsync(r => r.CourseId == course!.Id);
         resource.Should().NotBeNull();
         resource!.DisplayName.Should().Be("syllabus.pdf");
@@ -298,7 +298,7 @@ public class CezEndpointsTests
             // Created timestamp determines the content name: e.g. 1767272400
             var timeCreated = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
             var contentName = $"888_{((DateTimeOffset)timeCreated).ToUnixTimeSeconds()}.pdf";
-            var oldResource = new CezResource
+            var oldResource = new Resource
             {
                 CourseId = course.Id,
                 Name = contentName,
@@ -306,7 +306,7 @@ public class CezEndpointsTests
                 MimeType = "application/pdf",
                 CezLastModified = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc)
             };
-            db.Set<CezResource>().Add(oldResource);
+            db.Set<Resource>().Add(oldResource);
             await db.SaveChangesAsync();
         }
 
@@ -349,7 +349,7 @@ public class CezEndpointsTests
             var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
             var course = await db.Courses.FirstAsync(c => c.CezExternalId == 401);
             
-            var resource = await db.Set<CezResource>()
+            var resource = await db.Set<Resource>()
                 .FirstOrDefaultAsync(r => r.CourseId == course.Id);
             resource.Should().NotBeNull();
             resource!.DisplayName.Should().Be("syllabus_v2.pdf");

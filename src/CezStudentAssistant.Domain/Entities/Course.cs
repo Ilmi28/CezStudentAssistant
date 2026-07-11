@@ -11,4 +11,5 @@ public class Course : BaseEntity
     public CourseType Type { get; set; }
     public ICollection<User> Users { get; set; } = new List<User>();
     public ICollection<Question> Questions { get; set; } = new List<Question>();
+    public ICollection<Resource> Resources { get; set; } = new List<Resource>();
 }
