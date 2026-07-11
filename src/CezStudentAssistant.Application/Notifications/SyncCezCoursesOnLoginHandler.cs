@@ -9,7 +9,7 @@ namespace CezStudentAssistant.Application.Notifications;
 
 public sealed record CezLoginSucceededNotification(Guid UserId) : INotification;
 
-public sealed class SyncCezCoursesOnLoginHandler(IJobScheduler jobScheduler, IUnitOfWork unitOfWork)
+public sealed class SyncCezCoursesOnLoginHandler(IJobScheduler jobScheduler, IUnitOfWork unitOfWork, IJobNotificationService notificationService)
     : INotificationHandler<CezLoginSucceededNotification>
 {
     public async Task Handle(CezLoginSucceededNotification notification, CancellationToken cancellationToken)
@@ -28,5 +28,7 @@ public sealed class SyncCezCoursesOnLoginHandler(IJobScheduler jobScheduler, IUn
 
         syncJob.JobId = jobId;
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await notificationService.SendJobStatusUpdateAsync(notification.UserId, jobId, JobStatus.Enqueued, cancellationToken);
     }
 }
