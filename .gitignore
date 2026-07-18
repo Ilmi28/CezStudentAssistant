@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # Environment variable settings file
 .env
+/src/CezStudentAssistant.API/appsettings.Development.json

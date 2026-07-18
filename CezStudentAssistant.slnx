@@ -16,6 +16,7 @@
     <Project Path="src/CezStudentAssistant.Infrastructure/CezStudentAssistant.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/ExternalServices/">
+    <Project Path="src/ExternalServices/CezStudentAssistant.AI/CezStudentAssistant.AI.csproj" Id="6a4a35db-c9a4-4520-a310-46deddaa1572" />
     <Project Path="src/ExternalServices/CezStudentAssistant.Cez/CezStudentAssistant.Cez.csproj" />
   </Folder>
   <Folder Name="/tests/">

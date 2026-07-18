@@ -45,10 +45,11 @@ public class EntityRepositoriesTests
     {
         var repository = new QuestionRepository(_context);
         var course = new Course { Name = "Course" };
+        var quiz = new Quiz { Name = "Quiz", DisplayName = "Quiz", Course = course };
         var entity = new Question 
         { 
             Content = "Test Question", 
-            Course = course 
+            Quiz = quiz 
         };
 
         await repository.AddAsync(entity);
@@ -64,7 +65,8 @@ public class EntityRepositoriesTests
     {
         var repository = new QuestionOptionRepository(_context);
         var course = new Course { Name = "Course" };
-        var question = new Question { Content = "Question", Course = course };
+        var quiz = new Quiz { Name = "Quiz", DisplayName = "Quiz", Course = course };
+        var question = new Question { Content = "Question", Quiz = quiz };
         var entity = new QuestionOption 
         { 
             Content = "Test Option", 
@@ -106,14 +108,15 @@ public class EntityRepositoriesTests
         var repository = new QuestionAnswerRepository(_context);
         var user = new User { UserName = "testuser" };
         var course = new Course { Name = "Course" };
-        var question = new Question { Content = "Question", Course = course };
-        var quizAttempt = new QuizAttempt { User = user, Course = course };
+        var quiz = new Quiz { Name = "Quiz", DisplayName = "Quiz", Course = course };
+        var question = new Question { Content = "Question", Quiz = quiz };
+        var quizAttempt = new QuizAttempt { User = user, Course = course, Quiz = quiz };
         
         var entity = new QuestionAnswer 
         { 
             QuizAttempt = quizAttempt,
             Question = question,
-            Answer = "My Answer"
+            EarnedPoints = 10m
         };
 
         await repository.AddAsync(entity);
@@ -121,6 +124,6 @@ public class EntityRepositoriesTests
 
         var retrieved = await repository.GetByIdAsync(entity.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.Answer.Should().Be("My Answer");
+        retrieved!.EarnedPoints.Should().Be(10m);
     }
 }
