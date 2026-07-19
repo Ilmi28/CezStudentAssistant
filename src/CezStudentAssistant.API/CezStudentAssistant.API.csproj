@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -31,5 +31,6 @@
     <ProjectReference Include="..\CezStudentAssistant.Application\CezStudentAssistant.Application.csproj" />
     <ProjectReference Include="..\CezStudentAssistant.Infrastructure\CezStudentAssistant.Infrastructure.csproj" />
     <ProjectReference Include="..\ExternalServices\CezStudentAssistant.Cez\CezStudentAssistant.Cez.csproj" />
+    <ProjectReference Include="..\ExternalServices\CezStudentAssistant.AI\CezStudentAssistant.AI.csproj" />
   </ItemGroup>
 </Project>

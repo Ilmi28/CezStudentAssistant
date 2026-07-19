@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -38,6 +38,7 @@
     <ProjectReference Include="..\..\src\CezStudentAssistant.Infrastructure\CezStudentAssistant.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\CezStudentAssistant.Domain\CezStudentAssistant.Domain.csproj" />
     <ProjectReference Include="..\..\src\ExternalServices\CezStudentAssistant.Cez\CezStudentAssistant.Cez.csproj" />
+    <ProjectReference Include="..\..\src\ExternalServices\CezStudentAssistant.AI\CezStudentAssistant.AI.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,11 @@
-﻿namespace CezStudentAssistant.Application.Requests.AI;
+using CezStudentAssistant.Application.Enums;
+
+namespace CezStudentAssistant.Application.Requests.AI;
 
 public class AIQuizRequest
 {
     public required int QuestionCount { get; set; }
-    public IEnumerable<Stream> Files { get; set; } = new List<Stream>();
+    public QuizLanguage Language { get; set; } = QuizLanguage.PL;
+    public IEnumerable<AIFile> Files { get; set; } = new List<AIFile>();
     public string? AdditionalInstructions { get; set; }
 }

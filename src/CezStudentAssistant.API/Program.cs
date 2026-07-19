@@ -7,6 +7,7 @@ using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Cez;
+using CezStudentAssistant.AI;
 using CezStudentAssistant.Infrastructure;
 using CezStudentAssistant.Infrastructure.Settings;
 using Hangfire;
@@ -96,6 +97,7 @@ public class Program
         builder.Services.AddApplication();
         builder.Services.AddInstrastructure(builder.Configuration, builder.Environment.IsDevelopment());
         builder.Services.AddCez(builder.Configuration);
+        builder.Services.AddAI(builder.Configuration);
         builder.Services.AddSignalR();
 
         builder.Services.AddScoped<IJobNotificationService, SignalRJobNotificationService>();

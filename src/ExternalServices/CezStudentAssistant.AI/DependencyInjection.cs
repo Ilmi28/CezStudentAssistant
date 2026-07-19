@@ -1,4 +1,5 @@
-﻿using Google.GenAI;
+using CezStudentAssistant.Application.Interfaces.External;
+using Google.GenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +12,12 @@ public static class DependencyInjection
         public IServiceCollection AddAI(IConfiguration configuration)
         {
             services.AddSingleton(x => new Client(apiKey: configuration["Gemini:ApiKey"]));
+            services.AddScoped<IAIClient, GeminiAIClient>();
+
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddMaps(typeof(AIProfile).Assembly);
+            });
 
             return services;
         }
