@@ -64,7 +64,7 @@ public class AIService(
 
             var aiResponse = await aiClient.GenerateQuizAsync(aiRequest);
 
-            if (!aiResponse.Success || aiResponse.Data == null)
+            if (!aiResponse.Success || aiResponse.Data == null || !aiResponse.Data.Questions.Any())
             {
                 throw new BadRequestException(new ApiMessage(this, aiResponse.Message ?? AIMessageConsts.QuizGenerationError));
             }

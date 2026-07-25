@@ -1,5 +1,6 @@
 using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Commands.Quiz;
+using CezStudentAssistant.Application.Dtos.Quiz;
 using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
@@ -103,6 +104,23 @@ public class AIQuizEndpointsTests
         var response = await _client.PostAsJsonAsync($"/course/{nonExistentCourseId}/generate-quiz", command);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task GenerateQuiz_ShouldReturnBadRequest_WhenQuestionCountIsZero()
+    {
+        var username = "quizvalidationuser";
+        await RegisterAndLogin(username, "Password123!");
+
+        var command = new GenerateQuizCommand
+        {
+            QuestionCount = 0,
+            AdditionalInstructions = "validation test"
+        };
+
+        var response = await _client.PostAsJsonAsync($"/course/{Guid.NewGuid()}/generate-quiz", command);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Test]
@@ -216,5 +234,81 @@ public class AIQuizEndpointsTests
             quiz.Questions.Should().HaveCount(1);
             quiz.Questions.First().Content.Should().Be("What is 2+2?");
         }
+    }
+
+    [Test]
+    public async Task GetQuizzes_ShouldReturnQuizzes_WhenUserHasQuizzes()
+    {
+        var username = "quizuser4";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        var courseId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var user = await db.Users.FirstAsync(u => u.Id == userId);
+            
+            var course = new Course { Id = courseId, Name = "Course 10", Type = CourseType.Cez };
+            db.Courses.Add(course);
+            user.Courses.Add(course);
+
+            var quiz = new Quiz { Id = quizId, Name = "Calculus 1 Quiz", DisplayName = "Calculus 1 Quiz", CourseId = courseId };
+            db.Quizzes.Add(quiz);
+            await db.SaveChangesAsync();
+        }
+
+        var response = await _client.GetAsync("/quiz");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<List<QuizDto>>>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+        content.Data.Should().NotBeNull();
+        content.Data.Should().HaveCount(1);
+        content.Data![0].Id.Should().Be(quizId);
+        content.Data[0].CourseName.Should().Be("Course 10");
+    }
+
+    [Test]
+    public async Task GetQuizById_ShouldReturnDetails_WhenQuizExistsAndBelongsToUser()
+    {
+        var username = "quizuser5";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        var courseId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var user = await db.Users.FirstAsync(u => u.Id == userId);
+            
+            var course = new Course { Id = courseId, Name = "Physics Course", Type = CourseType.Cez };
+            db.Courses.Add(course);
+            user.Courses.Add(course);
+
+            var quiz = new Quiz { Id = quizId, Name = "Electricity Quiz", DisplayName = "Electricity Quiz", CourseId = courseId };
+            var question = new Question { Content = "V=IR?", Type = QuestionType.SingleChoice, Points = 1, Quiz = quiz };
+            question.Options.Add(new QuestionOption { Content = "Yes", IsCorrect = true, Question = question });
+            db.Quizzes.Add(quiz);
+            db.Questions.Add(question);
+            await db.SaveChangesAsync();
+        }
+
+        var response = await _client.GetAsync($"/quiz/{quizId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<QuizDetailsDto>>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+        content.Data.Should().NotBeNull();
+        content.Data!.Id.Should().Be(quizId);
+        content.Data.Questions.Should().HaveCount(1);
+        content.Data.Questions[0].Content.Should().Be("V=IR?");
+        content.Data.Questions[0].Options.Should().HaveCount(1);
     }
 }

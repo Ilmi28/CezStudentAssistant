@@ -1,4 +1,6 @@
-using CezStudentAssistant.API.Consts;
+
+using CezStudentAssistant.AI;
+using CezStudentAssistant.API.Consts;
 using CezStudentAssistant.API.Endpoints;
 using CezStudentAssistant.API.Hubs;
 using CezStudentAssistant.API.Services;
@@ -7,7 +9,6 @@ using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Cez;
-using CezStudentAssistant.AI;
 using CezStudentAssistant.Infrastructure;
 using CezStudentAssistant.Infrastructure.Settings;
 using Hangfire;
@@ -15,6 +16,7 @@ using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -120,6 +122,7 @@ public class Program
         app.MapUserEndpoints();
         app.MapCezEndpoints();
         app.MapCourseEndpoints();
+        app.MapQuizEndpoints();
         app.MapHub<CezSyncNotificationHub>("/sync-hub");
     }
 
