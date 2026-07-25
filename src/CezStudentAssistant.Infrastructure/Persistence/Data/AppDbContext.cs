@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyDeletedAtFilters();
+        modelBuilder.Entity<Quiz>().ToTable("Quiz");
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
@@ -44,6 +45,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CezUser> CezUsers { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Course> Courses { get; set; }
+    public DbSet<Quiz> Quizzes { get; set; }
     public DbSet<Question> Questions { get; set; }
     public DbSet<QuestionOption> QuestionOptions { get; set; }
     public DbSet<QuizAttempt> QuizAttempts { get; set; }

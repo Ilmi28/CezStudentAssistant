@@ -44,6 +44,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public ICezApiClient CezApiClientMock { get; } = Substitute.For<ICezApiClient>();
+    public IAIClient AIClientMock { get; } = Substitute.For<IAIClient>();
     public static IReadOnlyList<CezCourse> DefaultCezCourses { get; } = new List<CezCourse>
     {
         new() { ExternalId = 101, DisplayName = "Calculus I" },
@@ -70,8 +71,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // Mock External CEZ API
+            // Mock External CEZ API and AI Client
             services.AddSingleton(CezApiClientMock);
+            services.AddSingleton(AIClientMock);
             services.AddScoped<IJobScheduler, ScopedImmediateJobScheduler>();
         });
     }

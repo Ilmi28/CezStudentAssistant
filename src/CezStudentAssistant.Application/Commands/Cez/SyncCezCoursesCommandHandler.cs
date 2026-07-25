@@ -1,10 +1,11 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Interfaces.CQRS;
-using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Responses;
-using CezStudentAssistant.Domain.Entities;
-using CezStudentAssistant.Domain.Interfaces.Repositories;
+using CezStudentAssistant.Domain.Enums;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CezStudentAssistant.Application.Commands.Cez;
 
@@ -15,8 +16,7 @@ public sealed class SyncCezCoursesCommand : ICommand, IUserRequest
 
 public class SyncCezCoursesCommandHandler(
     IJobScheduler jobScheduler,
-    IUnitOfWork unitOfWork,
-    IJobNotificationService notificationService) : BaseCommandHandler<SyncCezCoursesCommand>
+    IJobService jobService) : BaseCommandHandler<SyncCezCoursesCommand>
 {
     protected override ApiMessage SuccessMessage => new(this, CezMessagesConsts.SyncCoursesSuccess);
 
@@ -24,21 +24,10 @@ public class SyncCezCoursesCommandHandler(
 
     protected override async Task ExecuteAsync(SyncCezCoursesCommand command, CancellationToken ct)
     {
-        var syncJob = new Job
-        {
-            UserId = command.UserId,
-            JobId = "pending", // Will be updated after enqueue
-            Status = Domain.Enums.JobStatus.Enqueued
-        };
-
-        await unitOfWork.Repository<IJobRepository>().AddAsync(syncJob, ct);
-        await unitOfWork.SaveChangesAsync(ct);
+        var job = await jobService.CreateJobAsync(command.UserId, JobType.CezSync, ct);
 
         var jobId = jobScheduler.Enqueue<ICezService>(service => service.SyncUserCourses(command.UserId, ct));
 
-        syncJob.JobId = jobId;
-        await unitOfWork.SaveChangesAsync(ct);
-
-        await notificationService.SendJobStatusUpdateAsync(command.UserId, jobId, Domain.Enums.JobStatus.Enqueued, ct);
+        await jobService.UpdateJobAsync(job, JobStatus.Enqueued, jobId, ct);
     }
 }

@@ -1,4 +1,5 @@
 using CezStudentAssistant.Application.Commands.Course;
+using CezStudentAssistant.Application.Commands.Quiz;
 using CezStudentAssistant.Application.Queries.Course;
 using MediatR;
 
@@ -65,5 +66,12 @@ public static class CourseEndpoints
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization().DisableAntiforgery();
+
+        group.MapPost("/{courseId:guid}/generate-quiz", async (Guid courseId, GenerateQuizCommand command, IMediator mediator) =>
+        {
+            command.CourseId = courseId;
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
     }
 }

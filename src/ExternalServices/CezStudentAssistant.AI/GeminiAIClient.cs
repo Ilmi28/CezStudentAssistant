@@ -1,4 +1,5 @@
 using CezStudentAssistant.AI.Services;
+using CezStudentAssistant.AI.Consts;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
@@ -11,7 +12,7 @@ namespace CezStudentAssistant.AI;
 
 public class GeminiAIClient(Client client, IConfiguration configuration, ILogger<GeminiAIClient> logger, IAIQuizService quizService) : IAIClient
 {
-    private readonly string _model = configuration["Gemini:DefaultModel"] ?? throw new ArgumentNullException("Gemini:DefaultModel configuration is missing.");
+    private readonly string _model = configuration["Gemini:DefaultModel"] ?? throw new ArgumentNullException(nameof(configuration), AIErrorMessages.DefaultModelConfigMissing);
     private readonly int _maxAttempts = int.TryParse(configuration["Gemini:MaxAttempts"], out var attempts) && attempts > 0 ? attempts : 6;
     private readonly int[] _retryDelaysMs = GetRetryDelays(configuration);
 
@@ -26,7 +27,7 @@ public class GeminiAIClient(Client client, IConfiguration configuration, ILogger
 
             var config = new GenerateContentConfig
             {
-                ResponseMimeType = "application/json",
+                ResponseMimeType = AIModelSettings.ResponseMimeTypeJson,
                 ResponseSchema = schema
             };
 
@@ -39,7 +40,7 @@ public class GeminiAIClient(Client client, IConfiguration configuration, ILogger
                 return new AIQuizResponse
                 {
                     Success = false,
-                    Message = "AI returned an empty response."
+                    Message = AIErrorMessages.EmptyResponseErrorMessage
                 };
             }
 
@@ -51,7 +52,7 @@ public class GeminiAIClient(Client client, IConfiguration configuration, ILogger
             return new AIQuizResponse
             {
                 Success = false,
-                Message = $"An error occurred while generating the quiz: {ex.Message}"
+                Message = string.Format(AIErrorMessages.GeneralErrorMessageFormat, ex.Message)
             };
         }
     }

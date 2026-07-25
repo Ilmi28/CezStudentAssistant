@@ -8,6 +8,7 @@ using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses.Cez;
 using CezStudentAssistant.Application.Services;
 using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
 using MockQueryable.NSubstitute;
@@ -26,9 +27,9 @@ public class CezServiceTests
     private ICezResourceRepository _cezResourceRepository = null!;
     private IFileService _fileService = null!;
     private IJobScheduler _jobScheduler = null!;
-    private IJobNotificationService _notificationService = null!;
-    private IJobRepository _cezSyncJobRepository = null!;
+    private IJobService _jobService = null!;
     private CezService _sut = null!;
+    private Job _existingJob = null!;
 
     [SetUp]
     public void SetUp()
@@ -41,21 +42,18 @@ public class CezServiceTests
         _courseRepository = Substitute.For<ICourseRepository>();
         _cezResourceRepository = Substitute.For<ICezResourceRepository>();
         _jobScheduler = Substitute.For<IJobScheduler>();
-        _notificationService = Substitute.For<IJobNotificationService>();
-        _cezSyncJobRepository = Substitute.For<IJobRepository>();
+        _jobService = Substitute.For<IJobService>();
 
         _unitOfWork.Repository<IUserRepository>().Returns(_userRepository);
         _unitOfWork.Repository<ICezUserRepository>().Returns(_cezUserRepository);
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_cezResourceRepository);
-        _unitOfWork.Repository<IJobRepository>().Returns(_cezSyncJobRepository);
 
-        var existingJob = new Job { JobId = "test-job-id", UserId = Guid.NewGuid(), Status = Domain.Enums.JobStatus.Enqueued };
-        var mockJobDbSet = new List<Job> { existingJob }.BuildMockDbSet();
-        _cezSyncJobRepository.Find(Arg.Any<Expression<Func<Job, bool>>>())
-            .Returns(x => mockJobDbSet);
+        _existingJob = new Job { JobId = "test-job-id", UserId = Guid.NewGuid(), Status = Domain.Enums.JobStatus.Enqueued };
+        _jobService.GetLatestJobAsync(Arg.Any<Guid>(), JobType.CezSync, Arg.Any<CancellationToken>())
+            .Returns(_existingJob);
 
-        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler, _notificationService);
+        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler, _jobService);
     }
 
     [TearDown]
@@ -262,8 +260,8 @@ public class CezServiceTests
 
         await act.Should().ThrowAsync<NotFoundException>();
 
-        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
-        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Failed, Arg.Any<CancellationToken>());
+        await _jobService.Received(1).UpdateJobAsync(_existingJob, Domain.Enums.JobStatus.Processing, null, Arg.Any<CancellationToken>());
+        await _jobService.Received(1).UpdateJobAsync(_existingJob, Domain.Enums.JobStatus.Failed, null, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -281,8 +279,8 @@ public class CezServiceTests
 
         await act.Should().ThrowAsync<BadRequestException>();
 
-        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
-        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Failed, Arg.Any<CancellationToken>());
+        await _jobService.Received(1).UpdateJobAsync(_existingJob, Domain.Enums.JobStatus.Processing, null, Arg.Any<CancellationToken>());
+        await _jobService.Received(1).UpdateJobAsync(_existingJob, Domain.Enums.JobStatus.Failed, null, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -346,8 +344,8 @@ public class CezServiceTests
 
         await _unitOfWork.Received().SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
-        await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Succeeded, Arg.Any<CancellationToken>());
+        await _jobService.Received(1).UpdateJobAsync(_existingJob, Domain.Enums.JobStatus.Processing, null, Arg.Any<CancellationToken>());
+        await _jobService.Received(1).UpdateJobAsync(_existingJob, Domain.Enums.JobStatus.Succeeded, null, Arg.Any<CancellationToken>());
     }
 
     [Test]
