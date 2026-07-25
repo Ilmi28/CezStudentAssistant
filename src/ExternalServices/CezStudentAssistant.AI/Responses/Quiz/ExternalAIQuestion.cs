@@ -1,4 +1,6 @@
-﻿namespace CezStudentAssistant.AI.Responses.Quiz;
+using System.Collections.Generic;
+
+namespace CezStudentAssistant.AI.Responses.Quiz;
 
 public class ExternalAIQuestion
 {

@@ -1,7 +1,4 @@
-using AutoMapper;
-using CezStudentAssistant.AI.Consts;
-using CezStudentAssistant.AI.Responses.Quiz;
-using CezStudentAssistant.Application.Enums;
+using CezStudentAssistant.AI.Services;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
@@ -9,13 +6,12 @@ using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace CezStudentAssistant.AI;
 
-public class GeminiAIClient(Client client, IMapper mapper, IConfiguration configuration, ILogger<GeminiAIClient> logger) : IAIClient
+public class GeminiAIClient(Client client, IConfiguration configuration, ILogger<GeminiAIClient> logger, IAIQuizService quizService) : IAIClient
 {
-    private readonly string _model = configuration["Gemini:DefaultModel"] ?? GeminiAIModelSettings.DefaultModel;
+    private readonly string _model = configuration["Gemini:DefaultModel"] ?? throw new ArgumentNullException("Gemini:DefaultModel configuration is missing.");
     private readonly int _maxAttempts = int.TryParse(configuration["Gemini:MaxAttempts"], out var attempts) && attempts > 0 ? attempts : 6;
     private readonly int[] _retryDelaysMs = GetRetryDelays(configuration);
 
@@ -23,13 +19,15 @@ public class GeminiAIClient(Client client, IMapper mapper, IConfiguration config
     {
         try
         {
-            var content = await BuildQuizContentAsync(request);
-            var quizSchema = BuildQuizSchema();
+            var prompt = quizService.BuildPrompt(request);
+            var schema = quizService.BuildSchema();
+
+            var content = await BuildContentAsync(prompt, request.Files);
 
             var config = new GenerateContentConfig
             {
-                ResponseMimeType = GeminiAIModelSettings.ResponseMimeTypeJson,
-                ResponseSchema = quizSchema
+                ResponseMimeType = "application/json",
+                ResponseSchema = schema
             };
 
             var response = await GenerateContentWithRetryAsync(content, config);
@@ -41,40 +39,19 @@ public class GeminiAIClient(Client client, IMapper mapper, IConfiguration config
                 return new AIQuizResponse
                 {
                     Success = false,
-                    Message = GeminiAIErrorMessages.EmptyResponseErrorMessage
+                    Message = "AI returned an empty response."
                 };
             }
 
-            var externalQuiz = JsonSerializer.Deserialize<ExternalAIQuiz>(jsonText, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            if (externalQuiz == null)
-            {
-                logger.LogWarning("[GEMINI] Failed to deserialize the JSON returned by AI: {JsonText}", jsonText);
-                return new AIQuizResponse
-                {
-                    Success = false,
-                    Message = GeminiAIErrorMessages.DeserializationErrorMessage
-                };
-            }
-
-            var quiz = mapper.Map<AIQuiz>(externalQuiz);
-
-            return new AIQuizResponse
-            {
-                Success = true,
-                Data = quiz
-            };
+            return quizService.ParseResponse(jsonText);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[GEMINI] Failed to generate quiz: {Message}", ex.Message);
+            logger.LogError(ex, "[GEMINI] GenerateQuizAsync failed: {Message}", ex.Message);
             return new AIQuizResponse
             {
                 Success = false,
-                Message = string.Format(GeminiAIErrorMessages.GeneralErrorMessageFormat, ex.Message)
+                Message = $"An error occurred while generating the quiz: {ex.Message}"
             };
         }
     }
@@ -92,13 +69,11 @@ public class GeminiAIClient(Client client, IMapper mapper, IConfiguration config
             }
             catch (ClientError ex) when (attempts < _maxAttempts)
             {
-                // Only retry on transient status codes (429 Rate Limit, 500 Server Error, 503 Service Unavailable, 504 Gateway Timeout)
                 if (ex.StatusCode != 429 && ex.StatusCode != 500 && ex.StatusCode != 503 && ex.StatusCode != 504)
                 {
                     throw;
                 }
 
-                // Protect against out of bounds index if delays list is smaller than max attempts
                 var delayIndex = Math.Min(attempts - 1, _retryDelaysMs.Length - 1);
                 var delay = _retryDelaysMs[delayIndex];
 
@@ -107,7 +82,6 @@ public class GeminiAIClient(Client client, IMapper mapper, IConfiguration config
             }
             catch (Exception ex) when (attempts < _maxAttempts)
             {
-                // Catch other network/HTTP exceptions
                 var delayIndex = Math.Min(attempts - 1, _retryDelaysMs.Length - 1);
                 var delay = _retryDelaysMs[delayIndex];
 
@@ -131,29 +105,16 @@ public class GeminiAIClient(Client client, IMapper mapper, IConfiguration config
         return delays.Count > 0 ? delays.ToArray() : new[] { 1000, 2000, 4000, 8000, 16000, 32000 };
     }
 
-    private static async Task<Content> BuildQuizContentAsync(AIQuizRequest request)
+    private static async Task<Content> BuildContentAsync(string prompt, IEnumerable<AIFile>? files)
     {
-        var parts = new List<Part>();
-
-        var languageName = request.Language switch
+        var parts = new List<Part>
         {
-            QuizLanguage.PL => "Polish",
-            QuizLanguage.EN => "English",
-            _ => "Polish"
+            Part.FromText(prompt)
         };
 
-        var instructionPrompt = string.Format(GeminiAIPrompts.InstructionPromptTemplate, request.QuestionCount, languageName);
-
-        if (!string.IsNullOrWhiteSpace(request.AdditionalInstructions))
+        if (files != null)
         {
-            instructionPrompt += string.Format(GeminiAIPrompts.AdditionalInstructionsTemplate, request.AdditionalInstructions);
-        }
-
-        parts.Add(Part.FromText(instructionPrompt));
-
-        if (request.Files != null)
-        {
-            foreach (var file in request.Files)
+            foreach (var file in files)
             {
                 using var ms = new MemoryStream();
                 await file.Stream.CopyToAsync(ms);
@@ -168,59 +129,6 @@ public class GeminiAIClient(Client client, IMapper mapper, IConfiguration config
         return new Content
         {
             Parts = parts
-        };
-    }
-
-    private static Schema BuildQuizSchema()
-    {
-        var optionSchema = new Schema
-        {
-            Type = Google.GenAI.Types.Type.Object,
-            Required = new List<string> { GeminiAISchemas.PropertyContent, GeminiAISchemas.PropertyIsCorrect },
-            Properties = new Dictionary<string, Schema>
-            {
-                { GeminiAISchemas.PropertyContent, new Schema { Type = Google.GenAI.Types.Type.String, Description = GeminiAISchemas.OptionContentDescription } },
-                { GeminiAISchemas.PropertyIsCorrect, new Schema { Type = Google.GenAI.Types.Type.Boolean, Description = GeminiAISchemas.OptionIsCorrectDescription } }
-            }
-        };
-
-        var allowedQuestionTypes = Enum.GetNames<QuestionType>().ToList();
-
-        var questionSchema = new Schema
-        {
-            Type = Google.GenAI.Types.Type.Object,
-            Required = new List<string> { GeminiAISchemas.PropertyContent, GeminiAISchemas.PropertyQuestionType, GeminiAISchemas.PropertyPoints, GeminiAISchemas.PropertyOptions },
-            Properties = new Dictionary<string, Schema>
-            {
-                { GeminiAISchemas.PropertyContent, new Schema { Type = Google.GenAI.Types.Type.String, Description = GeminiAISchemas.QuestionContentDescription } },
-                { GeminiAISchemas.PropertyQuestionType, new Schema {
-                    Type = Google.GenAI.Types.Type.String,
-                    Description = string.Format(GeminiAISchemas.QuestionTypeDescriptionTemplate, string.Join(", ", allowedQuestionTypes)),
-                    Enum = allowedQuestionTypes
-                } },
-                { GeminiAISchemas.PropertyPoints, new Schema { Type = Google.GenAI.Types.Type.Number, Description = GeminiAISchemas.QuestionPointsDescription } },
-                { GeminiAISchemas.PropertyOptions, new Schema {
-                    Type = Google.GenAI.Types.Type.Array,
-                    Items = optionSchema,
-                    Description = GeminiAISchemas.QuestionOptionsDescription
-                } }
-            }
-        };
-
-        return new Schema
-        {
-            Type = Google.GenAI.Types.Type.Object,
-            Required = new List<string> { GeminiAISchemas.PropertyTitle, GeminiAISchemas.PropertyDescription, GeminiAISchemas.PropertyQuestions },
-            Properties = new Dictionary<string, Schema>
-            {
-                { GeminiAISchemas.PropertyTitle, new Schema { Type = Google.GenAI.Types.Type.String, Description = GeminiAISchemas.QuizTitleDescription } },
-                { GeminiAISchemas.PropertyDescription, new Schema { Type = Google.GenAI.Types.Type.String, Description = GeminiAISchemas.QuizDescriptionDescription } },
-                { GeminiAISchemas.PropertyQuestions, new Schema {
-                    Type = Google.GenAI.Types.Type.Array,
-                    Items = questionSchema,
-                    Description = GeminiAISchemas.QuizQuestionsDescription
-                } }
-            }
         };
     }
 }

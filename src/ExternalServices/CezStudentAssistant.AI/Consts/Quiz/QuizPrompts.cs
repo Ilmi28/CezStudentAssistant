@@ -1,6 +1,6 @@
-namespace CezStudentAssistant.AI.Consts;
+namespace CezStudentAssistant.AI.Consts.Quiz;
 
-internal static class GeminiAIPrompts
+public static class QuizPrompts
 {
     public const string InstructionPromptTemplate = """
         You are an expert educational assistant. Your task is to generate a high-quality quiz based on the provided content.
@@ -8,6 +8,7 @@ internal static class GeminiAIPrompts
         All questions must be relevant to the provided files or context.
         The entire quiz (title, description, questions, and options) must be written in the following language: {1}.
         """;
+
     public const string AdditionalInstructionsTemplate = """
 
         [SYSTEM CRITICAL - Additional User Constraints]:

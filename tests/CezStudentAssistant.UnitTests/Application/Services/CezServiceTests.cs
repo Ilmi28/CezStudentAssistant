@@ -1,6 +1,5 @@
-using CezStudentAssistant.Application.Consts;
-using CezStudentAssistant.Application.Enums;
 using CezStudentAssistant.Application.Dtos.Cez;
+using CezStudentAssistant.Application.Enums;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
@@ -28,7 +27,7 @@ public class CezServiceTests
     private IFileService _fileService = null!;
     private IJobScheduler _jobScheduler = null!;
     private IJobNotificationService _notificationService = null!;
-    private ICezSyncJobRepository _cezSyncJobRepository = null!;
+    private IJobRepository _cezSyncJobRepository = null!;
     private CezService _sut = null!;
 
     [SetUp]
@@ -43,17 +42,17 @@ public class CezServiceTests
         _cezResourceRepository = Substitute.For<ICezResourceRepository>();
         _jobScheduler = Substitute.For<IJobScheduler>();
         _notificationService = Substitute.For<IJobNotificationService>();
-        _cezSyncJobRepository = Substitute.For<ICezSyncJobRepository>();
+        _cezSyncJobRepository = Substitute.For<IJobRepository>();
 
         _unitOfWork.Repository<IUserRepository>().Returns(_userRepository);
         _unitOfWork.Repository<ICezUserRepository>().Returns(_cezUserRepository);
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_cezResourceRepository);
-        _unitOfWork.Repository<ICezSyncJobRepository>().Returns(_cezSyncJobRepository);
+        _unitOfWork.Repository<IJobRepository>().Returns(_cezSyncJobRepository);
 
-        var existingJob = new CezSyncJob { JobId = "test-job-id", UserId = Guid.NewGuid(), Status = Domain.Enums.JobStatus.Enqueued };
-        var mockJobDbSet = new List<CezSyncJob> { existingJob }.BuildMockDbSet();
-        _cezSyncJobRepository.Find(Arg.Any<Expression<Func<CezSyncJob, bool>>>())
+        var existingJob = new Job { JobId = "test-job-id", UserId = Guid.NewGuid(), Status = Domain.Enums.JobStatus.Enqueued };
+        var mockJobDbSet = new List<Job> { existingJob }.BuildMockDbSet();
+        _cezSyncJobRepository.Find(Arg.Any<Expression<Func<Job, bool>>>())
             .Returns(x => mockJobDbSet);
 
         _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler, _notificationService);
@@ -262,7 +261,7 @@ public class CezServiceTests
         Func<Task> act = () => _sut.SyncUserCourses(userId, CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
-        
+
         await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
         await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Failed, Arg.Any<CancellationToken>());
     }
@@ -281,7 +280,7 @@ public class CezServiceTests
         Func<Task> act = () => _sut.SyncUserCourses(userId, CancellationToken.None);
 
         await act.Should().ThrowAsync<BadRequestException>();
-        
+
         await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
         await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Failed, Arg.Any<CancellationToken>());
     }
@@ -346,7 +345,7 @@ public class CezServiceTests
         user.Courses.Should().Contain(existingCourse);
 
         await _unitOfWork.Received().SaveChangesAsync(Arg.Any<CancellationToken>());
-        
+
         await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Processing, Arg.Any<CancellationToken>());
         await _notificationService.Received(1).SendJobStatusUpdateAsync(userId, "test-job-id", Domain.Enums.JobStatus.Succeeded, Arg.Any<CancellationToken>());
     }
@@ -448,12 +447,12 @@ public class CezServiceTests
         var timeModified = new DateTime(2026, 1, 1, 13, 0, 0, DateTimeKind.Utc);
         var incomingContent = new List<CezCourseContent>
         {
-            new CezCourseContent 
-            { 
-                FileName = "file.pdf", 
-                Type = CezResourceType.File, 
-                MimeType = "application/pdf", 
-                FileUrl = "url", 
+            new CezCourseContent
+            {
+                FileName = "file.pdf",
+                Type = CezResourceType.File,
+                MimeType = "application/pdf",
+                FileUrl = "url",
                 ModuleId = 123,
                 TimeCreated = timeCreated,
                 TimeModified = timeModified
@@ -477,17 +476,17 @@ public class CezServiceTests
         await _sut.SyncCourseContent(request, CancellationToken.None);
 
         // Assert
-        await _cezResourceRepository.Received(1).AddAsync(Arg.Is<Resource>(r => 
-            r.DisplayName == "file.pdf" && 
-            r.MimeType == "application/pdf" && 
-            r.CourseId == course.Id && 
+        await _cezResourceRepository.Received(1).AddAsync(Arg.Is<Resource>(r =>
+            r.DisplayName == "file.pdf" &&
+            r.MimeType == "application/pdf" &&
+            r.CourseId == course.Id &&
             r.CezLastModified == timeModified), Arg.Any<CancellationToken>());
 
         await _fileService.Received(1).UploadAsync(
-            fileStream, 
-            Arg.Is<string>(s => s.StartsWith($"{course.Id}/123_")), 
-            "course-files", 
-            "application/pdf", 
+            fileStream,
+            Arg.Is<string>(s => s.StartsWith($"{course.Id}/123_")),
+            "course-files",
+            "application/pdf",
             Arg.Any<CancellationToken>());
 
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -502,12 +501,12 @@ public class CezServiceTests
         var timeModified = new DateTime(2026, 1, 1, 13, 0, 0, DateTimeKind.Utc);
         var incomingContent = new List<CezCourseContent>
         {
-            new CezCourseContent 
-            { 
-                FileName = "file.pdf", 
-                Type = CezResourceType.File, 
-                MimeType = "application/pdf", 
-                FileUrl = "url", 
+            new CezCourseContent
+            {
+                FileName = "file.pdf",
+                Type = CezResourceType.File,
+                MimeType = "application/pdf",
+                FileUrl = "url",
                 ModuleId = 123,
                 TimeCreated = timeCreated,
                 TimeModified = timeModified
@@ -542,12 +541,12 @@ public class CezServiceTests
         var newTimeModified = new DateTime(2026, 1, 2, 12, 0, 0, DateTimeKind.Utc);
         var incomingContent = new List<CezCourseContent>
         {
-            new CezCourseContent 
-            { 
-                FileName = "file_updated.pdf", 
-                Type = CezResourceType.File, 
-                MimeType = "application/pdf", 
-                FileUrl = "url", 
+            new CezCourseContent
+            {
+                FileName = "file_updated.pdf",
+                Type = CezResourceType.File,
+                MimeType = "application/pdf",
+                FileUrl = "url",
                 ModuleId = 123,
                 TimeCreated = timeCreated,
                 TimeModified = newTimeModified
@@ -573,15 +572,15 @@ public class CezServiceTests
 
         // Assert
         await _cezResourceRepository.DidNotReceiveWithAnyArgs().AddAsync(null!, default);
-        
+
         existingResource.DisplayName.Should().Be("file_updated.pdf");
         existingResource.CezLastModified.Should().Be(newTimeModified);
 
         await _fileService.Received(1).UploadAsync(
-            fileStream, 
-            Arg.Is<string>(s => s.StartsWith($"{course.Id}/123_")), 
-            "course-files", 
-            "application/pdf", 
+            fileStream,
+            Arg.Is<string>(s => s.StartsWith($"{course.Id}/123_")),
+            "course-files",
+            "application/pdf",
             Arg.Any<CancellationToken>());
 
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());

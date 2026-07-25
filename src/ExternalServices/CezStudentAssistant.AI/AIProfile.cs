@@ -3,11 +3,9 @@ using CezStudentAssistant.AI.Responses.Quiz;
 using CezStudentAssistant.Application.Enums;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("CezStudentAssistant.UnitTests")]
-
 namespace CezStudentAssistant.AI;
 
-internal class AIProfile : Profile
+public class AIProfile : Profile
 {
     public AIProfile()
     {

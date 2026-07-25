@@ -49,5 +49,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<QuizAttempt> QuizAttempts { get; set; }
     public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
     public DbSet<Resource> Resources { get; set; }
-    public DbSet<CezSyncJob> CezSyncJobs { get; set; }
+    public DbSet<Job> Jobs { get; set; }
 }

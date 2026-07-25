@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Application.Behaviors;
+using CezStudentAssistant.Application.Behaviors;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Services;
 using CezStudentAssistant.Application.Validators;

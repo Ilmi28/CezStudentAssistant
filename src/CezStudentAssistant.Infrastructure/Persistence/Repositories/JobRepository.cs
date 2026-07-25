@@ -4,9 +4,9 @@ using CezStudentAssistant.Infrastructure.Persistence.Data;
 
 namespace CezStudentAssistant.Infrastructure.Persistence.Repositories;
 
-public class CezSyncJobRepository : GenericRepository<CezSyncJob>, ICezSyncJobRepository
+public class JobRepository : GenericRepository<Job>, IJobRepository
 {
-    public CezSyncJobRepository(AppDbContext context) : base(context)
+    public JobRepository(AppDbContext context) : base(context)
     {
     }
 }

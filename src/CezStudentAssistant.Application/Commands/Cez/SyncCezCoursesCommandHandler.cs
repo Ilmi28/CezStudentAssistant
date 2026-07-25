@@ -24,21 +24,21 @@ public class SyncCezCoursesCommandHandler(
 
     protected override async Task ExecuteAsync(SyncCezCoursesCommand command, CancellationToken ct)
     {
-        var syncJob = new CezSyncJob
+        var syncJob = new Job
         {
             UserId = command.UserId,
             JobId = "pending", // Will be updated after enqueue
             Status = Domain.Enums.JobStatus.Enqueued
         };
 
-        await unitOfWork.Repository<ICezSyncJobRepository>().AddAsync(syncJob, ct);
+        await unitOfWork.Repository<IJobRepository>().AddAsync(syncJob, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         var jobId = jobScheduler.Enqueue<ICezService>(service => service.SyncUserCourses(command.UserId, ct));
 
         syncJob.JobId = jobId;
         await unitOfWork.SaveChangesAsync(ct);
-        
+
         await notificationService.SendJobStatusUpdateAsync(command.UserId, jobId, Domain.Enums.JobStatus.Enqueued, ct);
     }
 }

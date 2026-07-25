@@ -51,7 +51,7 @@ public class CezService(
 
     public async Task SyncUserCourses(Guid userId, CancellationToken ct = default)
     {
-        var cezJobRepo = unitOfWork.Repository<ICezSyncJobRepository>();
+        var cezJobRepo = unitOfWork.Repository<IJobRepository>();
         var job = await cezJobRepo.Find(j => j.UserId == userId).OrderByDescending(j => j.CreatedAt).FirstOrDefaultAsync(ct);
         if (job == null)
             throw new AppException(new ApiMessage(null, CezMessagesConsts.SyncCoursesError));
@@ -76,7 +76,7 @@ public class CezService(
         }
     }
 
-    private async Task UpdateJobStatusAsync(Guid userId, CezSyncJob job, JobStatus status, CancellationToken ct)
+    private async Task UpdateJobStatusAsync(Guid userId, Job job, JobStatus status, CancellationToken ct)
     {
         job.Status = status;
         await unitOfWork.SaveChangesAsync(ct);

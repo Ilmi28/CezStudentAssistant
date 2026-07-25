@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using CezStudentAssistant.AI;
+using CezStudentAssistant.AI.Services;
 using CezStudentAssistant.AI.Responses.Quiz;
 using CezStudentAssistant.Application.Enums;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
@@ -16,18 +17,20 @@ namespace CezStudentAssistant.UnitTests;
 [TestFixture]
 public class GeminiAIClientTests
 {
-    private IMapper _mapper;
     private IConfiguration _configuration;
-    private ILogger<GeminiAIClient> _logger;
+    private ILogger<GeminiAIClient> _clientLogger;
+    private ILogger<AIQuizService> _serviceLogger;
     private Client _client;
+    private IAIQuizService _quizService;
 
     [SetUp]
     public void SetUp()
     {
-        _mapper = Substitute.For<IMapper>();
         _configuration = Substitute.For<IConfiguration>();
-        _logger = Substitute.For<ILogger<GeminiAIClient>>();
+        _clientLogger = Substitute.For<ILogger<GeminiAIClient>>();
+        _serviceLogger = Substitute.For<ILogger<AIQuizService>>();
         _client = new Client(apiKey: "dummy-api-key");
+        _quizService = Substitute.For<IAIQuizService>();
     }
 
     [TearDown]
@@ -37,10 +40,18 @@ public class GeminiAIClientTests
     }
 
     [Test]
-    public void Constructor_ShouldInitializeCorrectly()
+    public void GeminiAIClient_Constructor_ShouldInitializeCorrectly()
     {
-        var aiClient = new GeminiAIClient(_client, _mapper, _configuration, _logger);
+        var aiClient = new GeminiAIClient(_client, _configuration, _clientLogger, _quizService);
         Assert.That(aiClient, Is.Not.Null);
+    }
+
+    [Test]
+    public void AIQuizService_Constructor_ShouldInitializeCorrectly()
+    {
+        var mapper = Substitute.For<IMapper>();
+        var service = new AIQuizService(mapper, _serviceLogger);
+        Assert.That(service, Is.Not.Null);
     }
 
     [Test]
