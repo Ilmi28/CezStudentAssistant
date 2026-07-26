@@ -20,6 +20,7 @@
     <Project Path="src/ExternalServices/CezStudentAssistant.Cez/CezStudentAssistant.Cez.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/CezStudentAssistant.ArchitectureTests/CezStudentAssistant.ArchitectureTests.csproj" />
     <Project Path="tests/CezStudentAssistant.IntegrationTests/CezStudentAssistant.IntegrationTests.csproj" />
     <Project Path="tests/CezStudentAssistant.UnitTests/CezStudentAssistant.UnitTests.csproj" />
   </Folder>
