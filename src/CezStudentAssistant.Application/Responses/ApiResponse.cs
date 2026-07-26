@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 namespace CezStudentAssistant.Application.Responses;
 
@@ -11,9 +11,18 @@ public class ApiResponse
 
     public HttpStatusCode StatusCode { get; set; }
 
-    public string ApplicationCode { get; set; } = string.Empty;
-
     public string Message { get; set; } = string.Empty;
+
+    public ApiResponse()
+    {
+    }
+
+    protected ApiResponse(bool success, HttpStatusCode statusCode, ApiMessage message)
+    {
+        Success = success;
+        StatusCode = statusCode;
+        Message = message.Message;
+    }
 }
 
 /// <summary>
@@ -25,4 +34,14 @@ public class ApiResponse
 public class ApiResponse<T> : ApiResponse
 {
     public T? Data { get; set; }
+
+    public ApiResponse()
+    {
+    }
+
+    protected ApiResponse(bool success, HttpStatusCode statusCode, ApiMessage message, T? data = default)
+        : base(success, statusCode, message)
+    {
+        Data = data;
+    }
 }

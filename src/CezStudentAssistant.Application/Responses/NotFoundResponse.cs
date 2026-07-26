@@ -1,14 +1,11 @@
-﻿using System.Net;
+using System.Net;
 
 namespace CezStudentAssistant.Application.Responses;
 
 public class NotFoundResponse : ApiResponse
 {
     public NotFoundResponse(ApiMessage message)
+        : base(false, HttpStatusCode.NotFound, message)
     {
-        Success = false;
-        StatusCode = HttpStatusCode.NotFound;
-        Message = message.Message;
-        ApplicationCode = $"{message.Source}_NOT_FOUND";
     }
 }

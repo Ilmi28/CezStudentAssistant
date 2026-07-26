@@ -1,12 +1,9 @@
-﻿namespace CezStudentAssistant.Application.Responses;
+namespace CezStudentAssistant.Application.Responses;
 
 public class UnauthorizedResponse : ApiResponse
 {
     public UnauthorizedResponse(ApiMessage message)
+        : base(false, System.Net.HttpStatusCode.Unauthorized, message)
     {
-        Success = false;
-        StatusCode = System.Net.HttpStatusCode.Unauthorized;
-        Message = message.Message;
-        ApplicationCode = $"{message.Source}_UNAUTHORIZED";
     }
 }

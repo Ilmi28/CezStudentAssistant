@@ -1,12 +1,9 @@
-﻿namespace CezStudentAssistant.Application.Responses;
+namespace CezStudentAssistant.Application.Responses;
 
 public class BadGatewayResponse : ApiResponse
 {
     public BadGatewayResponse(ApiMessage message)
+        : base(false, System.Net.HttpStatusCode.BadGateway, message)
     {
-        Success = false;
-        StatusCode = System.Net.HttpStatusCode.BadGateway;
-        Message = message.Message;
-        ApplicationCode = $"{message.Source}_BAD_GATEWAY";
     }
 }

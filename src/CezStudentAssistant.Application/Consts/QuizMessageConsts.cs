@@ -2,9 +2,9 @@ namespace CezStudentAssistant.Application.Consts;
 
 public static class QuizMessageConsts
 {
-    public const string GetQuizzesSuccess = "Pomyślnie pobrano listy quizów.";
-    public const string GetQuizzesError = "Wystąpił błąd podczas pobierania quizów.";
-    public const string GetQuizSuccess = "Pomyślnie pobrano szczegóły quizu.";
-    public const string GetQuizError = "Wystąpił błąd podczas pobierania szczegółów quizu.";
-    public const string QuizNotFound = "Nie znaleziono żądanego quizu.";
+    public const string GetQuizzesSuccess = "Successfully retrieved list of quizzes.";
+    public const string GetQuizzesError = "An error occurred while retrieving quizzes.";
+    public const string GetQuizSuccess = "Successfully retrieved quiz details.";
+    public const string GetQuizError = "An error occurred while retrieving quiz details.";
+    public const string QuizNotFound = "Requested quiz not found.";
 }

@@ -1,4 +1,5 @@
 using CezStudentAssistant.Domain.Entities;
+using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
 using CezStudentAssistant.Infrastructure.Persistence.Repositories;
 using FluentAssertions;
@@ -91,7 +92,7 @@ public class EntityRepositoriesTests
         { 
             User = user,
             Course = course,
-            Score = 10.5m 
+            Status = QuizAttemptStatus.Completed
         };
 
         await repository.AddAsync(entity);
@@ -99,7 +100,7 @@ public class EntityRepositoriesTests
 
         var retrieved = await repository.GetByIdAsync(entity.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.Score.Should().Be(10.5m);
+        retrieved!.Status.Should().Be(QuizAttemptStatus.Completed);
     }
 
     [Test]

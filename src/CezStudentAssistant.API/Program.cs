@@ -142,7 +142,7 @@ public class Program
                     {
                         NotFoundException => new NotFoundResponse(appException.ApiMessage),
                         ConflictException => new ConflictResponse(appException.ApiMessage),
-                        ApiValidationException => new ValidationResponse(appException.ApiMessage, ((ApiValidationException)appException).Errors),
+                        ApiValidationException validationException => new ValidationResponse(validationException.ApiMessage, validationException.Errors),
                         BadGatewayException => new BadGatewayResponse(appException.ApiMessage),
                         UnauthorizedException => new UnauthorizedResponse(appException.ApiMessage),
                         BadRequestException => new BadRequestResponse(appException.ApiMessage),

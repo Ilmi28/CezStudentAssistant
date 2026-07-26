@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 namespace CezStudentAssistant.Application.Responses;
 
@@ -7,11 +7,8 @@ public class ValidationResponse : ApiResponse
     public IEnumerable<ValidationError> Errors { get; set; }
 
     public ValidationResponse(ApiMessage message, IEnumerable<ValidationError> errors)
+        : base(false, HttpStatusCode.BadRequest, message)
     {
-        Success = false;
-        StatusCode = HttpStatusCode.BadRequest;
-        Message = message.Message;
-        ApplicationCode = $"{message.Source}_VALIDATION";
         Errors = errors;
     }
 }

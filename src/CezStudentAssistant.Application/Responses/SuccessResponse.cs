@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 namespace CezStudentAssistant.Application.Responses;
 
@@ -11,12 +11,8 @@ public class SuccessResponse<T> : ApiResponse<T>
     }
 
     public SuccessResponse(ApiMessage message, T data)
+        : base(true, HttpStatusCode.OK, message, data)
     {
-        Success = true;
-        StatusCode = HttpStatusCode.OK;
-        Message = message.Message;
-        Data = data;
-        ApplicationCode = $"{message.Source}_SUCCESS";
     }
 }
 
@@ -29,10 +25,7 @@ public class SuccessResponse : ApiResponse
     }
 
     public SuccessResponse(ApiMessage message)
+        : base(true, HttpStatusCode.OK, message)
     {
-        Success = true;
-        StatusCode = HttpStatusCode.OK;
-        Message = message.Message;
-        ApplicationCode = $"{message.Source}_SUCCESS";
     }
 }

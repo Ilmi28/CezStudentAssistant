@@ -1,15 +1,12 @@
-﻿using System.Net;
+using System.Net;
 
 namespace CezStudentAssistant.Application.Responses;
 
 public class ServerErrorResponse : ApiResponse
 {
     public ServerErrorResponse(ApiMessage message)
+        : base(false, HttpStatusCode.InternalServerError, message)
     {
-        Success = false;
-        StatusCode = HttpStatusCode.InternalServerError;
-        Message = message.Message;
-        ApplicationCode = $"{message.Source}_INTERNAL_SERVER_ERROR";
     }
 
     public ServerErrorResponse()
@@ -17,6 +14,5 @@ public class ServerErrorResponse : ApiResponse
         Success = false;
         StatusCode = HttpStatusCode.InternalServerError;
         Message = "An unexpected error occurred while processing your request. Please try again later.";
-        ApplicationCode = "INTERNAL_SERVER_ERROR";
     }
 }
