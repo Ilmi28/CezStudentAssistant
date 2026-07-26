@@ -1,9 +1,10 @@
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
+using CezStudentAssistant.Infrastructure.Persistence.Repositories;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
-namespace CezStudentAssistant.UnitTests.Infrastructure.Persistence.Data;
+namespace CezStudentAssistant.UnitTests.Infrastructure.Persistence.Repositories;
 
 public class GenericRepositoryTests
 {

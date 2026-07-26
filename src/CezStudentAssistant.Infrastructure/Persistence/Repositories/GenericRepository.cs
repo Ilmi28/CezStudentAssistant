@@ -1,9 +1,10 @@
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
+using CezStudentAssistant.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace CezStudentAssistant.Infrastructure.Persistence.Data;
+namespace CezStudentAssistant.Infrastructure.Persistence.Repositories;
 
 public class GenericRepository<TEntity>(AppDbContext context) : IGenericRepository<TEntity>
     where TEntity : BaseEntity

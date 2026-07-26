@@ -2,6 +2,7 @@ using AutoMapper;
 using CezStudentAssistant.AI.Consts.Quiz;
 using CezStudentAssistant.AI.Responses.Quiz;
 using CezStudentAssistant.Application.Enums;
+using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
 using Google.GenAI.Types;

@@ -191,7 +191,7 @@ public class AIQuizEndpointsTests
                 new AIQuestion
                 {
                     Content = "What is 2+2?",
-                    QuestionType = CezStudentAssistant.Application.Enums.QuestionType.SingleChoice,
+                    QuestionType = CezStudentAssistant.Domain.Enums.QuestionType.SingleChoice,
                     Points = 1,
                     Options = new List<AIQuestionOption>
                     {

@@ -2,7 +2,7 @@ using NUnit.Framework;
 using CezStudentAssistant.AI;
 using CezStudentAssistant.AI.Services;
 using CezStudentAssistant.AI.Responses.Quiz;
-using CezStudentAssistant.Application.Enums;
+using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +12,7 @@ using Google.GenAI;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CezStudentAssistant.UnitTests;
+namespace CezStudentAssistant.UnitTests.AI;
 
 [TestFixture]
 public class GeminiAIClientTests

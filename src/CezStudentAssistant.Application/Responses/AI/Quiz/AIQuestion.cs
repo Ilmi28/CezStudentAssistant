@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Application.Enums;
+using CezStudentAssistant.Domain.Enums;
 
 namespace CezStudentAssistant.Application.Responses.AI.Quiz;
 

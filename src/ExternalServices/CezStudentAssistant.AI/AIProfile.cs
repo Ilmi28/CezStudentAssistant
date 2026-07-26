@@ -1,6 +1,6 @@
 using AutoMapper;
 using CezStudentAssistant.AI.Responses.Quiz;
-using CezStudentAssistant.Application.Enums;
+using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
 
 namespace CezStudentAssistant.AI;

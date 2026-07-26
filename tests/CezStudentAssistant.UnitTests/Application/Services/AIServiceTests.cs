@@ -103,7 +103,7 @@ public class AIServiceTests
                 new AIQuestion
                 {
                     Content = "Question 1?",
-                    QuestionType = CezStudentAssistant.Application.Enums.QuestionType.SingleChoice,
+                    QuestionType = QuestionType.SingleChoice,
                     Points = 1,
                     Options = new List<AIQuestionOption>
                     {
