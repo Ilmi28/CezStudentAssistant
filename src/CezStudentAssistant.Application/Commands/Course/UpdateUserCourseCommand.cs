@@ -18,8 +18,8 @@ public class UpdateUserCourseCommand : ICommand, IUserRequest
 
 public class UpdateUserCourseCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandler<UpdateUserCourseCommand>
 {
-    protected override ApiMessage SuccessMessage => new(this, CourseMessageConsts.UpdateCourseSuccess);
-    protected override ApiMessage ErrorMessage => new(this, CourseMessageConsts.UpdateCourseError);
+    protected override ApiMessage SuccessMessage => CourseMessageConsts.UpdateCourseSuccess;
+    protected override ApiMessage ErrorMessage => CourseMessageConsts.UpdateCourseError;
 
     protected override async Task ExecuteAsync(UpdateUserCourseCommand command, CancellationToken ct)
     {
@@ -28,17 +28,17 @@ public class UpdateUserCourseCommandHandler(IUnitOfWork unitOfWork) : BaseComman
 
         if (course == null)
         {
-            throw new NotFoundException(new ApiMessage(this, CourseMessageConsts.CourseNotFound));
+            throw new NotFoundException(CourseMessageConsts.CourseNotFound);
         }
 
         if (course.Type == CourseType.Cez)
         {
-            throw new BadRequestException(new ApiMessage(this, CourseMessageConsts.CourseInvalidType));
+            throw new BadRequestException(CourseMessageConsts.CourseInvalidType);
         }
 
         if (!course.Users.Any(u => u.Id == command.UserId))
         {
-            throw new UnauthorizedException(new ApiMessage(this, CourseMessageConsts.CourseAccessDenied));
+            throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
         course.Name = command.Name;

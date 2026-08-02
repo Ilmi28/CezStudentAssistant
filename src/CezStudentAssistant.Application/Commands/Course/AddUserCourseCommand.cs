@@ -16,8 +16,8 @@ public class AddUserCourseCommand : ICommand<Guid>, IUserRequest
 
 public class AddUserCourseCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandler<AddUserCourseCommand, Guid>
 {
-    protected override ApiMessage SuccessMessage => new(this, CourseMessageConsts.CreateCourseSuccess);
-    protected override ApiMessage ErrorMessage => new(this, CourseMessageConsts.CreateCourseError);
+    protected override ApiMessage SuccessMessage => CourseMessageConsts.CreateCourseSuccess;
+    protected override ApiMessage ErrorMessage => CourseMessageConsts.CreateCourseError;
 
     protected override async Task<Guid> ExecuteAsync(AddUserCourseCommand command, CancellationToken ct)
     {

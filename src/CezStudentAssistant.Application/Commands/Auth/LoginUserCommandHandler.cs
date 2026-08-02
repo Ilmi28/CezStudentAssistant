@@ -16,9 +16,9 @@ public class LoginUserCommandHandler(
     ICurrentUserService currentUserService,
     ITokenService tokenService) : BaseCommandHandler<LoginUserCommand>
 {
-    protected override ApiMessage SuccessMessage => new ApiMessage(this, AuthMessagesConsts.LoginSuccess);
+    protected override ApiMessage SuccessMessage => AuthMessagesConsts.LoginSuccess;
 
-    protected override ApiMessage ErrorMessage => new ApiMessage(this, AuthMessagesConsts.LoginError);
+    protected override ApiMessage ErrorMessage => AuthMessagesConsts.LoginError;
 
     protected async override Task ExecuteAsync(LoginUserCommand command, CancellationToken ct)
     {
@@ -26,7 +26,7 @@ public class LoginUserCommandHandler(
         var user = await userRepo.GetSingleAsync(x => x.UserName == command.UserName, ct);
 
         if (user == null || user.PasswordHash == null || !passwordService.VerifyPassword(command.Password, user.PasswordHash))
-            throw new UnauthorizedException(new ApiMessage(this, AuthMessagesConsts.LoginInvalidCredentials));
+            throw new UnauthorizedException(AuthMessagesConsts.LoginInvalidCredentials);
 
         var refreshToken = await tokenService.HandleRefreshToken(user.Id, ct);
         var accessToken = tokenService.GenerateAccessToken(user.Id);

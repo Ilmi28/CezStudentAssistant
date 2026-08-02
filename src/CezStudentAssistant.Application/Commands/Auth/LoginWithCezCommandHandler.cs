@@ -17,9 +17,9 @@ public class LoginWithCezCommandHandler(
     IUnitOfWork unitOfWork,
     IPublisher publisher) : BaseCommandHandler<LoginWithCezCommand>
 {
-    protected override ApiMessage SuccessMessage => new ApiMessage(this, CezMessagesConsts.LoginSuccess);
+    protected override ApiMessage SuccessMessage => CezMessagesConsts.LoginSuccess;
 
-    protected override ApiMessage ErrorMessage => new ApiMessage(this, CezMessagesConsts.LoginError);
+    protected override ApiMessage ErrorMessage => CezMessagesConsts.LoginError;
 
     protected override async Task ExecuteAsync(LoginWithCezCommand command, CancellationToken ct)
     {

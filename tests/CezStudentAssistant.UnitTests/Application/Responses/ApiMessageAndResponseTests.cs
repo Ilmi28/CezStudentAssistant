@@ -212,4 +212,28 @@ public class ApiMessageAndResponseTests
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         response.Errors.Should().ContainSingle().Which.PropertyName.Should().Be("Username");
     }
+
+    [Test]
+    public void ApiMessage_ShouldImplicitlyConvertFromString()
+    {
+        // Act
+        ApiMessage message = "Implicit conversion works!";
+
+        // Assert
+        message.Source.Should().Be("SYSTEM");
+        message.Message.Should().Be("Implicit conversion works!");
+        message.Code.Should().Be("IMPLICIT_CONVERSION_WORKS");
+    }
+
+    [Test]
+    public void ApiMessage_ShouldConstructWithoutSource()
+    {
+        // Act
+        var message = new ApiMessage("Without source message");
+
+        // Assert
+        message.Source.Should().Be("SYSTEM");
+        message.Message.Should().Be("Without source message");
+        message.Code.Should().Be("WITHOUT_SOURCE_MESSAGE");
+    }
 }

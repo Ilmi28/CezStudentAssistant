@@ -18,9 +18,9 @@ public class SyncCezCoursesCommandHandler(
     IJobScheduler jobScheduler,
     IJobService jobService) : BaseCommandHandler<SyncCezCoursesCommand>
 {
-    protected override ApiMessage SuccessMessage => new(this, CezMessagesConsts.SyncCoursesSuccess);
+    protected override ApiMessage SuccessMessage => CezMessagesConsts.SyncCoursesSuccess;
 
-    protected override ApiMessage ErrorMessage => new(this, CezMessagesConsts.GetUserCoursesError);
+    protected override ApiMessage ErrorMessage => CezMessagesConsts.GetUserCoursesError;
 
     protected override async Task ExecuteAsync(SyncCezCoursesCommand command, CancellationToken ct)
     {

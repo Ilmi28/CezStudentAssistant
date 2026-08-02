@@ -30,7 +30,7 @@ public class CezService(
         });
 
         if (!loginResponse.Success || loginResponse.Data is null)
-            throw new BadRequestException(new ApiMessage(this, loginResponse.Message ?? CezMessagesConsts.LoginError));
+            throw new BadRequestException(loginResponse.Message ?? CezMessagesConsts.LoginError);
 
         var userInfoResponse = await cezApiClient.GetSiteInfo(new CezBaseRequest
         {
@@ -38,7 +38,7 @@ public class CezService(
         });
 
         if (!userInfoResponse.Success || userInfoResponse.Data is null)
-            throw new BadRequestException(new ApiMessage(this, userInfoResponse.Message ?? CezMessagesConsts.GetSiteInfoError));
+            throw new BadRequestException(userInfoResponse.Message ?? CezMessagesConsts.GetSiteInfoError);
 
         var cezUserInfo = new CezUserInfo
         {
@@ -53,7 +53,7 @@ public class CezService(
     {
         var job = await jobService.GetLatestJobAsync(userId, JobType.CezSync, ct);
         if (job == null)
-            throw new AppException(new ApiMessage(null, CezMessagesConsts.SyncCoursesError));
+            throw new AppException(CezMessagesConsts.SyncCoursesError);
 
         await jobService.UpdateJobAsync(job, JobStatus.Processing, ct: ct);
         try
@@ -79,7 +79,7 @@ public class CezService(
     {
         var repo = unitOfWork.Repository<ICezUserRepository>();
         return await repo.GetSingleAsync(cu => cu.UserId == userId, ct)
-            ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+            ?? throw new NotFoundException(CezMessagesConsts.CezUserNotFound);
     }
 
     private async Task<List<CezCourse>> FetchExternalCoursesAsync(CezUser cezUser, CancellationToken ct)
@@ -93,7 +93,7 @@ public class CezService(
         var response = await cezApiClient.GetUserCourses(request);
 
         if (!response.Success || response.Data is null)
-            throw new BadRequestException(new ApiMessage(this, response.Message ?? CezMessagesConsts.GetUserCoursesError));
+            throw new BadRequestException(response.Message ?? CezMessagesConsts.GetUserCoursesError);
 
         return response.Data.ToList();
     }
@@ -102,7 +102,7 @@ public class CezService(
     {
         var repo = unitOfWork.Repository<IUserRepository>();
         return await repo.GetByIdAsync(userId, ct, includes: x => x.Courses)
-            ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezUserNotFound));
+            ?? throw new NotFoundException(CezMessagesConsts.CezUserNotFound);
     }
 
     private async Task SynchronizeCoursesAsync(User user, List<CezCourse> externalCourses, CancellationToken ct)
@@ -166,14 +166,14 @@ public class CezService(
         var courseContentResponse = await cezApiClient.GetCourseContent(courseRequest);
 
         if (!courseContentResponse.Success)
-            throw new BadRequestException(new ApiMessage(this, courseContentResponse.Message ?? CezMessagesConsts.GetCourseContentsError));
+            throw new BadRequestException(courseContentResponse.Message ?? CezMessagesConsts.GetCourseContentsError);
 
         if (courseContentResponse.Data is null || courseContentResponse.Data.Count == 0)
             return;
 
         var courseRepo = unitOfWork.Repository<ICourseRepository>();
         var course = await courseRepo.GetSingleAsync(x => x.CezExternalId == courseRequest.CourseId, cancellationToken)
-                    ?? throw new NotFoundException(new ApiMessage(this, CezMessagesConsts.CezCourseNotFound));
+                    ?? throw new NotFoundException(CezMessagesConsts.CezCourseNotFound);
 
         var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
         var fileContents = courseContentResponse.Data.Where(x => x.Type == Enums.CezResourceType.File);
@@ -226,7 +226,7 @@ public class CezService(
             var user = new User
             {
                 UserName = siteInfoData.UserName
-                    ?? throw new BadRequestException(new ApiMessage(this, CezMessagesConsts.GetSiteInfoError))
+                    ?? throw new BadRequestException(CezMessagesConsts.GetSiteInfoError)
             };
 
             await cezUserRepo.AddAsync(

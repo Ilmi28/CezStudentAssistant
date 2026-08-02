@@ -21,9 +21,9 @@ public sealed class GetQuizByIdQuery : IQuery<QuizDetailsDto>, IUserRequest
 
 public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetQuizByIdQuery, QuizDetailsDto>
 {
-    protected override ApiMessage SuccessMessage => new(this, QuizMessageConsts.GetQuizSuccess);
+    protected override ApiMessage SuccessMessage => QuizMessageConsts.GetQuizSuccess;
 
-    protected override ApiMessage ErrorMessage => new(this, QuizMessageConsts.GetQuizError);
+    protected override ApiMessage ErrorMessage => QuizMessageConsts.GetQuizError;
 
     protected override async Task<QuizDetailsDto> ExecuteAsync(GetQuizByIdQuery query, CancellationToken ct)
     {
@@ -36,7 +36,7 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
             .FirstOrDefaultAsync(ct);
 
         if (quiz == null)
-            throw new NotFoundException(new ApiMessage(this, QuizMessageConsts.QuizNotFound));
+            throw new NotFoundException(QuizMessageConsts.QuizNotFound);
 
         return new QuizDetailsDto
         {

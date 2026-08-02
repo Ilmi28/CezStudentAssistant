@@ -7,6 +7,8 @@ public class QuizAttempt : BaseEntity
     public Guid UserId { get; set; }
     public Guid QuizId { get; set; }
     public QuizAttemptStatus Status { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime? ExpiresAt { get; set; }
 
     public ICollection<QuestionAnswer> Answers { get; set; } = new List<QuestionAnswer>();
     public Quiz Quiz { get; set; } = null!;

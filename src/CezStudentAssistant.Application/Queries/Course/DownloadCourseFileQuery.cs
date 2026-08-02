@@ -26,12 +26,12 @@ public class DownloadCourseFileQueryHandler(IUnitOfWork unitOfWork, IFileService
 
         if (course == null)
         {
-            throw new NotFoundException(new ApiMessage(this, CourseMessageConsts.CourseNotFound));
+            throw new NotFoundException(CourseMessageConsts.CourseNotFound);
         }
 
         if (!course.Users.Any(u => u.Id == request.UserId))
         {
-            throw new UnauthorizedException(new ApiMessage(this, CourseMessageConsts.CourseAccessDenied));
+            throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
         var resourceRepository = unitOfWork.Repository<ICezResourceRepository>();
@@ -39,7 +39,7 @@ public class DownloadCourseFileQueryHandler(IUnitOfWork unitOfWork, IFileService
 
         if (resource == null || resource.CourseId != request.CourseId)
         {
-            throw new NotFoundException(new ApiMessage(this, "File not found."));
+            throw new NotFoundException("File not found.");
         }
 
         var filePath = $"{course.Id}/{resource.Name}";

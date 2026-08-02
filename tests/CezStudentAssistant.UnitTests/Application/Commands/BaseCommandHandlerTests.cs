@@ -83,7 +83,7 @@ public class BaseCommandHandlerTests
         // Arrange
         var handler = new TestCommandHandler();
         var command = new TestCommand();
-        var originalAppException = new AppException(new ApiMessage(this, "Original Error"));
+        var originalAppException = new AppException("Original Error");
         handler.ExceptionToThrow = originalAppException;
 
         // Act
@@ -135,7 +135,7 @@ public class BaseCommandHandlerTests
         // Arrange
         var handler = new TestCommandHandlerWithResponse();
         var command = new TestCommandWithResponse();
-        var originalAppException = new AppException(new ApiMessage(this, "Original Error"));
+        var originalAppException = new AppException("Original Error");
         handler.ExceptionToThrow = originalAppException;
 
         // Act

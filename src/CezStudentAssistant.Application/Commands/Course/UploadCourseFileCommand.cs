@@ -21,8 +21,8 @@ public class UploadCourseFileCommand : ICommand<Guid>, IUserRequest
 
 public class UploadCourseFileCommandHandler(IUnitOfWork unitOfWork, IFileService fileService) : BaseCommandHandler<UploadCourseFileCommand, Guid>
 {
-    protected override ApiMessage SuccessMessage => new(this, CourseMessageConsts.UploadCourseFileSuccess);
-    protected override ApiMessage ErrorMessage => new(this, CourseMessageConsts.UploadCourseFileError);
+    protected override ApiMessage SuccessMessage => CourseMessageConsts.UploadCourseFileSuccess;
+    protected override ApiMessage ErrorMessage => CourseMessageConsts.UploadCourseFileError;
 
     protected override async Task<Guid> ExecuteAsync(UploadCourseFileCommand command, CancellationToken ct)
     {
@@ -31,17 +31,17 @@ public class UploadCourseFileCommandHandler(IUnitOfWork unitOfWork, IFileService
 
         if (course == null)
         {
-            throw new NotFoundException(new ApiMessage(this, CourseMessageConsts.CourseNotFound));
+            throw new NotFoundException(CourseMessageConsts.CourseNotFound);
         }
 
         if (course.Type == CourseType.Cez)
         {
-            throw new BadRequestException(new ApiMessage(this, CourseMessageConsts.CourseInvalidType));
+            throw new BadRequestException(CourseMessageConsts.CourseInvalidType);
         }
 
         if (!course.Users.Any(u => u.Id == command.UserId))
         {
-            throw new UnauthorizedException(new ApiMessage(this, CourseMessageConsts.CourseAccessDenied));
+            throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
         var resourceRepository = unitOfWork.Repository<ICezResourceRepository>();

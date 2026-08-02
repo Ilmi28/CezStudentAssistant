@@ -15,9 +15,9 @@ public class RegisterUserCommandHandler(
     IUnitOfWork unitOfWork,
     IPasswordService passwordService) : BaseCommandHandler<RegisterUserCommand>
 {
-    protected override ApiMessage SuccessMessage => new ApiMessage(this, AuthMessagesConsts.RegistrationSuccess);
+    protected override ApiMessage SuccessMessage => AuthMessagesConsts.RegistrationSuccess;
 
-    protected override ApiMessage ErrorMessage => new ApiMessage(this, AuthMessagesConsts.RegistrationError);
+    protected override ApiMessage ErrorMessage => AuthMessagesConsts.RegistrationError;
 
     protected async override Task ExecuteAsync(RegisterUserCommand command, CancellationToken ct)
     {
@@ -25,7 +25,7 @@ public class RegisterUserCommandHandler(
 
         var userWithUserNameExists = await userRepo.ExistsAsync(x => x.UserName == command.UserName, ct);
         if (userWithUserNameExists)
-            throw new ConflictException(new ApiMessage(this, AuthMessagesConsts.RegistrationConflictUsername));
+            throw new ConflictException(AuthMessagesConsts.RegistrationConflictUsername);
 
         var user = new User
         {

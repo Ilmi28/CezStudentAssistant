@@ -17,6 +17,10 @@ public readonly struct ApiMessage(object? source, string message, string? code =
     public string Message { get; } = message;
     public string Code { get; } = code ?? GenerateCode(message);
 
+    public ApiMessage(string message, string? code = null) : this(null, message, code) { }
+
+    public static implicit operator ApiMessage(string message) => new(message);
+
     private static string GenerateCode(string message)
     {
         if (string.IsNullOrWhiteSpace(message))

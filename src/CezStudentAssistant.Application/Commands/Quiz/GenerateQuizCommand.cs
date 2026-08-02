@@ -23,9 +23,9 @@ public class GenerateQuizCommandHandler(
     IJobScheduler jobScheduler,
     IJobService jobService) : BaseCommandHandler<GenerateQuizCommand>
 {
-    protected override ApiMessage SuccessMessage => new(this, AIMessageConsts.QuizGenerationEnqueued);
+    protected override ApiMessage SuccessMessage => AIMessageConsts.QuizGenerationEnqueued;
 
-    protected override ApiMessage ErrorMessage => new(this, AIMessageConsts.QuizGenerationError);
+    protected override ApiMessage ErrorMessage => AIMessageConsts.QuizGenerationError;
 
     protected override async Task ExecuteAsync(GenerateQuizCommand command, CancellationToken ct)
     {

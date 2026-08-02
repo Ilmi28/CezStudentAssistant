@@ -7,4 +7,7 @@ public static class QuizMessageConsts
     public const string GetQuizSuccess = "Successfully retrieved quiz details.";
     public const string GetQuizError = "An error occurred while retrieving quiz details.";
     public const string QuizNotFound = "Requested quiz not found.";
+
+    public const string AnswerSubmittedSuccess = "Answer submitted successfully.";
+    public const string AnswerSubmittedError = "An error occurred while submitting the answer.";
 }

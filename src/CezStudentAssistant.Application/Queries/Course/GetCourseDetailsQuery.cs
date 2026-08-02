@@ -17,8 +17,8 @@ public class GetCourseDetailsQuery : IQuery<CourseDetailsDto>, IUserRequest
 
 public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetCourseDetailsQuery, CourseDetailsDto>
 {
-    protected override ApiMessage SuccessMessage => new(this, CourseMessageConsts.GetCourseDetailsSuccess);
-    protected override ApiMessage ErrorMessage => new(this, CourseMessageConsts.GetCourseDetailsError);
+    protected override ApiMessage SuccessMessage => CourseMessageConsts.GetCourseDetailsSuccess;
+    protected override ApiMessage ErrorMessage => CourseMessageConsts.GetCourseDetailsError;
 
     protected override async Task<CourseDetailsDto> ExecuteAsync(GetCourseDetailsQuery query, CancellationToken ct)
     {
@@ -27,12 +27,12 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
 
         if (course == null)
         {
-            throw new NotFoundException(new ApiMessage(this, CourseMessageConsts.CourseNotFound));
+            throw new NotFoundException(CourseMessageConsts.CourseNotFound);
         }
 
         if (!course.Users.Any(u => u.Id == query.UserId))
         {
-            throw new UnauthorizedException(new ApiMessage(this, CourseMessageConsts.CourseAccessDenied));
+            throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
         var resourceRepository = unitOfWork.Repository<ICezResourceRepository>();

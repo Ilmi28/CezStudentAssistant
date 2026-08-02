@@ -28,7 +28,7 @@ public class AIService(
     {
         var job = await jobService.GetLatestJobAsync(dto.UserId, JobType.QuizGeneration, ct);
         if (job == null)
-            throw new AppException(new ApiMessage(null, AIMessageConsts.JobNotFound));
+            throw new AppException(AIMessageConsts.JobNotFound);
 
         await jobService.UpdateJobAsync(job, JobStatus.Processing, ct: ct);
 
@@ -38,7 +38,7 @@ public class AIService(
             var courseRepo = unitOfWork.Repository<ICourseRepository>();
             var course = await courseRepo.GetByIdAsync(dto.CourseId, ct);
             if (course == null)
-                throw new NotFoundException(new ApiMessage(this, AIMessageConsts.CourseNotFound));
+                throw new NotFoundException(AIMessageConsts.CourseNotFound);
 
             var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
             List<Resource> resources = await resourceRepo.Find(r => r.CourseId == dto.CourseId).ToListAsync(ct);
@@ -66,7 +66,7 @@ public class AIService(
 
             if (!aiResponse.Success || aiResponse.Data == null || !aiResponse.Data.Questions.Any())
             {
-                throw new BadRequestException(new ApiMessage(this, aiResponse.Message ?? AIMessageConsts.QuizGenerationError));
+                throw new BadRequestException(aiResponse.Message ?? AIMessageConsts.QuizGenerationError);
             }
 
             var quiz = new Quiz

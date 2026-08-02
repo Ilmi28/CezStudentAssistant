@@ -17,8 +17,8 @@ public class DeleteUserCourseCommand : ICommand, IUserRequest
 
 public class DeleteUserCourseCommandHandler(IUnitOfWork unitOfWork, IFileService fileService) : BaseCommandHandler<DeleteUserCourseCommand>
 {
-    protected override ApiMessage SuccessMessage => new(this, CourseMessageConsts.DeleteCourseSuccess);
-    protected override ApiMessage ErrorMessage => new(this, CourseMessageConsts.DeleteCourseError);
+    protected override ApiMessage SuccessMessage => CourseMessageConsts.DeleteCourseSuccess;
+    protected override ApiMessage ErrorMessage => CourseMessageConsts.DeleteCourseError;
 
     protected override async Task ExecuteAsync(DeleteUserCourseCommand command, CancellationToken ct)
     {
@@ -27,17 +27,17 @@ public class DeleteUserCourseCommandHandler(IUnitOfWork unitOfWork, IFileService
 
         if (course == null)
         {
-            throw new NotFoundException(new ApiMessage(this, CourseMessageConsts.CourseNotFound));
+            throw new NotFoundException(CourseMessageConsts.CourseNotFound);
         }
 
         if (course.Type == CourseType.Cez)
         {
-            throw new BadRequestException(new ApiMessage(this, CourseMessageConsts.CourseInvalidType));
+            throw new BadRequestException(CourseMessageConsts.CourseInvalidType);
         }
 
         if (!course.Users.Any(u => u.Id == command.UserId))
         {
-            throw new UnauthorizedException(new ApiMessage(this, CourseMessageConsts.CourseAccessDenied));
+            throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
         await courseRepository.DeleteAsync(course, ct);

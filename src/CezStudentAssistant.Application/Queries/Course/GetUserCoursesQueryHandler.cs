@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Application.Consts;
+using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.Course;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
@@ -15,9 +15,9 @@ public sealed class GetUserCoursesQuery : IQuery<List<CourseDto>>, IUserRequest
 
 public class GetUserCoursesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetUserCoursesQuery, List<CourseDto>>
 {
-    protected override ApiMessage SuccessMessage => new ApiMessage(this, CourseMessageConsts.GetCoursesSuccess);
+    protected override ApiMessage SuccessMessage => CourseMessageConsts.GetCoursesSuccess;
 
-    protected override ApiMessage ErrorMessage => new ApiMessage(this, CourseMessageConsts.GetCoursesError);
+    protected override ApiMessage ErrorMessage => CourseMessageConsts.GetCoursesError;
 
     protected override async Task<List<CourseDto>> ExecuteAsync(GetUserCoursesQuery query, CancellationToken ct)
     {
