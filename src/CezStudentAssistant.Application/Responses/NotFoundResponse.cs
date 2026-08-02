@@ -4,7 +4,7 @@ namespace CezStudentAssistant.Application.Responses;
 
 public class NotFoundResponse : ApiResponse
 {
-    public NotFoundResponse(ApiMessage message)
+    public NotFoundResponse(string message)
         : base(false, HttpStatusCode.NotFound, message)
     {
     }

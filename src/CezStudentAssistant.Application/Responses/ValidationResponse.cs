@@ -6,7 +6,7 @@ public class ValidationResponse : ApiResponse
 {
     public IEnumerable<ValidationError> Errors { get; set; }
 
-    public ValidationResponse(ApiMessage message, IEnumerable<ValidationError> errors)
+    public ValidationResponse(string message, IEnumerable<ValidationError> errors)
         : base(false, HttpStatusCode.BadRequest, message)
     {
         Errors = errors;

@@ -1,9 +1,8 @@
-﻿using CezStudentAssistant.Application.Responses;
 namespace CezStudentAssistant.Application.Exceptions;
 
 public class BadGatewayException : AppException
 {
-    public BadGatewayException(ApiMessage message) : base(message)
+    public BadGatewayException(string message) : base(message)
     {
     }
 }

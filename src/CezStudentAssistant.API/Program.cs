@@ -73,8 +73,7 @@ public class Program
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     context.Response.ContentType = "application/json";
 
-                    var message = new ApiMessage(null, MessageConsts.NotAuthenticated);
-                    var response = new UnauthorizedResponse(message);
+                    var response = new UnauthorizedResponse(MessageConsts.NotAuthenticated);
 
                     await context.Response.WriteAsJsonAsync(response);
                 },
@@ -83,8 +82,7 @@ public class Program
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;
                     context.Response.ContentType = "application/json";
 
-                    var message = new ApiMessage(null, MessageConsts.Forbidden);
-                    var response = new ForbiddenResponse(message);
+                    var response = new ForbiddenResponse(MessageConsts.Forbidden);
 
                     await context.Response.WriteAsJsonAsync(response);
                 }
@@ -140,13 +138,13 @@ public class Program
                 {
                     AppException appException => appException switch
                     {
-                        NotFoundException => new NotFoundResponse(appException.ApiMessage),
-                        ConflictException => new ConflictResponse(appException.ApiMessage),
-                        ApiValidationException validationException => new ValidationResponse(validationException.ApiMessage, validationException.Errors),
-                        BadGatewayException => new BadGatewayResponse(appException.ApiMessage),
-                        UnauthorizedException => new UnauthorizedResponse(appException.ApiMessage),
-                        BadRequestException => new BadRequestResponse(appException.ApiMessage),
-                        _ => new ServerErrorResponse(appException.ApiMessage)
+                        NotFoundException => new NotFoundResponse(appException.Message),
+                        ConflictException => new ConflictResponse(appException.Message),
+                        ApiValidationException validationException => new ValidationResponse(validationException.Message, validationException.Errors),
+                        BadGatewayException => new BadGatewayResponse(appException.Message),
+                        UnauthorizedException => new UnauthorizedResponse(appException.Message),
+                        BadRequestException => new BadRequestResponse(appException.Message),
+                        _ => new ServerErrorResponse(appException.Message)
                     },
 
                     _ => new ServerErrorResponse()

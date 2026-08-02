@@ -17,11 +17,11 @@ public class ApiResponse
     {
     }
 
-    protected ApiResponse(bool success, HttpStatusCode statusCode, ApiMessage message)
+    protected ApiResponse(bool success, HttpStatusCode statusCode, string message)
     {
         Success = success;
         StatusCode = statusCode;
-        Message = message.Message;
+        Message = message;
     }
 }
 
@@ -39,7 +39,7 @@ public class ApiResponse<T> : ApiResponse
     {
     }
 
-    protected ApiResponse(bool success, HttpStatusCode statusCode, ApiMessage message, T? data = default)
+    protected ApiResponse(bool success, HttpStatusCode statusCode, string message, T? data = default)
         : base(success, statusCode, message)
     {
         Data = data;

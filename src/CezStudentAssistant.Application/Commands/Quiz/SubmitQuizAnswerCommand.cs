@@ -14,9 +14,9 @@ public sealed class SubmitQuizAnswerCommand : ICommand, IUserRequest
 
 public class SubmitQuizAnswerCommandHandler : BaseCommandHandler<SubmitQuizAnswerCommand>
 {
-    protected override ApiMessage SuccessMessage => QuizMessageConsts.AnswerSubmittedSuccess;
+    protected override string SuccessMessage => QuizMessageConsts.AnswerSubmittedSuccess;
 
-    protected override ApiMessage ErrorMessage => QuizMessageConsts.AnswerSubmittedError;
+    protected override string ErrorMessage => QuizMessageConsts.AnswerSubmittedError;
 
     protected override Task ExecuteAsync(SubmitQuizAnswerCommand command, CancellationToken ct)
     {

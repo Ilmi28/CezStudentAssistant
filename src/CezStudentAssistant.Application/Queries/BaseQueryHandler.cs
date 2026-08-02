@@ -8,9 +8,9 @@ namespace CezStudentAssistant.Application.Queries;
 public abstract class BaseQueryHandler<TQuery, TResponse> : IRequestHandler<TQuery, ApiResponse<TResponse>>
     where TQuery : IQuery<TResponse>
 {
-    protected abstract ApiMessage SuccessMessage { get; }
+    protected abstract string SuccessMessage { get; }
 
-    protected abstract ApiMessage ErrorMessage { get; }
+    protected abstract string ErrorMessage { get; }
 
     protected abstract Task<TResponse> ExecuteAsync(TQuery query, CancellationToken ct);
 

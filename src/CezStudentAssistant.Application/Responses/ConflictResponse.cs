@@ -4,7 +4,7 @@ namespace CezStudentAssistant.Application.Responses;
 
 public class ConflictResponse : ApiResponse
 {
-    public ConflictResponse(ApiMessage message)
+    public ConflictResponse(string message)
         : base(false, HttpStatusCode.Conflict, message)
     {
     }

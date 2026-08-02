@@ -5,44 +5,13 @@ using NUnit.Framework;
 namespace CezStudentAssistant.UnitTests.Application.Responses;
 
 [TestFixture]
-public class ApiMessageAndResponseTests
+public class ApiResponseTests
 {
-    private class DummySourceClass { }
-
-    [TestCase("Username already exists.", "USERNAME_ALREADY_EXISTS")]
-    [TestCase("Email already exists!", "EMAIL_ALREADY_EXISTS")]
-    [TestCase("Some-random_error   message.", "SOME_RANDOM_ERROR_MESSAGE")]
-    [TestCase("", "ERROR")]
-    [TestCase("    ", "ERROR")]
-    public void ApiMessage_ShouldSanitizeMessageToUpperCaseSnakeCaseCode_WhenNoCodeIsProvided(string messageText, string expectedCode)
-    {
-        // Arrange & Act
-        var message = new ApiMessage(new DummySourceClass(), messageText);
-
-        // Assert
-        message.Code.Should().Be(expectedCode);
-    }
-
-    [Test]
-    public void ApiMessage_ShouldUseExplicitCode_WhenProvided()
-    {
-        // Arrange & Act
-        var message = new ApiMessage(new DummySourceClass(), "Custom message", "EXPLICIT_CUSTOM_CODE");
-
-        // Assert
-        message.Code.Should().Be("EXPLICIT_CUSTOM_CODE");
-        message.Message.Should().Be("Custom message");
-    }
-
     [Test]
     public void ConflictResponse_ShouldMapPropertiesFromMessage()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "Username already exists.");
-
         // Act
-        var response = new ConflictResponse(message);
+        var response = new ConflictResponse("Username already exists.");
 
         // Assert
         response.Message.Should().Be("Username already exists.");
@@ -53,12 +22,8 @@ public class ApiMessageAndResponseTests
     [Test]
     public void NotFoundResponse_ShouldMapPropertiesFromMessage()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "Course not found.");
-
         // Act
-        var response = new NotFoundResponse(message);
+        var response = new NotFoundResponse("Course not found.");
 
         // Assert
         response.Message.Should().Be("Course not found.");
@@ -69,12 +34,8 @@ public class ApiMessageAndResponseTests
     [Test]
     public void BadRequestResponse_ShouldMapPropertiesFromMessage()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "Invalid parameter value.");
-
         // Act
-        var response = new BadRequestResponse(message);
+        var response = new BadRequestResponse("Invalid parameter value.");
 
         // Assert
         response.Message.Should().Be("Invalid parameter value.");
@@ -85,12 +46,8 @@ public class ApiMessageAndResponseTests
     [Test]
     public void BadGatewayResponse_ShouldMapPropertiesFromMessage()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "External API timeout.");
-
         // Act
-        var response = new BadGatewayResponse(message);
+        var response = new BadGatewayResponse("External API timeout.");
 
         // Assert
         response.Message.Should().Be("External API timeout.");
@@ -101,12 +58,8 @@ public class ApiMessageAndResponseTests
     [Test]
     public void ForbiddenResponse_ShouldMapPropertiesFromMessage()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "Admin access required.");
-
         // Act
-        var response = new ForbiddenResponse(message);
+        var response = new ForbiddenResponse("Admin access required.");
 
         // Assert
         response.Message.Should().Be("Admin access required.");
@@ -117,12 +70,8 @@ public class ApiMessageAndResponseTests
     [Test]
     public void UnauthorizedResponse_ShouldMapPropertiesFromMessage()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "Session expired.");
-
         // Act
-        var response = new UnauthorizedResponse(message);
+        var response = new UnauthorizedResponse("Session expired.");
 
         // Assert
         response.Message.Should().Be("Session expired.");
@@ -133,12 +82,8 @@ public class ApiMessageAndResponseTests
     [Test]
     public void ServerErrorResponse_ShouldMapPropertiesFromMessage_WhenMessageProvided()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "Database connection failure.");
-
         // Act
-        var response = new ServerErrorResponse(message);
+        var response = new ServerErrorResponse("Database connection failure.");
 
         // Assert
         response.Message.Should().Be("Database connection failure.");
@@ -161,12 +106,8 @@ public class ApiMessageAndResponseTests
     [Test]
     public void SuccessResponse_ShouldMapPropertiesFromMessage()
     {
-        // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "User registered successfully.");
-
         // Act
-        var response = new SuccessResponse(message);
+        var response = new SuccessResponse("User registered successfully.");
 
         // Assert
         response.Message.Should().Be("User registered successfully.");
@@ -178,12 +119,10 @@ public class ApiMessageAndResponseTests
     public void SuccessResponseOfT_ShouldMapPropertiesFromMessageAndContainData()
     {
         // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "User details fetched.");
         var testData = "SomeData";
 
         // Act
-        var response = new SuccessResponse<string>(message, testData);
+        var response = new SuccessResponse<string>("User details fetched.", testData);
 
         // Assert
         response.Message.Should().Be("User details fetched.");
@@ -196,44 +135,18 @@ public class ApiMessageAndResponseTests
     public void ValidationResponse_ShouldMapPropertiesFromMessageAndContainErrors()
     {
         // Arrange
-        var source = new DummySourceClass();
-        var message = new ApiMessage(source, "Validation failed.");
         var errors = new[]
         {
             new ValidationError { PropertyName = "Username", ErrorMessage = "Username is required." }
         };
 
         // Act
-        var response = new ValidationResponse(message, errors);
+        var response = new ValidationResponse("Validation failed.", errors);
 
         // Assert
         response.Message.Should().Be("Validation failed.");
         response.Success.Should().BeFalse();
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         response.Errors.Should().ContainSingle().Which.PropertyName.Should().Be("Username");
-    }
-
-    [Test]
-    public void ApiMessage_ShouldImplicitlyConvertFromString()
-    {
-        // Act
-        ApiMessage message = "Implicit conversion works!";
-
-        // Assert
-        message.Source.Should().Be("SYSTEM");
-        message.Message.Should().Be("Implicit conversion works!");
-        message.Code.Should().Be("IMPLICIT_CONVERSION_WORKS");
-    }
-
-    [Test]
-    public void ApiMessage_ShouldConstructWithoutSource()
-    {
-        // Act
-        var message = new ApiMessage("Without source message");
-
-        // Assert
-        message.Source.Should().Be("SYSTEM");
-        message.Message.Should().Be("Without source message");
-        message.Code.Should().Be("WITHOUT_SOURCE_MESSAGE");
     }
 }

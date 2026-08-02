@@ -16,9 +16,9 @@ public class LoginUserCommandHandler(
     ICurrentUserService currentUserService,
     ITokenService tokenService) : BaseCommandHandler<LoginUserCommand>
 {
-    protected override ApiMessage SuccessMessage => AuthMessagesConsts.LoginSuccess;
+    protected override string SuccessMessage => AuthMessagesConsts.LoginSuccess;
 
-    protected override ApiMessage ErrorMessage => AuthMessagesConsts.LoginError;
+    protected override string ErrorMessage => AuthMessagesConsts.LoginError;
 
     protected async override Task ExecuteAsync(LoginUserCommand command, CancellationToken ct)
     {

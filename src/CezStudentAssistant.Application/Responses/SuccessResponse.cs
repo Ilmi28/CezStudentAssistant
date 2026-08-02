@@ -10,7 +10,7 @@ public class SuccessResponse<T> : ApiResponse<T>
         StatusCode = HttpStatusCode.OK;
     }
 
-    public SuccessResponse(ApiMessage message, T data)
+    public SuccessResponse(string message, T data)
         : base(true, HttpStatusCode.OK, message, data)
     {
     }
@@ -24,7 +24,7 @@ public class SuccessResponse : ApiResponse
         StatusCode = HttpStatusCode.OK;
     }
 
-    public SuccessResponse(ApiMessage message)
+    public SuccessResponse(string message)
         : base(true, HttpStatusCode.OK, message)
     {
     }

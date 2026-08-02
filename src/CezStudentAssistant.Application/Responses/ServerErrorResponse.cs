@@ -4,7 +4,7 @@ namespace CezStudentAssistant.Application.Responses;
 
 public class ServerErrorResponse : ApiResponse
 {
-    public ServerErrorResponse(ApiMessage message)
+    public ServerErrorResponse(string message)
         : base(false, HttpStatusCode.InternalServerError, message)
     {
     }

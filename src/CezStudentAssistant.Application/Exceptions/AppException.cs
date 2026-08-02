@@ -1,18 +1,12 @@
-﻿using CezStudentAssistant.Application.Responses;
-
 namespace CezStudentAssistant.Application.Exceptions;
 
 public class AppException : Exception
 {
-    public ApiMessage ApiMessage { get; set; }
-
-    public AppException(ApiMessage message) : base(message.Message)
+    public AppException(string message) : base(message)
     {
-        ApiMessage = message;
     }
 
-    public AppException(ApiMessage message, Exception innerException) : base(message.Message, innerException)
+    public AppException(string message, Exception innerException) : base(message, innerException)
     {
-        ApiMessage = message;
     }
 }

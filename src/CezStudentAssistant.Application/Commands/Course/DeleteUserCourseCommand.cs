@@ -17,8 +17,8 @@ public class DeleteUserCourseCommand : ICommand, IUserRequest
 
 public class DeleteUserCourseCommandHandler(IUnitOfWork unitOfWork, IFileService fileService) : BaseCommandHandler<DeleteUserCourseCommand>
 {
-    protected override ApiMessage SuccessMessage => CourseMessageConsts.DeleteCourseSuccess;
-    protected override ApiMessage ErrorMessage => CourseMessageConsts.DeleteCourseError;
+    protected override string SuccessMessage => CourseMessageConsts.DeleteCourseSuccess;
+    protected override string ErrorMessage => CourseMessageConsts.DeleteCourseError;
 
     protected override async Task ExecuteAsync(DeleteUserCourseCommand command, CancellationToken ct)
     {

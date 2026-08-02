@@ -18,8 +18,8 @@ public class UpdateUserCourseCommand : ICommand, IUserRequest
 
 public class UpdateUserCourseCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandler<UpdateUserCourseCommand>
 {
-    protected override ApiMessage SuccessMessage => CourseMessageConsts.UpdateCourseSuccess;
-    protected override ApiMessage ErrorMessage => CourseMessageConsts.UpdateCourseError;
+    protected override string SuccessMessage => CourseMessageConsts.UpdateCourseSuccess;
+    protected override string ErrorMessage => CourseMessageConsts.UpdateCourseError;
 
     protected override async Task ExecuteAsync(UpdateUserCourseCommand command, CancellationToken ct)
     {

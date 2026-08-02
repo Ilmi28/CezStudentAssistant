@@ -21,9 +21,9 @@ public sealed class GetQuizByIdQuery : IQuery<QuizDetailsDto>, IUserRequest
 
 public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetQuizByIdQuery, QuizDetailsDto>
 {
-    protected override ApiMessage SuccessMessage => QuizMessageConsts.GetQuizSuccess;
+    protected override string SuccessMessage => QuizMessageConsts.GetQuizSuccess;
 
-    protected override ApiMessage ErrorMessage => QuizMessageConsts.GetQuizError;
+    protected override string ErrorMessage => QuizMessageConsts.GetQuizError;
 
     protected override async Task<QuizDetailsDto> ExecuteAsync(GetQuizByIdQuery query, CancellationToken ct)
     {

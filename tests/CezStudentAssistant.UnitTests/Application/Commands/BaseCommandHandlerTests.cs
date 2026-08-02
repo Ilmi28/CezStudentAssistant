@@ -16,8 +16,8 @@ public class BaseCommandHandlerTests
         public bool IsExecuted { get; private set; }
         public Exception? ExceptionToThrow { get; set; }
 
-        protected override ApiMessage SuccessMessage => new(this, "Success");
-        protected override ApiMessage ErrorMessage => new(this, "Error");
+        protected override string SuccessMessage => "Success";
+        protected override string ErrorMessage => "Error";
 
         protected override Task ExecuteAsync(TestCommand command, CancellationToken ct)
         {
@@ -32,8 +32,8 @@ public class BaseCommandHandlerTests
         public string Result { get; set; } = "Default";
         public Exception? ExceptionToThrow { get; set; }
 
-        protected override ApiMessage SuccessMessage => new(this, "Success");
-        protected override ApiMessage ErrorMessage => new(this, "Error");
+        protected override string SuccessMessage => "Success";
+        protected override string ErrorMessage => "Error";
 
         protected override Task<string> ExecuteAsync(TestCommandWithResponse command, CancellationToken ct)
         {

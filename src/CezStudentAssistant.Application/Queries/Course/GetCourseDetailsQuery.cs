@@ -17,8 +17,8 @@ public class GetCourseDetailsQuery : IQuery<CourseDetailsDto>, IUserRequest
 
 public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetCourseDetailsQuery, CourseDetailsDto>
 {
-    protected override ApiMessage SuccessMessage => CourseMessageConsts.GetCourseDetailsSuccess;
-    protected override ApiMessage ErrorMessage => CourseMessageConsts.GetCourseDetailsError;
+    protected override string SuccessMessage => CourseMessageConsts.GetCourseDetailsSuccess;
+    protected override string ErrorMessage => CourseMessageConsts.GetCourseDetailsError;
 
     protected override async Task<CourseDetailsDto> ExecuteAsync(GetCourseDetailsQuery query, CancellationToken ct)
     {

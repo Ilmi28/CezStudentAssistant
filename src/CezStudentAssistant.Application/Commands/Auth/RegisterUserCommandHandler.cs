@@ -15,9 +15,9 @@ public class RegisterUserCommandHandler(
     IUnitOfWork unitOfWork,
     IPasswordService passwordService) : BaseCommandHandler<RegisterUserCommand>
 {
-    protected override ApiMessage SuccessMessage => AuthMessagesConsts.RegistrationSuccess;
+    protected override string SuccessMessage => AuthMessagesConsts.RegistrationSuccess;
 
-    protected override ApiMessage ErrorMessage => AuthMessagesConsts.RegistrationError;
+    protected override string ErrorMessage => AuthMessagesConsts.RegistrationError;
 
     protected async override Task ExecuteAsync(RegisterUserCommand command, CancellationToken ct)
     {

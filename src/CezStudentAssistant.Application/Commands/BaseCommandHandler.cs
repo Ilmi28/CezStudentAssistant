@@ -8,9 +8,9 @@ namespace CezStudentAssistant.Application.Commands;
 public abstract class BaseCommandHandler<TCommand> : IRequestHandler<TCommand, ApiResponse>
     where TCommand : ICommand
 {
-    protected abstract ApiMessage SuccessMessage { get; }
+    protected abstract string SuccessMessage { get; }
 
-    protected abstract ApiMessage ErrorMessage { get; }
+    protected abstract string ErrorMessage { get; }
 
     protected abstract Task ExecuteAsync(TCommand command, CancellationToken ct);
 
@@ -33,9 +33,9 @@ public abstract class BaseCommandHandler<TCommand> : IRequestHandler<TCommand, A
 public abstract class BaseCommandHandler<TCommand, TResponse> : IRequestHandler<TCommand, ApiResponse<TResponse>>
     where TCommand : ICommand<TResponse>
 {
-    protected abstract ApiMessage SuccessMessage { get; }
+    protected abstract string SuccessMessage { get; }
 
-    protected abstract ApiMessage ErrorMessage { get; }
+    protected abstract string ErrorMessage { get; }
 
     protected abstract Task<TResponse> ExecuteAsync(TCommand command, CancellationToken ct);
 

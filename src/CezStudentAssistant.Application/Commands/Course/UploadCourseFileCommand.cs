@@ -21,8 +21,8 @@ public class UploadCourseFileCommand : ICommand<Guid>, IUserRequest
 
 public class UploadCourseFileCommandHandler(IUnitOfWork unitOfWork, IFileService fileService) : BaseCommandHandler<UploadCourseFileCommand, Guid>
 {
-    protected override ApiMessage SuccessMessage => CourseMessageConsts.UploadCourseFileSuccess;
-    protected override ApiMessage ErrorMessage => CourseMessageConsts.UploadCourseFileError;
+    protected override string SuccessMessage => CourseMessageConsts.UploadCourseFileSuccess;
+    protected override string ErrorMessage => CourseMessageConsts.UploadCourseFileError;
 
     protected override async Task<Guid> ExecuteAsync(UploadCourseFileCommand command, CancellationToken ct)
     {

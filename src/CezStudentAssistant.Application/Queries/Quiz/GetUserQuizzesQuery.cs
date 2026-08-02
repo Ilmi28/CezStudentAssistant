@@ -20,9 +20,9 @@ public sealed class GetUserQuizzesQuery : IQuery<List<QuizDto>>, IUserRequest
 
 public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetUserQuizzesQuery, List<QuizDto>>
 {
-    protected override ApiMessage SuccessMessage => new(this, QuizMessageConsts.GetQuizzesSuccess);
+    protected override string SuccessMessage => QuizMessageConsts.GetQuizzesSuccess;
 
-    protected override ApiMessage ErrorMessage => new(this, QuizMessageConsts.GetQuizzesError);
+    protected override string ErrorMessage => QuizMessageConsts.GetQuizzesError;
 
     protected override async Task<List<QuizDto>> ExecuteAsync(GetUserQuizzesQuery query, CancellationToken ct)
     {

@@ -15,9 +15,9 @@ public sealed class GetUserCoursesQuery : IQuery<List<CourseDto>>, IUserRequest
 
 public class GetUserCoursesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetUserCoursesQuery, List<CourseDto>>
 {
-    protected override ApiMessage SuccessMessage => CourseMessageConsts.GetCoursesSuccess;
+    protected override string SuccessMessage => CourseMessageConsts.GetCoursesSuccess;
 
-    protected override ApiMessage ErrorMessage => CourseMessageConsts.GetCoursesError;
+    protected override string ErrorMessage => CourseMessageConsts.GetCoursesError;
 
     protected override async Task<List<CourseDto>> ExecuteAsync(GetUserCoursesQuery query, CancellationToken ct)
     {
