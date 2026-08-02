@@ -39,7 +39,7 @@ public class DownloadCourseFileQueryHandler(IUnitOfWork unitOfWork, IFileService
 
         if (resource == null || resource.CourseId != request.CourseId)
         {
-            throw new NotFoundException("File not found.");
+            throw new NotFoundException(GeneralMessageConsts.FileNotFound);
         }
 
         var filePath = $"{course.Id}/{resource.Name}";

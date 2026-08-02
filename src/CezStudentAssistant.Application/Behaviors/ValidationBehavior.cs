@@ -1,3 +1,4 @@
+using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Responses;
 using FluentValidation;
@@ -29,7 +30,7 @@ public class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TReq
 
         if (failures.Count != 0)
         {
-            throw new ApiValidationException("Validation failed", failures);
+            throw new ApiValidationException(GeneralMessageConsts.ValidationFailed, failures);
         }
 
         return await next();
