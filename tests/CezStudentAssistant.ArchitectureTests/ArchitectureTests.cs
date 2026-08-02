@@ -419,4 +419,86 @@ public class ArchitectureTests
         failingServices.Should().BeEmpty("all classes implementing a custom Service interface must end with 'Service'.");
         failingSchedulers.Should().BeEmpty("all classes implementing a custom Scheduler interface must end with 'Scheduler'.");
     }
+
+    [Test]
+    public void CustomExceptions_ShouldNotUseStringLiteralsDirectly()
+    {
+        // Arrange
+        var solutionRoot = FindSolutionRoot();
+        var srcDir = Path.Combine(solutionRoot, "src");
+
+        var csFiles = Directory.GetFiles(srcDir, "*.cs", SearchOption.AllDirectories);
+        var failingFiles = new List<string>();
+
+        // Regex to match instantiation of our custom exceptions with a string literal ("...", $"...", @"...", etc.)
+        var literalRegex = new System.Text.RegularExpressions.Regex(
+            @"\bnew\s+(NotFound|Conflict|BadRequest|Forbidden|Unauthorized|BadGateway|App|ApiValidation)Exception\s*\(\s*[\$@]*""",
+            System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        // Act
+        foreach (var file in csFiles)
+        {
+            if (file.Contains(@"\obj\") || file.Contains(@"\bin\"))
+            {
+                continue;
+            }
+
+            var content = File.ReadAllText(file);
+            if (literalRegex.IsMatch(content))
+            {
+                failingFiles.Add(Path.GetFileName(file));
+            }
+        }
+
+        // Assert
+        failingFiles.Should().BeEmpty(
+            "Custom exceptions (AppException, NotFoundException, etc.) must not use hardcoded string literals directly. " +
+            "Instead, define them in a constant class (e.g. CourseMessageConsts or GeneralMessageConsts) and reference the constant.");
+    }
+
+    [Test]
+    public void Handlers_ShouldNotUseStringLiteralsForSuccessAndErrorMessages()
+    {
+        // Arrange
+        var solutionRoot = FindSolutionRoot();
+        var srcDir = Path.Combine(solutionRoot, "src");
+
+        var csFiles = Directory.GetFiles(srcDir, "*.cs", SearchOption.AllDirectories);
+        var failingFiles = new List<string>();
+
+        // Regex to match property overrides of SuccessMessage or ErrorMessage returning a string literal directly
+        var literalRegex = new System.Text.RegularExpressions.Regex(
+            @"\bprotected\s+override\s+string\s+(Success|Error)Message\s*=>\s*[\$@]*""",
+            System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        // Act
+        foreach (var file in csFiles)
+        {
+            if (file.Contains(@"\obj\") || file.Contains(@"\bin\"))
+            {
+                continue;
+            }
+
+            var content = File.ReadAllText(file);
+            if (literalRegex.IsMatch(content))
+            {
+                failingFiles.Add(Path.GetFileName(file));
+            }
+        }
+
+        // Assert
+        failingFiles.Should().BeEmpty(
+            "Command and Query Handlers must not use hardcoded string literals directly for SuccessMessage or ErrorMessage. " +
+            "Instead, reference a constant (e.g. QuizMessageConsts.AnswerSubmittedSuccess).");
+    }
+
+    private static string FindSolutionRoot()
+    {
+        var dir = new DirectoryInfo(Path.GetDirectoryName(typeof(ArchitectureTests).Assembly.Location)!);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "CezStudentAssistant.slnx")) && !File.Exists(Path.Combine(dir.FullName, "CezStudentAssistant.sln")))
+        {
+            dir = dir.Parent;
+        }
+        return dir?.FullName ?? throw new DirectoryNotFoundException("Solution root could not be found.");
+    }
 }

@@ -1,6 +1,5 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Interfaces.CQRS;
-using CezStudentAssistant.Application.Responses;
 
 namespace CezStudentAssistant.Application.Commands.Quiz;
 
