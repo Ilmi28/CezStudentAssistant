@@ -143,6 +143,7 @@ public class Program
                         ApiValidationException validationException => new ValidationResponse(validationException.Message, validationException.Errors),
                         BadGatewayException => new BadGatewayResponse(appException.Message),
                         UnauthorizedException => new UnauthorizedResponse(appException.Message),
+                        ForbiddenException => new ForbiddenResponse(appException.Message),
                         BadRequestException => new BadRequestResponse(appException.Message),
                         _ => new ServerErrorResponse(appException.Message)
                     },
