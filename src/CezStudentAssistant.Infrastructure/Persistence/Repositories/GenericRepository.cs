@@ -100,4 +100,9 @@ public class GenericRepository<TEntity>(AppDbContext context) : IGenericReposito
 
         return await query.FirstOrDefaultAsync(predicate, cancellationToken);
     }
+
+    public async Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+    {
+        await _dbSet.AddRangeAsync(entities, cancellationToken);
+    }
 }

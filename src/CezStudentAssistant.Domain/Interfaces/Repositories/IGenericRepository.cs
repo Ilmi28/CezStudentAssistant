@@ -64,6 +64,14 @@ public interface IGenericRepository<TEntity>
     Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Asynchronously adds a range of entities to the data store.
+    /// </summary>
+    /// <param name="entities">The entities to add to the data store.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous add operation.</returns>
+    Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Asynchronously updates the specified entity in the data store.
     /// </summary>
     /// <param name="entity">The entity to update. Cannot be null.</param>

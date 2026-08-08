@@ -10,4 +10,17 @@ public static class QuizMessageConsts
 
     public const string AnswerSubmittedSuccess = "Answer submitted successfully.";
     public const string AnswerSubmittedError = "An error occurred while submitting the answer.";
+
+    public const string QuizAttemptNotFound = "Quiz attempt not found.";
+    public const string QuestionNotFound = "Question not found.";
+    public const string QuestionOptionNotFound = "Question option not found.";
+
+    public const string UnauthorizedAttemptAccess = "You are not authorized to submit answers for this quiz attempt.";
+    public const string QuizAttemptNotInProgress = "This quiz attempt is not currently in progress.";
+    public const string QuizAttemptExpired = "This quiz attempt has expired.";
+    public const string QuestionNotBelongToQuiz = "This question does not belong to the quiz being attempted.";
+    public const string QuestionAlreadyAnswered = "An answer has already been submitted for this question.";
+    public const string SingleChoiceMultipleOptions = "Only one option can be selected for a single choice question.";
+
+    public const string Forbidden = "You are not allowed to submit an answer for this quiz attempt.";
 }

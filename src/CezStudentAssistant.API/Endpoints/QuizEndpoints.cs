@@ -1,3 +1,4 @@
+using CezStudentAssistant.Application.Commands.Quiz;
 using CezStudentAssistant.Application.Queries.Quiz;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -24,6 +25,12 @@ public static class QuizEndpoints
         {
             var query = new GetQuizByIdQuery { QuizId = id };
             var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPost("/answer", async (SubmitQuizAnswerCommand command, IMediator mediator) =>
+        {
+            var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
     }
