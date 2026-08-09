@@ -7,7 +7,9 @@
     "statusOnline": "CEZ system online",
     "logout": "Log out",
     "avatarDefault": "ST",
-    "back": "Back"
+    "back": "Back",
+    "switchLanguage": "Przełącz na polski",
+    "switchLanguageLabel": "PL"
   },
   "nav": {
     "home": "Home",
@@ -15,15 +17,15 @@
     "quizzes": "Quizzes"
   },
   "auth": {
-    "loginTitle": "Standard Login",
+    "loginTitle": "Login",
     "loginBtn": "Log In",
     "loginLoading": "Logging in...",
     "usernameLabel": "Username",
-    "usernamePlaceholder": "student123",
+    "usernamePlaceholder": "",
     "passwordLabel": "Password",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "",
     "orText": "Or login via",
-    "cezBtn": "Student Portal CEZ PB",
+    "cezBtn": "CEZ",
     "noAccount": "Don't have an account? ",
     "registerLink": "Register",
     "registerTitle": "Registration",
@@ -31,14 +33,19 @@
     "registerLoading": "Registering...",
     "haveAccount": "Already have an account? ",
     "loginLink": "Log in",
-    "cezTitle": "CEZ PB Login",
-    "cezSubtitle": "Enter your login credentials for the USOS / CEZ portal of Bialystok University of Technology.",
-    "cezUserLabel": "CEZ Login (index number)",
-    "cezUserPlaceholder": "123456",
-    "cezPassLabel": "Access Password",
+    "cezTitle": "CEZ Login",
+    "cezSubtitle": "",
+    "cezUserLabel": "Username",
+    "cezUserPlaceholder": "",
+    "cezPassLabel": "Password",
     "cezBtnSubmit": "Log in via CEZ",
-    "cezBack": "Back to standard login",
-    "emptyFields": "Please fill in all fields."
+    "cezBack": "Back to login",
+    "emptyFields": "Please fill in all fields.",
+    "invalidCredentials": "Invalid username or password.",
+    "usernameTaken": "Username already exists.",
+    "loginSuccess": "Logged in successfully",
+    "cezSuccess": "Logged in with CEZ",
+    "registerSuccess": "Account created successfully"
   },
   "home": {
     "stats": {

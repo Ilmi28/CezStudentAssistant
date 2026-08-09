@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Application.Interfaces.Services;
+namespace CezStudentAssistant.Application.Interfaces.Services;
 
 /// <summary>
 /// Provides information about the current user, including their identity and authentication status.
@@ -9,4 +9,5 @@ public interface ICurrentUserService
 {
     Guid? GetCurrentUserId();
     void SetSession(string accessToken, string refreshToken);
+    void ClearSession();
 }

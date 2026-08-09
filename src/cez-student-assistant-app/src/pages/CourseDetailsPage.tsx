@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, FileText, Upload, Brain, X, RefreshCw } from "lucide-react";
 import { api, type CourseDetailsDto } from "../services/api";
+import { PrimaryButton } from "../components/Button";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
@@ -196,14 +197,16 @@ export default function CourseDetailsPage({
                   </div>
                 )}
               </div>
-              <button
+              <PrimaryButton
                 type="submit"
-                disabled={uploading || !selectedFile}
-                className="w-full bg-primary hover:bg-primary/90 disabled:bg-[#888] text-white py-2 rounded text-[12px] font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                size="sm"
+                fullWidth
+                loading={uploading}
+                disabled={!selectedFile}
+                icon={!uploading ? <Upload size={13} /> : undefined}
               >
-                <Upload size={13} />
-                {uploading ? t("courseDetails.uploadBtnLoading") : t("courseDetails.uploadBtn")}
-              </button>
+                {t("courseDetails.uploadBtn")}
+              </PrimaryButton>
             </form>
           </div>
         </div>
@@ -250,14 +253,16 @@ export default function CourseDetailsPage({
                 />
               </div>
 
-              <button
+              <PrimaryButton
                 type="submit"
-                disabled={generating || selectedCourse.files.length === 0}
-                className="w-full bg-primary hover:bg-primary/90 disabled:bg-[#888] text-white py-2.5 rounded text-[12px] font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                size="sm"
+                fullWidth
+                loading={generating}
+                disabled={selectedCourse.files.length === 0}
+                icon={!generating ? <Brain size={14} /> : undefined}
               >
-                <Brain size={14} />
-                {generating ? t("courseDetails.generateBtnLoading") : t("courseDetails.generateBtn")}
-              </button>
+                {t("courseDetails.generateBtn")}
+              </PrimaryButton>
               {selectedCourse.files.length === 0 && (
                 <p className="text-[10px] text-[#c44444] text-center font-medium mt-1">
                   {t("courseDetails.generateNoFilesError")}

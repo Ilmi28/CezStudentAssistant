@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RefreshCw, ChevronRight, Layers } from "lucide-react";
 import type { CourseDto } from "../services/api";
+import { PrimaryButton, SecondaryButton } from "../components/Button";
 
 interface CoursesPageProps {
   courses: CourseDto[];
@@ -33,20 +34,18 @@ export default function CoursesPage({
           </div>
         </div>
         <div className="flex gap-2.5">
-          <button
+          <SecondaryButton
             onClick={onOpenCezModal}
-            className="px-4 py-2.5 rounded border border-border hover:border-primary/30 hover:bg-muted/50 text-[13px] font-medium transition-colors cursor-pointer text-foreground inline-flex items-center gap-2"
           >
             {t("courses.connectCezBtn")}
-          </button>
-          <button
+          </SecondaryButton>
+          <PrimaryButton
             onClick={onSyncCourses}
-            disabled={syncing}
-            className="bg-primary hover:bg-primary/90 disabled:bg-[#888] text-white px-5 py-2.5 rounded text-[13px] font-medium transition-colors inline-flex items-center gap-2 flex-shrink-0 cursor-pointer shadow-sm"
+            loading={syncing}
+            icon={!syncing ? <RefreshCw size={14} /> : undefined}
           >
-            <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
-            {syncing ? t("courses.syncBtnLoading") : t("courses.syncBtn")}
-          </button>
+            {t("courses.syncBtn")}
+          </PrimaryButton>
         </div>
       </div>
 

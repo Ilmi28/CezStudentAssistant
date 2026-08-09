@@ -52,7 +52,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [quizzes, setQuizzes] = useState<QuizDto[]>([]);
 
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    return localStorage.getItem("darkMode") === "true";
+    const stored = localStorage.getItem("darkMode");
+    return stored !== null ? stored === "true" : true;
   });
 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
@@ -87,7 +88,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const storedUser = localStorage.getItem("username") || "Student";
       setUsername(storedUser);
     } catch (err: any) {
-      if (err.message === "UNAUTHORIZED") {
+      const msg = err.message || "";
+      if (
+        msg === "UNAUTHORIZED" ||
+        msg === "User is not authenticated." ||
+        msg.includes("authenticated") ||
+        msg.includes("401")
+      ) {
         setUsername(null);
       } else {
         setError(t("common.errorConnection"));
@@ -124,9 +131,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch {
+      // Ignore network/server errors on logout
+    }
     localStorage.removeItem("username");
     setUsername(null);
+    setCourses([]);
+    setQuizzes([]);
     document.cookie = "accessToken=; Max-Age=0; path=/;";
     document.cookie = "refreshToken=; Max-Age=0; path=/;";
     navigate("/login");

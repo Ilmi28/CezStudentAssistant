@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BookOpen, X } from "lucide-react";
+import { X } from "lucide-react";
+import { Input } from "./Input";
+import { Alert } from "./Alert";
+import { PrimaryButton, SecondaryButton } from "./Button";
+import cezLogo from "../assets/cez-logo.png";
 
 interface CezModalProps {
   isOpen: boolean;
@@ -18,15 +22,24 @@ export default function CezModal({
   const { t } = useTranslation();
   const [cezUser, setCezUser] = useState("");
   const [cezPass, setCezPass] = useState("");
+  const [modalError, setModalError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cezUser || !cezPass) return;
-    await onSubmit(cezUser, cezPass);
-    setCezUser("");
-    setCezPass("");
+    if (!cezUser || !cezPass) {
+      setModalError(t("auth.emptyFields"));
+      return;
+    }
+    setModalError(null);
+    try {
+      await onSubmit(cezUser, cezPass);
+      setCezUser("");
+      setCezPass("");
+    } catch (err: any) {
+      setModalError(err.message || t("auth.emptyFields"));
+    }
   };
 
   return (
@@ -35,10 +48,12 @@ export default function CezModal({
         {/* Modal header */}
         <div className="bg-sidebar px-6 py-4 flex items-center justify-between border-b border-sidebar-border">
           <div className="flex items-center gap-2 text-white">
-            <BookOpen size={16} />
+            <div className="w-6 h-6 rounded-full bg-white p-0.5 flex items-center justify-center flex-shrink-0 shadow-xs">
+              <img src={cezLogo} alt="CEZ" className="w-full h-full object-contain" />
+            </div>
             <span style={{ fontFamily: "Roboto Slab, serif" }} className="text-[14px] font-semibold">{t("cezModal.title")}</span>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white cursor-pointer">
+          <button onClick={() => { setModalError(null); onClose(); }} className="text-white/60 hover:text-white cursor-pointer">
             <X size={16} />
           </button>
         </div>
@@ -47,45 +62,45 @@ export default function CezModal({
           <p className="text-[12px] text-muted-foreground leading-relaxed">
             {t("cezModal.desc")}
           </p>
-          <div>
-            <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">
-              {t("cezModal.username")}
-            </label>
-            <input
-              type="text"
-              value={cezUser}
-              onChange={(e) => setCezUser(e.target.value)}
-              className="w-full px-3 py-2 text-[13px] border border-border rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-mono"
-              placeholder="123456"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">
-              {t("cezModal.password")}
-            </label>
-            <input
-              type="password"
-              value={cezPass}
-              onChange={(e) => setCezPass(e.target.value)}
-              className="w-full px-3 py-2 text-[13px] border border-border rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-mono"
-              placeholder="••••••••"
-            />
-          </div>
+
+          <Alert message={modalError} />
+
+          <Input
+            label={t("cezModal.username")}
+            value={cezUser}
+            onChange={(e) => {
+              setCezUser(e.target.value);
+              if (modalError) setModalError(null);
+            }}
+          />
+
+          <Input
+            type="password"
+            label={t("cezModal.password")}
+            value={cezPass}
+            onChange={(e) => {
+              setCezPass(e.target.value);
+              if (modalError) setModalError(null);
+            }}
+          />
+
           <div className="pt-2 flex gap-3">
-            <button
+            <SecondaryButton
               type="button"
+              size="sm"
               onClick={onClose}
-              className="flex-1 bg-muted hover:bg-muted/80 text-foreground py-2 rounded text-[12px] font-medium transition-colors cursor-pointer border border-border"
+              className="flex-1"
             >
               {t("cezModal.cancel")}
-            </button>
-            <button
+            </SecondaryButton>
+            <PrimaryButton
               type="submit"
-              disabled={loading}
-              className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 rounded text-[12px] font-medium transition-colors cursor-pointer shadow-sm"
+              size="sm"
+              loading={loading}
+              className="flex-1"
             >
-              {loading ? t("cezModal.submitLoading") : t("cezModal.submit")}
-            </button>
+              {t("cezModal.submit")}
+            </PrimaryButton>
           </div>
         </form>
       </div>

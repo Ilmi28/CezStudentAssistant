@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { RefreshCw, Wifi, LogOut, BookOpen, Sun, Moon, Home, Layers, Brain, Globe } from "lucide-react";
+import { RefreshCw, Wifi, LogOut, Sun, Moon, Home, Layers, Brain, Globe } from "lucide-react";
+import pbEmblem from "../assets/pb-emblem.png";
 
 interface TopbarProps {
   loading: boolean;
@@ -39,9 +40,7 @@ export default function Topbar({
       <div className="flex flex-col md:flex-row md:items-center gap-6 lg:gap-8">
         {/* Brand Logo & Name */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded bg-[#006633] border-2 border-white/20 flex items-center justify-center flex-shrink-0">
-            <BookOpen size={16} className="text-white" />
-          </div>
+          <img src={pbEmblem} alt="Politechnika Białostocka" className="h-10 w-auto object-contain flex-shrink-0" />
           <div>
             <div style={{ fontFamily: "Roboto Slab, serif" }} className="text-white font-semibold text-[15px] leading-tight">
               CEZStudentAssistant
@@ -93,7 +92,7 @@ export default function Topbar({
       {/* Right controls */}
       <div className="flex flex-wrap items-center justify-end gap-4 self-end md:self-auto">
         {/* Status indicator */}
-        <div className="flex items-center gap-1.5 text-[11px] text-[#00cc66] font-mono font-medium">
+        <div className="flex items-center gap-1.5 text-[11px] text-primary font-mono font-medium">
           <Wifi size={12} className="animate-pulse" /> {t("common.statusOnline")}
         </div>
 
@@ -110,10 +109,10 @@ export default function Topbar({
         <button
           onClick={toggleLanguage}
           className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 cursor-pointer text-[11px] font-bold uppercase tracking-wider"
-          title={i18n.language === "pl" ? "Switch to English" : "Przełącz na polski"}
+          title={t("common.switchLanguage")}
         >
           <Globe size={13} />
-          <span>{i18n.language === "pl" ? "EN" : "PL"}</span>
+          <span>{t("common.switchLanguageLabel")}</span>
         </button>
 
         {/* Dark Mode toggle button */}
@@ -125,8 +124,8 @@ export default function Topbar({
         </button>
 
         {/* Logged user info & Logout */}
-        <div className="flex items-center gap-2.5 bg-[#002e17]/35 px-3 py-1.5 rounded border border-white/10 text-white">
-          <div className="w-7 h-7 rounded bg-[#006633] border border-white/15 flex items-center justify-center text-[10px] font-bold flex-shrink-0 uppercase">
+        <div className="flex items-center gap-2.5 bg-white/5 px-3 py-1.5 rounded border border-white/10 text-white">
+          <div className="w-7 h-7 rounded bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold flex-shrink-0 uppercase shadow-xs">
             {username ? username.substring(0, 2) : t("common.avatarDefault")}
           </div>
           <span className="text-[12px] font-medium truncate max-w-[100px]" title={username || "Student"}>

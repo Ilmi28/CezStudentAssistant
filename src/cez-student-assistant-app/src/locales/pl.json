@@ -7,7 +7,9 @@
     "statusOnline": "CEZ system online",
     "logout": "Wyloguj się",
     "avatarDefault": "ST",
-    "back": "Powrót"
+    "back": "Powrót",
+    "switchLanguage": "Switch to English",
+    "switchLanguageLabel": "EN"
   },
   "nav": {
     "home": "Główna",
@@ -15,15 +17,15 @@
     "quizzes": "Quizy"
   },
   "auth": {
-    "loginTitle": "Logowanie standardowe",
+    "loginTitle": "Logowanie",
     "loginBtn": "Zaloguj się",
     "loginLoading": "Logowanie...",
     "usernameLabel": "Nazwa użytkownika",
-    "usernamePlaceholder": "student123",
+    "usernamePlaceholder": "",
     "passwordLabel": "Hasło",
-    "passwordPlaceholder": "••••••••",
+    "passwordPlaceholder": "",
     "orText": "Lub zaloguj przez",
-    "cezBtn": "Portal studenta CEZ PB",
+    "cezBtn": "CEZ",
     "noAccount": "Nie masz konta? ",
     "registerLink": "Zarejestruj się",
     "registerTitle": "Rejestracja",
@@ -31,14 +33,19 @@
     "registerLoading": "Rejestrowanie...",
     "haveAccount": "Masz już konto? ",
     "loginLink": "Zaloguj się",
-    "cezTitle": "Logowanie CEZ PB",
-    "cezSubtitle": "Wprowadź swoje dane logowania do serwisu USOS / CEZ Politechniki Białostockiej.",
-    "cezUserLabel": "Login CEZ (nr indeksu)",
-    "cezUserPlaceholder": "123456",
-    "cezPassLabel": "Hasło dostępowe",
+    "cezTitle": "Logowanie CEZ",
+    "cezSubtitle": "",
+    "cezUserLabel": "Nazwa użytkownika",
+    "cezUserPlaceholder": "",
+    "cezPassLabel": "Hasło",
     "cezBtnSubmit": "Zaloguj przez CEZ",
-    "cezBack": "Powrót do logowania standardowego",
-    "emptyFields": "Proszę wypełnić wszystkie pola."
+    "cezBack": "Powrót do logowania",
+    "emptyFields": "Proszę wypełnić wszystkie pola.",
+    "invalidCredentials": "Nieprawidłowa nazwa użytkownika lub hasło.",
+    "usernameTaken": "Użytkownik o podanej nazwie już istnieje.",
+    "loginSuccess": "Zalogowano pomyślnie",
+    "cezSuccess": "Zalogowano przez CEZ",
+    "registerSuccess": "Konto zostało utworzone"
   },
   "home": {
     "stats": {

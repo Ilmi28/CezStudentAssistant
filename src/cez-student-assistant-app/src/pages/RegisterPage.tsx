@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen } from "lucide-react";
 import { api } from "../services/api";
+import { AuthLayout } from "../components/AuthLayout";
+import { Input } from "../components/Input";
+import { Alert } from "../components/Alert";
+import { PrimaryButton } from "../components/Button";
 
 interface RegisterPageProps {
   setError: (msg: string) => void;
@@ -10,7 +13,6 @@ interface RegisterPageProps {
 }
 
 export default function RegisterPage({
-  setError,
   setSuccess
 }: RegisterPageProps) {
   const navigate = useNavigate();
@@ -18,81 +20,70 @@ export default function RegisterPage({
   const [regUser, setRegUser] = useState("");
   const [regPass, setRegPass] = useState("");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regUser || !regPass) return setError(t("auth.emptyFields"));
+    if (!regUser || !regPass) {
+      setFormError(t("auth.emptyFields"));
+      return;
+    }
+    setFormError(null);
     setLoading(true);
     try {
       await api.register(regUser, regPass);
-      setSuccess(t("auth.registerBtn") + " ✓");
+      setSuccess(t("auth.registerSuccess"));
       navigate("/login");
     } catch (err: any) {
-      setError(err.message || t("auth.emptyFields"));
+      setFormError(err.message || t("auth.emptyFields"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-background">
-      <div className="w-full max-w-md bg-card rounded-xl border border-border shadow-md overflow-hidden animate-in fade-in duration-300">
-        {/* Academic Header */}
-        <div className="bg-sidebar px-8 py-8 text-center border-b border-sidebar-border">
-          <div className="inline-flex w-12 h-12 rounded bg-primary border-2 border-white/20 items-center justify-center mb-3">
-            <BookOpen size={22} className="text-white" />
-          </div>
-          <h1 style={{ fontFamily: "Roboto Slab, serif" }} className="text-white text-xl font-semibold leading-tight">
-            CEZ Student Assistant
-          </h1>
-          <p className="text-[10px] tracking-[0.15em] uppercase text-white/55 mt-1 font-medium">
-            Politechnika Białostocka
-          </p>
-        </div>
+    <AuthLayout>
+      <form onSubmit={handleRegister} className="space-y-5">
+        <h2 style={{ fontFamily: "Roboto Slab, serif" }} className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
+          {t("auth.registerTitle")}
+        </h2>
 
-        <form onSubmit={handleRegister} className="p-8 space-y-5">
-          <h2 style={{ fontFamily: "Roboto Slab, serif" }} className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
-            {t("auth.registerTitle")}
-          </h2>
-          <div>
-            <label className="block text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5 font-sans">{t("auth.usernameLabel")}</label>
-            <input
-              type="text"
-              value={regUser}
-              onChange={(e) => setRegUser(e.target.value)}
-              className="w-full px-3 py-2 text-[13px] border border-border rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors font-mono"
-              placeholder={t("auth.usernamePlaceholder")}
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5 font-sans">{t("auth.passwordLabel")}</label>
-            <input
-              type="password"
-              value={regPass}
-              onChange={(e) => setRegPass(e.target.value)}
-              className="w-full px-3 py-2 text-[13px] border border-border rounded bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors font-mono"
-              placeholder={t("auth.passwordPlaceholder")}
-            />
-          </div>
+        <Alert message={formError} />
+
+        <Input
+          label={t("auth.usernameLabel")}
+          value={regUser}
+          onChange={(e) => {
+            setRegUser(e.target.value);
+            if (formError) setFormError(null);
+          }}
+        />
+
+        <Input
+          type="password"
+          label={t("auth.passwordLabel")}
+          value={regPass}
+          onChange={(e) => {
+            setRegPass(e.target.value);
+            if (formError) setFormError(null);
+          }}
+        />
+
+        <PrimaryButton type="submit" fullWidth loading={loading} className="mt-2">
+          {t("auth.registerBtn")}
+        </PrimaryButton>
+
+        <div className="text-center pt-2">
+          <span className="text-[12px] text-muted-foreground">{t("auth.haveAccount")}</span>
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 bg-primary hover:bg-primary/90 disabled:bg-[#888] text-white py-2.5 rounded text-[13px] font-medium transition-colors shadow-sm cursor-pointer"
+            type="button"
+            onClick={() => navigate("/login")}
+            className="text-[12px] text-primary font-medium hover:underline focus:outline-none cursor-pointer"
           >
-            {loading ? t("auth.registerLoading") : t("auth.registerBtn")}
+            {t("auth.loginLink")}
           </button>
-          <div className="text-center pt-2">
-            <span className="text-[12px] text-muted-foreground">{t("auth.haveAccount")}</span>
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className="text-[12px] text-primary font-medium hover:underline focus:outline-none"
-            >
-              {t("auth.loginLink")}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }

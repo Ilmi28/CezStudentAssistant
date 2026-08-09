@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Application.Interfaces.Common;
+using CezStudentAssistant.Application.Interfaces.Common;
 using CezStudentAssistant.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -25,5 +25,18 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         Response.Cookies.Append("accessToken", accessToken, CookieOptions);
         Response.Cookies.Append("refreshToken", refreshToken, CookieOptions);
+    }
+
+    public void ClearSession()
+    {
+        var options = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = httpContextAccessor.HttpContext?.Request.IsHttps ?? false,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(-1)
+        };
+        Response.Cookies.Delete("accessToken", options);
+        Response.Cookies.Delete("refreshToken", options);
     }
 }

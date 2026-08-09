@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 export interface ApiResponse<T = any> {
   success: boolean;
   statusCode: number;
@@ -57,23 +59,36 @@ export interface QuizDetailsDto {
   questions: QuestionDto[];
 }
 
-const handleResponse = async <T>(res: Response): Promise<T> => {
-  if (res.status === 401) {
-    throw new Error("UNAUTHORIZED");
-  }
-
-  let body: ApiResponse<T>;
+const handleResponse = async <T>(res: Response, isAuthEndpoint = false): Promise<T> => {
+  let body: ApiResponse<T> | null = null;
   try {
     body = await res.json();
   } catch (err) {
-    throw new Error("Failed to parse server response.");
+    // JSON parsing error
   }
 
-  if (!res.ok || !body.success) {
-    throw new Error(body.message || `Request failed with status ${res.status}`);
+  if (res.status === 401 && !isAuthEndpoint) {
+    throw new Error("UNAUTHORIZED");
   }
 
-  return body.data as T;
+  if (!res.ok || (body && !body.success)) {
+    const serverMessage = body?.message;
+
+    if (isAuthEndpoint) {
+      if (serverMessage === "Username already exists.") {
+        throw new Error(i18n.t("auth.usernameTaken") || "Użytkownik o podanej nazwie już istnieje.");
+      }
+      throw new Error(i18n.t("auth.invalidCredentials") || "Nieprawidłowa nazwa użytkownika lub hasło.");
+    }
+
+    if (serverMessage) {
+      throw new Error(serverMessage);
+    }
+
+    throw new Error(`Request failed with status ${res.status}`);
+  }
+
+  return body?.data as T;
 };
 
 export const api = {
@@ -85,7 +100,7 @@ export const api = {
       body: JSON.stringify({ userName, password }),
       credentials: "include",
     });
-    return handleResponse(res);
+    return handleResponse(res, true);
   },
 
   async register(userName: string, password: string): Promise<any> {
@@ -95,7 +110,7 @@ export const api = {
       body: JSON.stringify({ userName, password }),
       credentials: "include",
     });
-    return handleResponse(res);
+    return handleResponse(res, true);
   },
 
   async loginCez(userName: string, password: string): Promise<any> {
@@ -105,7 +120,15 @@ export const api = {
       body: JSON.stringify({ userName, password }),
       credentials: "include",
     });
-    return handleResponse(res);
+    return handleResponse(res, true);
+  },
+
+  async logout(): Promise<any> {
+    const res = await fetch("/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    return handleResponse(res, true);
   },
 
   // Cez Sync
