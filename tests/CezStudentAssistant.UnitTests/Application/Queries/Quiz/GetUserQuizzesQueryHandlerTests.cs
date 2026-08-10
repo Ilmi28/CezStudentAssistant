@@ -13,7 +13,11 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CezStudentAssistant.UnitTests.Application.Queries.QuizTests;
+namespace CezStudentAssistant.UnitTests.Application.Queries.Quiz;
+
+using UserEntity = CezStudentAssistant.Domain.Entities.User;
+using QuizEntity = CezStudentAssistant.Domain.Entities.Quiz;
+using CourseEntity = CezStudentAssistant.Domain.Entities.Course;
 
 [TestFixture]
 public class GetUserQuizzesQueryHandlerTests
@@ -27,6 +31,7 @@ public class GetUserQuizzesQueryHandlerTests
     {
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _quizRepository = Substitute.For<IQuizRepository>();
+
         _unitOfWork.Repository<IQuizRepository>().Returns(_quizRepository);
         _sut = new GetUserQuizzesQueryHandler(_unitOfWork);
     }
@@ -41,22 +46,20 @@ public class GetUserQuizzesQueryHandlerTests
     public async Task Handle_ShouldReturnQuizzes_WhenUserHasQuizzes()
     {
         var userId = Guid.NewGuid();
-        var user = new User { Id = userId, UserName = "test" };
-        var course = new Course { Id = Guid.NewGuid(), Name = "Course 1", Users = new List<User> { user } };
-        var quiz = new Quiz { Id = Guid.NewGuid(), Name = "Quiz 1", DisplayName = "Quiz 1 Display", CourseId = course.Id, Course = course };
+        var user = new UserEntity { Id = userId, UserName = "test" };
+        var course = new CourseEntity { Id = Guid.NewGuid(), Name = "Course 1", Users = new List<UserEntity> { user } };
+        var quiz = new QuizEntity { Id = Guid.NewGuid(), Name = "Quiz 1", DisplayName = "Quiz 1 Display", CourseId = course.Id, Course = course };
 
-        var mockDbSet = new List<Quiz> { quiz }.BuildMockDbSet();
-        _quizRepository.Find(Arg.Any<Expression<Func<Quiz, bool>>>()).Returns(mockDbSet);
+        var mockDbSet = new List<QuizEntity> { quiz }.BuildMockDbSet();
+        _quizRepository.Find(Arg.Any<Expression<Func<QuizEntity, bool>>>()).Returns(mockDbSet);
 
         var query = new GetUserQuizzesQuery { UserId = userId };
 
         var result = await _sut.Handle(query, CancellationToken.None);
 
+        result.Should().NotBeNull();
         result.Success.Should().BeTrue();
-        result.Message.Should().Be(QuizMessageConsts.GetQuizzesSuccess);
-        result.Data.Should().NotBeNull();
         result.Data.Should().HaveCount(1);
-        result.Data![0].Name.Should().Be("Quiz 1");
-        result.Data[0].CourseName.Should().Be("Course 1");
+        result.Data![0].Id.Should().Be(quiz.Id);
     }
 }

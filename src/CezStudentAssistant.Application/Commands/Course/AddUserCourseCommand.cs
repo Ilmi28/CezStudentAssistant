@@ -1,4 +1,5 @@
 using CezStudentAssistant.Application.Consts;
+using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Responses;
@@ -26,7 +27,7 @@ public class AddUserCourseCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHa
 
         if (user == null)
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedException(UserMessageConsts.UserNotFound);
         }
 
         var course = new Domain.Entities.Course

@@ -1,76 +1,52 @@
-# CezStudentAssistant Project Guidelines & UI Design System
+# CezStudentAssistant Architecture & Project Guidelines
 
-This file defines the project coding standards, UI design tokens, component architecture, frontend rules, backend architecture guidelines, and testing standards for **CEZ Student Assistant**.
+This file defines the project coding standards, UI design tokens, component architecture rules, backend clean architecture guidelines, testing standards, and file modification rules for **CEZ Student Assistant**.
 
 ---
 
-## 🎨 UI Design Tokens & Palette
+## 🎨 UI Design Tokens & Theme Palette
 
 - **Dark Obsidian Background**: `#0b0f17` / Tailwind `bg-background`
 - **Dark Slate Cards**: `#131b2e` / Tailwind `bg-card`
 - **Dark Slate Sidebar & Topbar Header**: `#182238` / Tailwind `bg-sidebar`
 - **Neutral Dark Borders**: `#1e293b` / Tailwind `border-border`
-- **Politechnika Białostocka Primary Brand Green**: `#00494B` (Primary) & `#007C66` (Hover Accent)
+- **CEZ WI PB Brand Primary Blue**: `#0f4c81` (Light Primary), `#0284c7` (Hover Accent) & `#2563eb` (Dark Primary)
 - **Typography**: `Roboto Slab, serif` for headings, `Inter / sans-serif` for body, `font-mono` for index numbers/IDs/code inputs.
 
 ---
 
-## 🧩 Reusable Frontend Component Architecture
+## 🧩 Frontend Component Architecture Rules
 
-**Rule**: NEVER duplicate hardcoded UI elements, inputs, buttons, header layouts, or alert banners. Always import and use the standard shared components in `src/components/`:
-
-### 1. Buttons (`src/components/Button.tsx`)
-- **`<PrimaryButton>`**: For main user actions (e.g. submit, log in, create, sync).
-  - Uses PB brand green `#00494B`.
-  - Supports `loading` prop (displays spinner loader next to constant text, dims opacity).
-- **`<SecondaryButton>`**: For outline / secondary actions (e.g. CEZ login, cancel, back).
-
-### 2. Form Inputs (`src/components/Input.tsx`)
-- **`<Input>`**: Reusable labeled input field.
-  - Handles labels (`label`), error states (`error`), input type, and monospace formatting automatically.
-
-### 3. Alerts (`src/components/Alert.tsx`)
-- **`<Alert>`**: Reusable inline error / warning banner.
-  - Replaces raw `div` error blocks inside forms and cards.
-
-### 4. Auth Layout (`src/components/AuthLayout.tsx`)
-- **`<AuthLayout>`**: Shell layout for unauthenticated pages (`LoginPage`, `CezLoginPage`, `RegisterPage`).
-  - Contains PB logo (`pb-logo.png`), academic header, floating top-right language switcher (`PL / EN`), and responsive card container.
-
-### 5. Toast Notifications (`src/components/Toast.tsx`)
-- **`<Toast>`**: Reusable floating notification popup for success and error messages.
-  - Supports `variant="success"` and `variant="error"`.
-  - Replaces inline `div` popups in `App.tsx`.
+1. **Component Extraction & Reusability**: ALWAYS extract self-contained, repeated, or modular UI elements (e.g. Modals, Banners, Cards, Inputs, Buttons, Headers) into dedicated reusable components in `src/components/` instead of writing raw inline HTML/JSX inside pages.
+2. **No Hardcoded UI Duplication**: NEVER duplicate hardcoded UI elements, inputs, buttons, header layouts, or alert banners. Always import and use standard shared components in `src/components/`.
+3. **Generic Container Pattern**: Prefer generic, composable container components (e.g. `<Card borderLeftPrimary hoverEffect>`) with configurable props and children over fragmented, single-purpose component variants.
+4. **Form Error Display**: Form validation errors (empty fields, bad credentials) MUST be rendered inline inside forms using shared inline alert/banner components. NEVER use floating toast popups for form validation errors.
 
 ---
 
 ## ⚙️ Backend Architecture Guidelines (.NET 9 / ASP.NET Core)
 
 ### 1. Clean Architecture & Layer Responsibilities
-- **`CezStudentAssistant.Domain`**: Pure domain entities (e.g. `User`, `Course`, `CourseFile`, `Quiz`), domain exceptions, and repository interfaces. NO dependencies on EF Core, MediatR, or API infrastructure.
+- **`CezStudentAssistant.Domain`**: Pure domain entities, domain exceptions, and repository interfaces. NO dependencies on EF Core, MediatR, or API infrastructure.
 - **`CezStudentAssistant.Application`**: Business logic layer following CQRS with MediatR:
   - Commands (`IRequest<TResponse>`) and Queries (`IRequest<TResponse>`).
   - Handlers extending `BaseCommandHandler<TCommand>` or `BaseQueryHandler<TQuery, TResponse>`.
   - Pipelines (`UserContextBehavior` for injecting `UserId`, validation behaviors).
   - Common responses extending `BaseResponse<T>` / `ApiResponse`.
-- **`CezStudentAssistant.Infrastructure`**: Persistence (`DbContext`, EF Core configurations, Repositories, UnitOfWork) and external services (`CurrentUserService`, `TokenService`, `PasswordHasher`, `CezSyncService`, AI Services).
-- **`CezStudentAssistant.API`**: Minimal API Endpoints (`AuthEndpoints`, `CourseEndpoints`, `QuizEndpoints`), middleware pipeline, and OpenAPI/Swagger configuration.
+- **`CezStudentAssistant.Infrastructure`**: Persistence (`DbContext`, EF Core configurations, Repositories, UnitOfWork) and external integration services (`CurrentUserService`, `TokenService`, `PasswordHasher`, external API services).
+- **`CezStudentAssistant.API`**: Minimal API Endpoints mapped via endpoint extension methods, middleware pipeline, and OpenAPI/Swagger configuration.
 
 ### 2. CQRS Handler & Result Standards
-- **Commands & Queries**: Use MediatR requests. Store request inputs in clean records or DTOs.
-- **User Context Pipeline**: Every authenticated request flows through `UserContextBehavior`, automatically populating `command.UserId` from the `ICurrentUserService` claims context.
-- **Standard Responses**: Use `BaseResponse<T>` / `ApiResponse` wrappers. Standardize success message constants (`SuccessMessage = "..."`).
+- **Commands & Queries**: Store request inputs in clean records or DTOs.
+- **User Context Pipeline**: Authenticated requests flow through `UserContextBehavior`, automatically populating `command.UserId` from `ICurrentUserService` claims context.
+- **Standard Responses**: Use `BaseResponse<T>` / `ApiResponse` wrappers with standardized success constants.
 
 ### 3. Exception Handling & HTTP Mapping
-- **Domain & Application Exceptions**: Throw strongly-typed exceptions inheriting from `AppException`:
-  - `UnauthorizedException` -> Maps to HTTP 401 `UnauthorizedResponse`
-  - `NotFoundException` -> Maps to HTTP 404 `NotFoundResponse`
-  - `ConflictException` -> Maps to HTTP 409 `ConflictResponse`
-  - `ApiValidationException` / `BadRequestException` -> Maps to HTTP 400 `BadRequestResponse` / `ValidationResponse`
-- **Global Exception Middleware**: Exception handling in `Program.cs` intercepts all thrown `AppException` types and serializes a clean, standardized JSON response. NEVER return unhandled stack trace 500 HTML pages.
+- **Domain & Application Exceptions**: Throw strongly-typed exceptions inheriting from `AppException` (e.g. `UnauthorizedException` -> HTTP 401, `ForbiddenException` -> HTTP 403, `NotFoundException` -> HTTP 404, `ConflictException` -> HTTP 409, `BadRequestException` -> HTTP 400).
+- **Global Exception Middleware**: Exception handling in `Program.cs` intercepts all `AppException` types and serializes standardized JSON responses. NEVER return unhandled stack trace 500 HTML pages.
 
 ### 4. Authentication & Security Best Practices
-- **HttpOnly Cookies**: JWT `accessToken` and `refreshToken` MUST be stored and transmitted via HttpOnly, Secure, SameSite cookies managed by `ICurrentUserService.SetSession()` and cleared by `ICurrentUserService.ClearSession()`.
+- **HttpOnly Cookies**: JWT `accessToken` and `refreshToken` MUST be stored and transmitted via HttpOnly, Secure, SameSite cookies managed by `ICurrentUserService`.
 - **Password Hashing**: Use `IPasswordHasherService` (PBKDF2 with SHA256) for secure password hashing and verification.
 - **Authorization**: Secure Minimal API endpoints with `.RequireAuthorization()`.
 
@@ -78,45 +54,31 @@ This file defines the project coding standards, UI design tokens, component arch
 
 ## 🧪 Testing Guidelines & Standards
 
-### 1. Backend Testing Strategy (.NET / xUnit)
+### 1. Backend Testing Strategy (.NET / NUnit)
+- **Mandatory Test Coverage Rule**: EVERY CQRS Handler (Command & Query) and Infrastructure/Domain Service MUST have a dedicated set of unit tests AND integration tests covering both happy paths and specific error/exception conditions.
 - **Unit Tests (`tests/CezStudentAssistant.UnitTests`)**:
-  - Test all CQRS Handlers, Domain Logic, Services, and Exception conditions in isolation.
-  - Use `xUnit` for test runner, `NSubstitute` / `Moq` for mocking interfaces (`IUserRepository`, `ICurrentUserService`), and `FluentAssertions` for readable assertions.
-  - Follow AAA pattern (Arrange, Act, Assert).
+  - Test all CQRS Handlers, Domain Logic, Services, and Exception conditions in isolation using `NUnit`, `NSubstitute`, and `FluentAssertions` following AAA pattern.
+  - MUST explicitly verify strongly-typed domain/application exceptions (e.g. `UnauthorizedException` -> 401, `ForbiddenException` -> 403, `NotFoundException` -> 404, `ConflictException` -> 409, `BadRequestException` -> 400).
 - **Integration Tests (`tests/CezStudentAssistant.IntegrationTests`)**:
   - Test API endpoints using `WebApplicationFactory<Program>` end-to-end.
-  - Verify HTTP status codes (200 OK, 400 Bad Request, 401 Unauthorized, 404 Not Found, 409 Conflict) and JSON response shapes (`ApiResponse<T>`).
-  - Verify HttpOnly cookie creation (`accessToken`, `refreshToken`) and expiration on logout.
+  - Verify success responses as well as specific HTTP error status codes (400, 401, 403, 404, 409), JSON response shapes (`ApiResponse<T>`), and HttpOnly cookie management.
 - **Architecture Tests (`tests/CezStudentAssistant.ArchitectureTests`)**:
-  - Enforce Clean Architecture rules using NetArchTest:
-    - Domain layer must NOT depend on Application, Infrastructure, or API.
-    - Application layer must NOT depend on Infrastructure or API.
-    - CQRS Handlers must inherit from `BaseCommandHandler` or `BaseQueryHandler`.
+  - Enforce Clean Architecture dependencies using NetArchTest.
 
 ### 2. Frontend Testing Strategy (React / Vitest)
-- **Component Tests (`*.test.tsx`)**:
-  - Test user interactions (button clicks, form inputs, loading states, inline error displays).
-  - Always mock API calls using `vi.mock("../services/api")`.
-  - Verify that `<PrimaryButton>` shows spinner when `loading={true}` and preserves button text.
-  - Verify that form validation errors render inline via `<Alert message={error} />`.
-- **Commands to Run Tests**:
-  - Backend: `dotnet test`
-  - Frontend: `npm test` or `npm run test:run`
+- **Component Tests**: Test user interactions, loading states, and inline error displays using `Vitest` and `React Testing Library`.
 
 ---
 
-## 🔒 Session & API Error Guidelines (Frontend-Backend Integration)
+## 🔒 Session & Asset Guidelines
 
-1. **Inline Form Validation**: Validation errors (empty fields, bad password/login) MUST be rendered inline inside the form using `<Alert message={error} />`. NEVER show floating popup toasts for form validation errors.
-2. **Silent Unauthenticated Startup Check**: When checking auth session on startup (`checkAuth()`), HTTP `401 Unauthorized` responses indicate the user is logged out — do NOT show an API connection error toast for logged-out users.
-3. **HTTP Cookie Logout**: Expire HttpOnly `accessToken` and `refreshToken` cookies via server endpoint `POST /auth/logout`.
+1. **Asset Storage**: Store ALL image assets exclusively in `src/assets/`. DO NOT duplicate image files into `public/`.
+2. **Silent Startup Auth Check**: HTTP `401 Unauthorized` responses on startup auth checks indicate logged-out state — do NOT display error connection toasts for unauthenticated users.
 
 ---
 
-## 📁 Image & Asset Placement
+## 📝 Guidelines for Modifying AGENTS.md
 
-- Store ALL image assets exclusively in `src/assets/`:
-  - `src/assets/pb-logo.png` (Full PB logo)
-  - `src/assets/pb-emblem.png` (PB eagle emblem)
-  - `src/assets/cez-logo.png` (CEZ favicon)
-- DO NOT duplicate image files into the `public/` directory.
+1. **Focus on Architectural Rules, Not Specific Component Names**: NEVER list specific individual components, file paths, or transient feature details (e.g. do NOT list `Navbar`, `SyncBanner`, `StatCard`, or specific endpoint routes).
+2. **Maintain General Standards**: Keep this file focused exclusively on universal architectural rules, design system tokens, clean architecture layer standards, security patterns, and testing guidelines.
+3. **High-Level Rule Enforcement**: Any future updates to `AGENTS.md` must state general behavioral constraints and design rules rather than enumerating specific component implementations.

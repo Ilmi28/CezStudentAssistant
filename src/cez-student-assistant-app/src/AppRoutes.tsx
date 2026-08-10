@@ -14,6 +14,8 @@ import QuizSolverPage from "./pages/QuizSolverPage";
 export default function AppRoutes() {
   const {
     isAuthenticated,
+    isCezConnected,
+    lastCezSync,
     handleLoginSuccess,
     setError,
     setSuccess,
@@ -21,7 +23,6 @@ export default function AppRoutes() {
     quizzes,
     syncing,
     handleSyncCourses,
-    setShowCezModal,
   } = useApp();
 
   return (
@@ -34,7 +35,7 @@ export default function AppRoutes() {
       {/* Protected */}
       <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" replace />}>
         <Route path="/home"       element={<HomePage courses={courses} quizzes={quizzes} />} />
-        <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} onOpenCezModal={() => setShowCezModal(true)} />} />
+        <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
         <Route path="/quizzes"    element={<QuizzesPage quizzes={quizzes} />} />
         <Route path="/course/:id" element={<CourseDetailsPage setError={setError} setSuccess={setSuccess} />} />
         <Route path="/quiz/:id"   element={<QuizSolverPage setError={setError} />} />

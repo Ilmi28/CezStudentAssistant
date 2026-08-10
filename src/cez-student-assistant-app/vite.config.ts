@@ -8,7 +8,7 @@ export default defineConfig({
         port: 5173,
         strictPort: true,
         proxy: {
-            "^/(auth|cez|course|quiz|sync-hub)": {
+            "^/(auth|cez|course($|/)|quiz|user|sync-hub)": {
                 target: "https://localhost:8081",
                 secure: false,
                 changeOrigin: true,

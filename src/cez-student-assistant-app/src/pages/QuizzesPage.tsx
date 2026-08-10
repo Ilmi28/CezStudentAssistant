@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Brain, ArrowRight } from "lucide-react";
+import { Brain } from "lucide-react";
 import type { QuizDto } from "../services/api";
+import Card from "../components/Card";
+import { PrimaryButton } from "../components/Button";
 
 interface QuizzesPageProps {
   quizzes: QuizDto[];
@@ -22,18 +24,17 @@ export default function QuizzesPage({ quizzes }: QuizzesPageProps) {
         </div>
 
         {quizzes.length === 0 ? (
-          <div className="bg-card rounded-lg border border-border p-8 text-center shadow-sm">
-            <Brain size={32} className="mx-auto text-muted-foreground/30 mb-2" />
-            <p className="text-[13px] text-muted-foreground">{t("quizzes.noQuizzes")}</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-1">{t("quizzes.noQuizzesSubtitle")}</p>
-          </div>
+          <Card className="p-8 text-center shadow-sm">
+            <div>
+              <Brain size={32} className="mx-auto text-muted-foreground/30 mb-2" />
+              <p className="text-[13px] text-muted-foreground">{t("quizzes.noQuizzes")}</p>
+              <p className="text-[11px] text-muted-foreground/60 mt-1">{t("quizzes.noQuizzesSubtitle")}</p>
+            </div>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {quizzes.map((q) => (
-              <div
-                key={q.id}
-                className="bg-card rounded-lg border border-border p-5 shadow-sm hover:border-primary/45 hover:shadow transition-all flex flex-col justify-between"
-              >
+              <Card key={q.id} hoverEffect>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[9px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded font-mono uppercase">
@@ -48,15 +49,13 @@ export default function QuizzesPage({ quizzes }: QuizzesPageProps) {
                     {q.courseName}
                   </p>
                 </div>
-                <button
+                <PrimaryButton
                   onClick={() => navigate(`/quiz/${q.id}`)}
-                  className="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded text-[12px] font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  icon={<Brain size={13} />}
                 >
-                  <Brain size={13} />
                   {t("home.startQuiz")}
-                  <ArrowRight size={12} />
-                </button>
-              </div>
+                </PrimaryButton>
+              </Card>
             ))}
           </div>
         )}

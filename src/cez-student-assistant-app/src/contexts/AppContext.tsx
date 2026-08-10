@@ -8,6 +8,8 @@ interface AppContextType {
   username: string | null;
   isAuthenticated: boolean;
   isAuthChecking: boolean;
+  isCezConnected: boolean;
+  lastCezSync: string | null;
   handleLoginSuccess: (user: string) => Promise<void>;
   handleLogout: () => void;
 
@@ -50,6 +52,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [username, setUsername] = useState<string | null>(null);
   const [courses, setCourses] = useState<CourseDto[]>([]);
   const [quizzes, setQuizzes] = useState<QuizDto[]>([]);
+  const [isCezConnected, setIsCezConnected] = useState<boolean>(false);
+  const [lastCezSync, setLastCezSync] = useState<string | null>(null);
 
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const stored = localStorage.getItem("darkMode");
@@ -85,6 +89,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCourses(courseList);
       const quizList = await api.getQuizzes();
       setQuizzes(quizList);
+      try {
+        const config = await api.getUserConfiguration();
+        setIsCezConnected(config.isCezConnected);
+        setLastCezSync(config.lastCezSync);
+      } catch {
+        // Fallback if config is not available
+      }
       const storedUser = localStorage.getItem("username") || "Student";
       setUsername(storedUser);
     } catch (err: any) {
@@ -123,6 +134,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCourses(courseList);
       const quizList = await api.getQuizzes();
       setQuizzes(quizList);
+      try {
+        const config = await api.getUserConfiguration();
+        setIsCezConnected(config.isCezConnected);
+        setLastCezSync(config.lastCezSync);
+      } catch {
+        // Fallback
+      }
       navigate("/home");
     } catch {
       setError(t("common.errorConnection"));
@@ -141,6 +159,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUsername(null);
     setCourses([]);
     setQuizzes([]);
+    setIsCezConnected(false);
+    setLastCezSync(null);
     document.cookie = "accessToken=; Max-Age=0; path=/;";
     document.cookie = "refreshToken=; Max-Age=0; path=/;";
     navigate("/login");
@@ -154,6 +174,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSuccess(t("common.syncSuccess"));
       const courseList = await api.getCourses();
       setCourses(courseList);
+      try {
+        const config = await api.getUserConfiguration();
+        setIsCezConnected(config.isCezConnected);
+        setLastCezSync(config.lastCezSync);
+      } catch {
+        // Fallback
+      }
     } catch (err: any) {
       setError(err.message || t("common.errorConnection"));
     } finally {
@@ -165,6 +192,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       await api.loginCez(cezUser, cezPass);
+      setIsCezConnected(true);
       setSuccess(t("common.syncSuccess"));
       setShowCezModal(false);
       handleSyncCourses();
@@ -182,6 +210,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCourses(courseList);
       const quizList = await api.getQuizzes();
       setQuizzes(quizList);
+      try {
+        const config = await api.getUserConfiguration();
+        setIsCezConnected(config.isCezConnected);
+        setLastCezSync(config.lastCezSync);
+      } catch {
+        // Fallback
+      }
       setSuccess(t("common.refreshSuccess"));
     } catch {
       setError(t("common.errorConnection"));
@@ -196,6 +231,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     username,
     isAuthenticated: username !== null,
     isAuthChecking,
+    isCezConnected,
+    lastCezSync,
     handleLoginSuccess,
     handleLogout,
     courses,

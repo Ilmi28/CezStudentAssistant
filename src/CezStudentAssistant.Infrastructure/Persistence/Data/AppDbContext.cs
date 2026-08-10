@@ -43,6 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<User> Users { get; set; }
     public DbSet<CezUser> CezUsers { get; set; }
+    public DbSet<UserConfiguration> UserConfigurations { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Course> Courses { get; set; }
     public DbSet<Quiz> Quizzes { get; set; }

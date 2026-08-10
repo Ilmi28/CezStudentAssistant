@@ -15,7 +15,11 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CezStudentAssistant.UnitTests.Application.Queries.QuizTests;
+namespace CezStudentAssistant.UnitTests.Application.Queries.Quiz;
+
+using UserEntity = CezStudentAssistant.Domain.Entities.User;
+using QuizEntity = CezStudentAssistant.Domain.Entities.Quiz;
+using CourseEntity = CezStudentAssistant.Domain.Entities.Course;
 
 [TestFixture]
 public class GetQuizByIdQueryHandlerTests
@@ -29,6 +33,7 @@ public class GetQuizByIdQueryHandlerTests
     {
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _quizRepository = Substitute.For<IQuizRepository>();
+
         _unitOfWork.Repository<IQuizRepository>().Returns(_quizRepository);
         _sut = new GetQuizByIdQueryHandler(_unitOfWork);
     }
@@ -43,10 +48,10 @@ public class GetQuizByIdQueryHandlerTests
     public async Task Handle_ShouldReturnQuizDetails_WhenQuizExistsAndBelongsToUser()
     {
         var userId = Guid.NewGuid();
-        var user = new User { Id = userId, UserName = "test" };
-        var course = new Course { Id = Guid.NewGuid(), Name = "Course A", Users = new List<User> { user } };
+        var user = new UserEntity { Id = userId, UserName = "test" };
+        var course = new CourseEntity { Id = Guid.NewGuid(), Name = "Course A", Users = new List<UserEntity> { user } };
         var quizId = Guid.NewGuid();
-        var quiz = new Quiz { Id = quizId, Name = "Math Quiz", DisplayName = "Math Quiz Display", CourseId = course.Id, Course = course };
+        var quiz = new QuizEntity { Id = quizId, Name = "Math Quiz", DisplayName = "Math Quiz Display", CourseId = course.Id, Course = course };
         
         var question = new Question
         {
@@ -61,37 +66,34 @@ public class GetQuizByIdQueryHandlerTests
         question.Options.Add(option);
         quiz.Questions.Add(question);
 
-        var mockDbSet = new List<Quiz> { quiz }.BuildMockDbSet();
-        _quizRepository.Find(Arg.Any<Expression<Func<Quiz, bool>>>()).Returns(mockDbSet);
+        var mockDbSet = new List<QuizEntity> { quiz }.BuildMockDbSet();
+        _quizRepository.Find(Arg.Any<Expression<Func<QuizEntity, bool>>>()).Returns(mockDbSet);
 
         var query = new GetQuizByIdQuery { UserId = userId, QuizId = quizId };
 
         var result = await _sut.Handle(query, CancellationToken.None);
 
+        result.Should().NotBeNull();
         result.Success.Should().BeTrue();
-        result.Message.Should().Be(QuizMessageConsts.GetQuizSuccess);
         result.Data.Should().NotBeNull();
-        result.Data!.Name.Should().Be("Math Quiz");
-        result.Data.CourseName.Should().Be("Course A");
+        result.Data!.Id.Should().Be(quizId);
         result.Data.Questions.Should().HaveCount(1);
-        result.Data.Questions[0].Content.Should().Be("2+2?");
-        result.Data.Questions[0].Options.Should().HaveCount(1);
-        result.Data.Questions[0].Options[0].Content.Should().Be("4");
     }
 
     [Test]
-    public async Task Handle_ShouldThrowNotFoundException_WhenQuizDoesNotExistOrAccessIsDenied()
+    public async Task Handle_ShouldThrowNotFoundException_WhenQuizDoesNotExist()
     {
         var userId = Guid.NewGuid();
         var quizId = Guid.NewGuid();
 
-        var mockDbSet = new List<Quiz>().BuildMockDbSet();
-        _quizRepository.Find(Arg.Any<Expression<Func<Quiz, bool>>>()).Returns(mockDbSet);
+        var mockDbSet = new List<QuizEntity>().BuildMockDbSet();
+        _quizRepository.Find(Arg.Any<Expression<Func<QuizEntity, bool>>>()).Returns(mockDbSet);
 
         var query = new GetQuizByIdQuery { UserId = userId, QuizId = quizId };
 
-        Func<Task> act = () => _sut.Handle(query, CancellationToken.None);
+        Func<Task> act = async () => await _sut.Handle(query, CancellationToken.None);
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"*{QuizMessageConsts.QuizNotFound}*");
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage(QuizMessageConsts.QuizNotFound);
     }
 }

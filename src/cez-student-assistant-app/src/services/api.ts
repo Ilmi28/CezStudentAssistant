@@ -59,6 +59,13 @@ export interface QuizDetailsDto {
   questions: QuestionDto[];
 }
 
+export interface UserConfigurationDto {
+  isCezConnected: boolean;
+  theme: number;
+  language: number;
+  lastCezSync: string | null;
+}
+
 const handleResponse = async <T>(res: Response, isAuthEndpoint = false): Promise<T> => {
   let body: ApiResponse<T> | null = null;
   try {
@@ -208,5 +215,14 @@ export const api = {
       credentials: "include",
     });
     return handleResponse(res);
+  },
+
+  // User
+  async getUserConfiguration(): Promise<UserConfigurationDto> {
+    const res = await fetch("/user/configuration", {
+      method: "GET",
+      credentials: "include",
+    });
+    return handleResponse<UserConfigurationDto>(res);
   },
 };
