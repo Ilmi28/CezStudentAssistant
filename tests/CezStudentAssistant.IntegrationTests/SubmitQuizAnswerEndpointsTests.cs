@@ -287,4 +287,182 @@ public class SubmitQuizAnswerEndpointsTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Test]
+    public async Task SubmitAnswer_ShouldReturnBadRequest_WhenQuizAttemptExpired()
+    {
+        // Arrange
+        var username = "quizuser_expired";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        var quizAttemptId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var user = await db.Users.FirstAsync(u => u.Id == userId);
+            
+            var course = new Course { Name = "Course Expired", Type = CourseType.Cez };
+            user.Courses.Add(course);
+
+            var quiz = new Quiz { Name = "Quiz Expired", DisplayName = "Quiz Expired", Course = course };
+            var attempt = new QuizAttempt
+            {
+                Id = quizAttemptId,
+                User = user,
+                Quiz = quiz,
+                Course = course,
+                Status = QuizAttemptStatus.InProgress,
+                StartedAt = DateTime.UtcNow.AddHours(-2),
+                ExpiresAt = DateTime.UtcNow.AddHours(-1)
+            };
+
+            db.Courses.Add(course);
+            db.Quizzes.Add(quiz);
+            db.QuizAttempts.Add(attempt);
+            await db.SaveChangesAsync();
+        }
+
+        var command = new SubmitQuizAnswerCommand
+        {
+            QuizAttemptId = quizAttemptId,
+            QuestionId = Guid.NewGuid(),
+            QuestionOptionIds = new List<Guid> { Guid.NewGuid() }
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/quiz/answer", command);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
+    public async Task SubmitAnswer_ShouldReturnBadRequest_WhenQuestionAlreadyAnswered()
+    {
+        // Arrange
+        var username = "quizuser_answered";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        var courseId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        var questionId = Guid.NewGuid();
+        var optionId = Guid.NewGuid();
+        var quizAttemptId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var user = await db.Users.FirstAsync(u => u.Id == userId);
+
+            var course = new Course { Id = courseId, Name = "Course Answered", Type = CourseType.Cez };
+            user.Courses.Add(course);
+
+            var quiz = new Quiz { Id = quizId, Name = "Quiz Answered", DisplayName = "Quiz Answered", Course = course };
+            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Answered", Type = QuestionType.SingleChoice, Points = 5m };
+            var option = new QuestionOption { Id = optionId, Question = question, Content = "Opt 1", IsCorrect = true };
+            question.Options.Add(option);
+
+            var attempt = new QuizAttempt
+            {
+                Id = quizAttemptId,
+                User = user,
+                Quiz = quiz,
+                Course = course,
+                Status = QuizAttemptStatus.InProgress,
+                StartedAt = DateTime.UtcNow
+            };
+
+            var existingAnswer = new QuestionAnswer
+            {
+                QuizAttempt = attempt,
+                Question = question
+            };
+
+            db.Courses.Add(course);
+            db.Quizzes.Add(quiz);
+            db.Questions.Add(question);
+            db.QuestionOptions.Add(option);
+            db.QuizAttempts.Add(attempt);
+            db.QuestionAnswers.Add(existingAnswer);
+            await db.SaveChangesAsync();
+        }
+
+        var command = new SubmitQuizAnswerCommand
+        {
+            QuizAttemptId = quizAttemptId,
+            QuestionId = questionId,
+            QuestionOptionIds = new List<Guid> { optionId }
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/quiz/answer", command);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
+    public async Task SubmitAnswer_ShouldReturnBadRequest_WhenSingleChoiceQuestionHasMultipleOptions()
+    {
+        // Arrange
+        var username = "quizuser_multsingle";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        var courseId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        var questionId = Guid.NewGuid();
+        var optionId1 = Guid.NewGuid();
+        var optionId2 = Guid.NewGuid();
+        var quizAttemptId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var user = await db.Users.FirstAsync(u => u.Id == userId);
+
+            var course = new Course { Id = courseId, Name = "Course Single", Type = CourseType.Cez };
+            user.Courses.Add(course);
+
+            var quiz = new Quiz { Id = quizId, Name = "Quiz Single", DisplayName = "Quiz Single", Course = course };
+            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Single", Type = QuestionType.SingleChoice, Points = 5m };
+            var option1 = new QuestionOption { Id = optionId1, Question = question, Content = "Opt 1", IsCorrect = true };
+            var option2 = new QuestionOption { Id = optionId2, Question = question, Content = "Opt 2", IsCorrect = false };
+            question.Options.Add(option1);
+            question.Options.Add(option2);
+
+            var attempt = new QuizAttempt
+            {
+                Id = quizAttemptId,
+                User = user,
+                Quiz = quiz,
+                Course = course,
+                Status = QuizAttemptStatus.InProgress,
+                StartedAt = DateTime.UtcNow
+            };
+
+            db.Courses.Add(course);
+            db.Quizzes.Add(quiz);
+            db.Questions.Add(question);
+            db.QuestionOptions.AddRange(option1, option2);
+            db.QuizAttempts.Add(attempt);
+            await db.SaveChangesAsync();
+        }
+
+        var command = new SubmitQuizAnswerCommand
+        {
+            QuizAttemptId = quizAttemptId,
+            QuestionId = questionId,
+            QuestionOptionIds = new List<Guid> { optionId1, optionId2 }
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/quiz/answer", command);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

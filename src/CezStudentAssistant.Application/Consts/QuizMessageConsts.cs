@@ -23,4 +23,9 @@ public static class QuizMessageConsts
     public const string SingleChoiceMultipleOptions = "Only one option can be selected for a single choice question.";
 
     public const string Forbidden = "You are not allowed to submit an answer for this quiz attempt.";
+
+    public const string StartQuizSuccess = "Quiz started successfully.";
+    public const string StartQuizError = "An error occurred while starting the quiz.";
+    public const string UnauthorizedStartAccess = "You are not authorized to start this quiz attempt.";
+    public const string QuizAttemptNotNotStarted = "This quiz attempt has already been started or completed.";
 }

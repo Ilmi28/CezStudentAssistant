@@ -33,5 +33,11 @@ public static class QuizEndpoints
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
+
+        group.MapPost("/start", async (StartQuizCommand command, IMediator mediator) =>
+        {
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
     }
 }

@@ -15,7 +15,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CezStudentAssistant.UnitTests.Application.Commands.QuizTests;
+namespace CezStudentAssistant.UnitTests.Application.Commands.Quiz;
 
 [TestFixture]
 public class SubmitQuizAnswerCommandHandlerTests
