@@ -1,22 +1,25 @@
-import i18n from "i18next";
+import i18n from "../i18n";
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T> {
   success: boolean;
   statusCode: number;
-  message: string;
+  message: string | null;
   data: T | null;
+  errors: string[] | null;
 }
 
 export interface CourseDto {
   id: string;
   name: string;
-  lastSynched: string;
+  lastSynched: string | null;
 }
 
 export interface CourseResourceDto {
   id: string;
-  name: string;
-  contentType: string;
+  displayName: string;
+  mimeType: string;
+  lastModified: string;
+  downloadUrl: string;
 }
 
 export interface CourseDetailsDto {
@@ -24,7 +27,7 @@ export interface CourseDetailsDto {
   name: string;
   description: string | null;
   type: number;
-  lastSynched: string;
+  lastSynched: string | null;
   files: CourseResourceDto[];
 }
 
@@ -39,13 +42,13 @@ export interface QuizDto {
 export interface QuestionOptionDto {
   id: string;
   content: string;
-  isCorrect: boolean;
+  isCorrect?: boolean;
 }
 
 export interface QuestionDto {
   id: string;
   content: string;
-  type: number; // 0 = SingleChoice, 1 = MultipleChoice
+  type: number;
   points: number;
   options: QuestionOptionDto[];
 }
@@ -63,15 +66,22 @@ export interface UserConfigurationDto {
   isCezConnected: boolean;
   theme: number;
   language: number;
-  lastCezSync: string | null;
 }
+
+export interface CezStatusDto {
+  isConnected: boolean;
+  lastSyncAt: string | null;
+  lastSyncStatus: number | null;
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:8081";
 
 const handleResponse = async <T>(res: Response, isAuthEndpoint = false): Promise<T> => {
   let body: ApiResponse<T> | null = null;
   try {
     body = await res.json();
-  } catch (err) {
-    // JSON parsing error
+  } catch {
+    // Non-JSON response
   }
 
   if (res.status === 401 && !isAuthEndpoint) {
@@ -101,7 +111,7 @@ const handleResponse = async <T>(res: Response, isAuthEndpoint = false): Promise
 export const api = {
   // Auth
   async login(userName: string, password: string): Promise<any> {
-    const res = await fetch("/auth/login", {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userName, password }),
@@ -111,7 +121,7 @@ export const api = {
   },
 
   async register(userName: string, password: string): Promise<any> {
-    const res = await fetch("/auth/register", {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userName, password }),
@@ -121,7 +131,7 @@ export const api = {
   },
 
   async loginCez(userName: string, password: string): Promise<any> {
-    const res = await fetch("/auth/login-cez", {
+    const res = await fetch(`${API_BASE_URL}/auth/login-cez`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userName, password }),
@@ -131,7 +141,7 @@ export const api = {
   },
 
   async logout(): Promise<any> {
-    const res = await fetch("/auth/logout", {
+    const res = await fetch(`${API_BASE_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
@@ -140,7 +150,7 @@ export const api = {
 
   // Cez Sync
   async syncCourses(): Promise<any> {
-    const res = await fetch("/cez/sync-courses", {
+    const res = await fetch(`${API_BASE_URL}/cez/sync-courses`, {
       method: "POST",
       credentials: "include",
     });
@@ -149,7 +159,7 @@ export const api = {
 
   // Courses
   async getCourses(): Promise<CourseDto[]> {
-    const res = await fetch("/course", {
+    const res = await fetch(`${API_BASE_URL}/course`, {
       method: "GET",
       credentials: "include",
     });
@@ -157,7 +167,7 @@ export const api = {
   },
 
   async getCourseDetails(id: string): Promise<CourseDetailsDto> {
-    const res = await fetch(`/course/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/course/${id}`, {
       method: "GET",
       credentials: "include",
     });
@@ -168,7 +178,7 @@ export const api = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`/course/${courseId}/file`, {
+    const res = await fetch(`${API_BASE_URL}/course/file/upload?courseId=${courseId}`, {
       method: "POST",
       body: formData,
       credentials: "include",
@@ -177,7 +187,7 @@ export const api = {
   },
 
   async generateQuiz(courseId: string, questionCount: number, additionalInstructions?: string): Promise<any> {
-    const res = await fetch(`/course/${courseId}/generate-quiz`, {
+    const res = await fetch(`${API_BASE_URL}/course/${courseId}/generate-quiz`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ questionCount, additionalInstructions }),
@@ -187,12 +197,12 @@ export const api = {
   },
 
   async getDownloadFileUrl(courseId: string, fileId: string): Promise<string> {
-    return `/course/${courseId}/file/${fileId}/download`;
+    return `${API_BASE_URL}/course/${courseId}/file/${fileId}/download`;
   },
 
   // Quizzes
   async getQuizzes(): Promise<QuizDto[]> {
-    const res = await fetch("/quiz", {
+    const res = await fetch(`${API_BASE_URL}/quiz`, {
       method: "GET",
       credentials: "include",
     });
@@ -200,7 +210,7 @@ export const api = {
   },
 
   async getQuizDetails(id: string): Promise<QuizDetailsDto> {
-    const res = await fetch(`/quiz/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/quiz/${id}`, {
       method: "GET",
       credentials: "include",
     });
@@ -208,7 +218,7 @@ export const api = {
   },
 
   async submitAnswer(quizAttemptId: string, questionId: string, questionOptionIds: string[]): Promise<any> {
-    const res = await fetch("/quiz/answer", {
+    const res = await fetch(`${API_BASE_URL}/quiz/answer`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quizAttemptId, questionId, questionOptionIds }),
@@ -219,10 +229,19 @@ export const api = {
 
   // User
   async getUserConfiguration(): Promise<UserConfigurationDto> {
-    const res = await fetch("/user/configuration", {
+    const res = await fetch(`${API_BASE_URL}/user/configuration`, {
       method: "GET",
       credentials: "include",
     });
     return handleResponse<UserConfigurationDto>(res);
+  },
+
+  // CEZ Status
+  async getCezStatus(): Promise<CezStatusDto> {
+    const res = await fetch(`${API_BASE_URL}/cez/status`, {
+      method: "GET",
+      credentials: "include",
+    });
+    return handleResponse<CezStatusDto>(res);
   },
 };

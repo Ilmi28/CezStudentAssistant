@@ -78,7 +78,7 @@ public class StartQuizEndpointsTests
             QuizAttemptId = Guid.NewGuid()
         };
 
-        var response = await unauthorizedClient.PostAsJsonAsync("/quiz/start", command);
+        var response = await unauthorizedClient.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -125,7 +125,7 @@ public class StartQuizEndpointsTests
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/quiz/start", command);
+        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -156,7 +156,7 @@ public class StartQuizEndpointsTests
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/quiz/start", command);
+        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -207,7 +207,7 @@ public class StartQuizEndpointsTests
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/quiz/start", command);
+        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -253,7 +253,7 @@ public class StartQuizEndpointsTests
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/quiz/start", command);
+        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);

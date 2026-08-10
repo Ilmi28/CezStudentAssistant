@@ -5,7 +5,8 @@ using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
-using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CezStudentAssistant.Application.Queries.User;
 
@@ -35,21 +36,11 @@ public class GetUserConfigurationQueryHandler(IUnitOfWork unitOfWork)
         var theme = user.Configuration?.Theme ?? UserTheme.Light;
         var language = user.Configuration?.Language ?? UserLanguage.Polish;
 
-        var jobRepo = unitOfWork.Repository<IJobRepository>();
-        var latestSyncJob = await jobRepo.Find(j => j.UserId == query.UserId && j.Type == JobType.CezSync && j.Status == JobStatus.Succeeded, true)
-            .OrderByDescending(j => j.LastModifiedAt)
-            .FirstOrDefaultAsync(ct);
-
-        DateTime? lastCezSync = latestSyncJob != null
-            ? (latestSyncJob.LastModifiedAt)
-            : null;
-
         return new UserConfigurationDto
         {
             IsCezConnected = isCezConnected,
             Theme = theme,
-            Language = language,
-            LastCezSync = lastCezSync
+            Language = language
         };
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace CezStudentAssistant.Application.Consts;
+namespace CezStudentAssistant.Application.Consts;
 
-internal static class CezMessagesConsts
+public static class CezMessagesConsts
 {
     public const string LoginSuccess = "Successfully logged in to CEZ.";
     public const string LoginError = "Failed to log in with CEZ.";
@@ -12,4 +12,6 @@ internal static class CezMessagesConsts
     public const string SyncCoursesSuccess = "Successfully synchronized user courses.";
     public const string GetCourseContentsError = "Failed to retrieve course contents from CEZ.";
     public const string SyncCoursesError = "Failed to synchronize user courses.";
+    public const string GetCezStatusSuccess = "Successfully retrieved CEZ status.";
+    public const string GetCezStatusError = "Failed to retrieve CEZ status.";
 }

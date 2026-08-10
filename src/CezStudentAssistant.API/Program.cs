@@ -89,6 +89,17 @@ public class Program
             };
         });
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("CorsPolicy", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
+
         builder.Services.AddAuthorization();
 
         builder.Services.AddEndpointsApiExplorer();
@@ -165,6 +176,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+        app.UseCors("CorsPolicy");
 
         app.UseAuthentication();
         app.UseAuthorization();

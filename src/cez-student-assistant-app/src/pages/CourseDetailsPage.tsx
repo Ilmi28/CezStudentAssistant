@@ -119,7 +119,7 @@ export default function CourseDetailsPage({
           {selectedCourse.description || t("courseDetails.noDesc")}
         </p>
         <div className="mt-4 pt-3 border-t border-border flex justify-between items-center text-[11px] text-muted-foreground/60">
-          <span>{t("courseDetails.lastSynched", { date: new Date(selectedCourse.lastSynched).toLocaleString() })}</span>
+          <span>{t("courseDetails.lastSynched", { date: selectedCourse.lastSynched ? new Date(selectedCourse.lastSynched).toLocaleString() : t("courses.noSyncDate") })}</span>
           <span className="font-mono">ID: {selectedCourse.id}</span>
         </div>
       </div>
@@ -150,12 +150,12 @@ export default function CourseDetailsPage({
                         <FileText size={15} />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-[12px] font-medium text-foreground truncate">{file.name}</div>
-                        <div className="text-[9px] text-muted-foreground/50 font-mono">{file.contentType} · ID: {file.id.substring(0, 8)}</div>
+                        <div className="text-[12px] font-medium text-foreground truncate">{file.displayName}</div>
+                        <div className="text-[9px] text-muted-foreground/50 font-mono">{file.mimeType} · ID: {file.id.substring(0, 8)}</div>
                       </div>
                     </div>
                     <a
-                      href={`/course/${selectedCourse.id}/file/${file.id}/download`}
+                      href={file.downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[12px] text-primary hover:underline font-bold flex-shrink-0 ml-4"

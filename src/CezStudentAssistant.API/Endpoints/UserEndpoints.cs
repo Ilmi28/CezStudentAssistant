@@ -8,7 +8,7 @@ namespace CezStudentAssistant.API.Endpoints;
 
 public static class UserEndpoints
 {
-    public static void MapUserEndpoints(this WebApplication app)
+    public static void MapUserEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/user").WithTags("User");
 

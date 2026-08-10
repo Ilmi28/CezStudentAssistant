@@ -23,10 +23,6 @@ export default function SyncBanner({
     ? new Date(lastCezSync).toLocaleString("pl-PL", { dateStyle: "short", timeStyle: "short" })
     : null;
 
-  const subtitleText = formattedDate
-    ? t("courses.syncSubtitleDate", { date: formattedDate })
-    : t("courses.syncSubtitleNoDate");
-
   return (
     <div className="bg-card rounded-lg border border-border p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
       <div className="flex items-center gap-4">
@@ -37,7 +33,11 @@ export default function SyncBanner({
           <h3 style={{ fontFamily: "Roboto Slab, serif" }} className="text-[14px] font-semibold text-foreground">
             {t("courses.syncTitle")}
           </h3>
-          <p className="text-[12px] text-muted-foreground font-mono">{subtitleText}</p>
+          {formattedDate && (
+            <p className="text-[12px] text-muted-foreground font-mono mt-0.5">
+              {t("courses.syncSubtitleDate", { date: formattedDate })}
+            </p>
+          )}
         </div>
       </div>
       <div className="flex gap-2.5">

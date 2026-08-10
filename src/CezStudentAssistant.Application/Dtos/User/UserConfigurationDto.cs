@@ -7,5 +7,4 @@ public class UserConfigurationDto
     public bool IsCezConnected { get; set; }
     public UserTheme Theme { get; set; }
     public UserLanguage Language { get; set; }
-    public DateTime? LastCezSync { get; set; }
 }

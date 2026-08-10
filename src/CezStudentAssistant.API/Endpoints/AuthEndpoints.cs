@@ -6,7 +6,7 @@ namespace CezStudentAssistant.API.Endpoints;
 
 public static class AuthEndpoints
 {
-    public static void MapAuthEndpoints(this WebApplication app)
+    public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/auth").WithTags("Auth");
 
@@ -39,10 +39,10 @@ public static class AuthEndpoints
 
         group.MapPost(
             "/logout",
-            (ICurrentUserService currentUserService) =>
+            async (ICurrentUserService currentUserService) =>
             {
                 currentUserService.ClearSession();
-                return Results.Ok(new { success = true, statusCode = 200, message = "Logged out successfully", data = (object?)null });
+                return Results.Ok();
             });
     }
 }

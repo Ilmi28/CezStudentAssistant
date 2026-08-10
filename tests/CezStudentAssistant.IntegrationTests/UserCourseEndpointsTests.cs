@@ -83,8 +83,8 @@ public class UserCourseEndpointsTests
         var addContent = await addResponse.Content.ReadFromJsonAsync<ApiResponse<Guid>>(_jsonOptions);
         var courseId = addContent!.Data;
 
-        var updateCommand = new UpdateUserCourseCommand { Name = "New Name", Description = "New Desc" };
-        var response = await _client.PutAsJsonAsync($"/course/{courseId}", updateCommand);
+        var updateCommand = new UpdateUserCourseCommand { CourseId = courseId, Name = "New Name", Description = "New Desc" };
+        var response = await _client.PutAsJsonAsync("/course", updateCommand);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

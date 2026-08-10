@@ -85,7 +85,7 @@ public class CourseDetailsEndpointsTests
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
         formData.Add(fileContent, "file", "testfile.bin");
 
-        var uploadResponse = await _client.PostAsync($"/course/{courseId}/file", formData);
+        var uploadResponse = await _client.PostAsync($"/course/file/upload?courseId={courseId}", formData);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var uploadContent = await uploadResponse.Content.ReadFromJsonAsync<ApiResponse<Guid>>(_jsonOptions);

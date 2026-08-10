@@ -15,7 +15,7 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         HttpOnly = true,
         Secure = httpContextAccessor.HttpContext?.Request.IsHttps ?? false,
-        SameSite = SameSiteMode.Strict,
+        SameSite = SameSiteMode.Lax,
         Expires = DateTime.UtcNow.AddDays(7)
     };
 
@@ -33,7 +33,7 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor)
         {
             HttpOnly = true,
             Secure = httpContextAccessor.HttpContext?.Request.IsHttps ?? false,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddDays(-1)
         };
         Response.Cookies.Delete("accessToken", options);

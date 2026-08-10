@@ -10,7 +10,7 @@ namespace CezStudentAssistant.API.Endpoints;
 
 public static class QuizEndpoints
 {
-    public static void MapQuizEndpoints(this WebApplication app)
+    public static void MapQuizEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/quiz").WithTags("Quiz");
 
@@ -28,13 +28,14 @@ public static class QuizEndpoints
             return Results.Ok(result);
         }).RequireAuthorization();
 
-        group.MapPost("/answer", async (SubmitQuizAnswerCommand command, IMediator mediator) =>
+        group.MapPost("/{id:guid}/start", async (Guid id, IMediator mediator) =>
         {
+            var command = new StartQuizCommand { QuizAttemptId = id };
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
 
-        group.MapPost("/start", async (StartQuizCommand command, IMediator mediator) =>
+        group.MapPost("/answer", async (SubmitQuizAnswerCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
             return Results.Ok(result);

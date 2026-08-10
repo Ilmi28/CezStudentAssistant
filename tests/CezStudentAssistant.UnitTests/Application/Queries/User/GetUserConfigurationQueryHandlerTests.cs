@@ -94,7 +94,6 @@ public class GetUserConfigurationQueryHandlerTests
         result.Data!.IsCezConnected.Should().BeTrue();
         result.Data.Theme.Should().Be(UserTheme.Dark);
         result.Data.Language.Should().Be(UserLanguage.English);
-        result.Data.LastCezSync.Should().Be(lastSyncDate);
     }
 
     [Test]
@@ -129,7 +128,6 @@ public class GetUserConfigurationQueryHandlerTests
         result.Data!.IsCezConnected.Should().BeFalse();
         result.Data.Theme.Should().Be(UserTheme.Light);
         result.Data.Language.Should().Be(UserLanguage.Polish);
-        result.Data.LastCezSync.Should().BeNull();
     }
 
     [Test]

@@ -7,7 +7,7 @@ namespace CezStudentAssistant.API.Endpoints;
 
 public static class CourseEndpoints
 {
-    public static void MapCourseEndpoints(this WebApplication app)
+    public static void MapCourseEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/course").WithTags("Course");
 
@@ -25,16 +25,15 @@ public static class CourseEndpoints
             return Results.Ok(result);
         }).RequireAuthorization();
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateUserCourseCommand command, IMediator mediator) =>
+        group.MapPut("/", async (UpdateUserCourseCommand command, IMediator mediator) =>
         {
-            command.CourseId = id;
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
 
-        group.MapDelete("/{id:guid}", async (Guid id, IMediator mediator) =>
+        group.MapDelete("/{courseId:guid}", async (Guid courseId, IMediator mediator) =>
         {
-            var command = new DeleteUserCourseCommand { CourseId = id };
+            var command = new DeleteUserCourseCommand { CourseId = courseId };
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
@@ -46,26 +45,27 @@ public static class CourseEndpoints
             return Results.Ok(result);
         }).RequireAuthorization();
 
+        group.MapPost("/file/upload", async (IFormFile file, Guid courseId, IMediator mediator) =>
+        {
+            using var stream = file.OpenReadStream();
+            var command = new UploadCourseFileCommand
+            {
+                CourseId = courseId,
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                FileStream = stream
+            };
+
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization().DisableAntiforgery();
+
         group.MapGet("/{courseId:guid}/file/{fileId:guid}/download", async (Guid courseId, Guid fileId, IMediator mediator) =>
         {
             var query = new DownloadCourseFileQuery { CourseId = courseId, FileId = fileId };
             var result = await mediator.Send(query);
             return Results.File(result.FileStream, result.ContentType, result.FileName);
         }).RequireAuthorization();
-
-        group.MapPost("/{courseId:guid}/file", async (Guid courseId, IFormFile file, IMediator mediator) =>
-        {
-            using var stream = file.OpenReadStream();
-            var command = new UploadCourseFileCommand
-            {
-                CourseId = courseId,
-                FileStream = stream,
-                FileName = file.FileName,
-                ContentType = file.ContentType
-            };
-            var result = await mediator.Send(command);
-            return Results.Ok(result);
-        }).RequireAuthorization().DisableAntiforgery();
 
         group.MapPost("/{courseId:guid}/generate-quiz", async (Guid courseId, GenerateQuizCommand command, IMediator mediator) =>
         {

@@ -48,6 +48,27 @@ public class CezEndpointsTests
     }
 
     [Test]
+    [Order(1)]
+    public async Task GetCezStatus_ShouldReturn200WithStatus_WhenAuthenticated()
+    {
+        // Arrange
+        var username = "statususer";
+        var password = "Password123!";
+        await RegisterAndLogin(username, password);
+
+        // Act
+        var response = await _client.GetAsync("/cez/status");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<CezStatusDto>>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+        content.Data.Should().NotBeNull();
+        content.Data!.IsConnected.Should().BeFalse();
+    }
+
+    [Test]
     public async Task SyncCourses_ShouldSyncCourses_WhenUserExists()
     {
         // Arrange

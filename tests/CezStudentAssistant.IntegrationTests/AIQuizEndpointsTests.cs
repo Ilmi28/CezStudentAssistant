@@ -97,7 +97,7 @@ public class AIQuizEndpointsTests
         var nonExistentCourseId = Guid.NewGuid();
         var command = new GenerateQuizCommand
         {
-            QuestionCount = 3,
+            QuestionCount = 5,
             AdditionalInstructions = "easy"
         };
 

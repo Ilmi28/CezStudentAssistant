@@ -90,11 +90,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const quizList = await api.getQuizzes();
       setQuizzes(quizList);
       try {
-        const config = await api.getUserConfiguration();
-        setIsCezConnected(config.isCezConnected);
-        setLastCezSync(config.lastCezSync);
+        const cezStatus = await api.getCezStatus();
+        setIsCezConnected(cezStatus.isConnected);
+        setLastCezSync(cezStatus.lastSyncAt);
       } catch {
-        // Fallback if config is not available
+        // Fallback if status is not available
       }
       const storedUser = localStorage.getItem("username") || "Student";
       setUsername(storedUser);
@@ -135,9 +135,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const quizList = await api.getQuizzes();
       setQuizzes(quizList);
       try {
-        const config = await api.getUserConfiguration();
-        setIsCezConnected(config.isCezConnected);
-        setLastCezSync(config.lastCezSync);
+        const cezStatus = await api.getCezStatus();
+        setIsCezConnected(cezStatus.isConnected);
+        setLastCezSync(cezStatus.lastSyncAt);
       } catch {
         // Fallback
       }
@@ -175,9 +175,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const courseList = await api.getCourses();
       setCourses(courseList);
       try {
-        const config = await api.getUserConfiguration();
-        setIsCezConnected(config.isCezConnected);
-        setLastCezSync(config.lastCezSync);
+        const cezStatus = await api.getCezStatus();
+        setIsCezConnected(cezStatus.isConnected);
+        setLastCezSync(cezStatus.lastSyncAt);
       } catch {
         // Fallback
       }
@@ -211,9 +211,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const quizList = await api.getQuizzes();
       setQuizzes(quizList);
       try {
-        const config = await api.getUserConfiguration();
-        setIsCezConnected(config.isCezConnected);
-        setLastCezSync(config.lastCezSync);
+        const cezStatus = await api.getCezStatus();
+        setIsCezConnected(cezStatus.isConnected);
+        setLastCezSync(cezStatus.lastSyncAt);
       } catch {
         // Fallback
       }
