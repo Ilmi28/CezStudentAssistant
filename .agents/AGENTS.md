@@ -21,6 +21,7 @@ This file defines the project coding standards, UI design tokens, component arch
 2. **No Hardcoded UI Duplication**: NEVER duplicate hardcoded UI elements, inputs, buttons, header layouts, or alert banners. Always import and use standard shared components in `src/components/`.
 3. **Generic Container Pattern**: Prefer generic, composable container components (e.g. `<Card borderLeftPrimary hoverEffect>`) with configurable props and children over fragmented, single-purpose component variants.
 4. **Form Error Display**: Form validation errors (empty fields, bad credentials) MUST be rendered inline inside forms using shared inline alert/banner components. NEVER use floating toast popups for form validation errors.
+5. **Domain-Specific Services**: Frontend API requests MUST be modularized into separate domain-specific service files (e.g. Auth, Course, Quiz, User) rather than bundled into a single monolithic API file. Low-level fetch wrappers, response parsing, and authentication interceptors MUST be encapsulated in a shared base client module.
 
 ---
 
@@ -49,6 +50,10 @@ This file defines the project coding standards, UI design tokens, component arch
 - **HttpOnly Cookies**: JWT `accessToken` and `refreshToken` MUST be stored and transmitted via HttpOnly, Secure, SameSite cookies managed by `ICurrentUserService`.
 - **Password Hashing**: Use `IPasswordHasherService` (PBKDF2 with SHA256) for secure password hashing and verification.
 - **Authorization**: Secure Minimal API endpoints with `.RequireAuthorization()`.
+
+### 5. Configuration & Settings Management
+- **No Hardcoded Configuration or Expiration Durations**: NEVER hardcode configuration values (e.g. container names, cookie TTLs, token expiration times, API timeout limits, or retry counts) directly in C# code files. ALL configuration parameters MUST be defined in `appsettings.json`.
+- **Direct IConfiguration Injection for Simple Settings**: For simple configuration strings, container names, or individual keys, inject `IConfiguration` directly instead of creating single-property wrapper classes or `IOptions<T>` objects. Reserve strongly-typed `IOptions<T>` settings classes strictly for complex multi-property settings sections (e.g. `JwtSettings`).
 
 ---
 

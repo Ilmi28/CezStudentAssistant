@@ -42,7 +42,7 @@ public class LoginWithCezCommandHandlerTests
 
         _cezAuthService.LoginWithCezAsync(command.UserName, command.Password, Arg.Any<CancellationToken>())
             .Returns(userId);
-        _tokenService.HandleRefreshToken(userId, Arg.Any<CancellationToken>())
+        _tokenService.RotateRefreshTokenAsync(userId, Arg.Any<CancellationToken>())
             .Returns("refresh-token");
         _tokenService.GenerateAccessToken(userId).Returns("access-token");
 

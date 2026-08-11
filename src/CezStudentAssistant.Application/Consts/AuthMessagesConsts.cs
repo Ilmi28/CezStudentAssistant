@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Application.Consts;
+namespace CezStudentAssistant.Application.Consts;
 
 internal static class AuthMessagesConsts
 {
@@ -12,4 +12,8 @@ internal static class AuthMessagesConsts
     public const string LoginError = "Failed to log in.";
     public const string LoginValidationError = "Invalid login details.";
     public const string LoginInvalidCredentials = "Invalid username or password.";
+
+    public const string RefreshSuccess = "Token refreshed successfully.";
+    public const string RefreshError = "Failed to refresh token.";
+    public const string InvalidRefreshToken = "Invalid or expired refresh token.";
 }

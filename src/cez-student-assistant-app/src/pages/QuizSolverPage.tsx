@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, AlertCircle, Check, ArrowRight, Trophy, RefreshCw } from "lucide-react";
-import { api, type QuizDetailsDto, type QuestionDto } from "../services/api";
+import { quizService, type QuizDetailsDto, type QuestionDto } from "../services";
 
 interface QuizSolverPageProps {
   setError: (msg: string) => void;
@@ -39,7 +39,7 @@ export default function QuizSolverPage({
     if (!id) return;
     setLoading(true);
     try {
-      const details = await api.getQuizDetails(id);
+      const details = await quizService.getQuizDetails(id);
       setSelectedQuiz(details);
       setQuizAttempt({
         currentQuestionIndex: 0,

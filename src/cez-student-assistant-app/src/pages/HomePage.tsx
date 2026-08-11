@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Layers, Trophy, Zap, Target, Brain, ArrowRight } from "lucide-react";
-import type { CourseDto, QuizDto } from "../services/api";
+import type { CourseDto, QuizDto } from "../services";
 import Card from "../components/Card";
 import { PrimaryButton } from "../components/Button";
 

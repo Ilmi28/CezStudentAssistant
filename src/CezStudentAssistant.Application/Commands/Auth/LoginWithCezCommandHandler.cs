@@ -25,7 +25,7 @@ public class LoginWithCezCommandHandler(
     {
         var userId = await cezService.LoginWithCezAsync(command.UserName, command.Password, ct);
 
-        var refreshToken = await tokenService.HandleRefreshToken(userId, ct);
+        var refreshToken = await tokenService.RotateRefreshTokenAsync(userId, ct);
         var accessToken = tokenService.GenerateAccessToken(userId);
         await unitOfWork.SaveChangesAsync(ct);
         await publisher.Publish(new CezLoginSucceededNotification(userId), ct);

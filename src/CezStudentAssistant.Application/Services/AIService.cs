@@ -11,6 +11,7 @@ using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,8 +23,13 @@ public class AIService(
     IAIClient aiClient,
     IUnitOfWork unitOfWork,
     IFileService fileService,
-    IJobService jobService) : IAIService, IScopedService
+    IJobService jobService,
+    IConfiguration configuration) : IAIService, IScopedService
 {
+    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
+        ?? configuration["CourseFilesContainer"]
+        ?? "course-files";
+
     public async Task GenerateQuiz(GenerateQuizDto dto, CancellationToken ct = default)
     {
         var job = await jobService.GetLatestJobAsync(dto.UserId, JobType.QuizGeneration, ct);
@@ -46,7 +52,7 @@ public class AIService(
             foreach (var resource in resources)
             {
                 var filePath = $"{dto.CourseId}/{resource.Name}";
-                var stream = await fileService.DownloadAsync(filePath, ContainerNameConsts.CourseFilesContainer, ct);
+                var stream = await fileService.DownloadAsync(filePath, _containerName, ct);
                 aiFiles.Add(new AIFile
                 {
                     Stream = stream,

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, FileText, Upload, Brain, X, RefreshCw } from "lucide-react";
-import { api, type CourseDetailsDto } from "../services/api";
+import { courseService, type CourseDetailsDto } from "../services";
 import { PrimaryButton } from "../components/Button";
 
 interface CourseDetailsPageProps {
@@ -35,7 +35,7 @@ export default function CourseDetailsPage({
     if (!id) return;
     setLoading(true);
     try {
-      const details = await api.getCourseDetails(id);
+      const details = await courseService.getCourseDetails(id);
       setSelectedCourse(details);
     } catch {
       setError(t("courseDetails.loadingDetails"));
@@ -50,10 +50,10 @@ export default function CourseDetailsPage({
     if (!selectedFile || !id) return;
     setUploading(true);
     try {
-      await api.uploadCourseFile(id, selectedFile);
+      await courseService.uploadCourseFile(id, selectedFile);
       setSuccess(t("courseDetails.uploadBtn") + " ✓");
       setSelectedFile(null);
-      const details = await api.getCourseDetails(id);
+      const details = await courseService.getCourseDetails(id);
       setSelectedCourse(details);
     } catch (err: any) {
       setError(err.message || t("courseDetails.uploadBtnLoading"));
@@ -67,7 +67,7 @@ export default function CourseDetailsPage({
     if (!id) return;
     setGenerating(true);
     try {
-      await api.generateQuiz(id, questionCount, additionalInstructions);
+      await courseService.generateQuiz(id, questionCount, additionalInstructions);
       setSuccess(t("courseDetails.generateBtn") + " ✓");
       setAdditionalInstructions("");
     } catch (err: any) {

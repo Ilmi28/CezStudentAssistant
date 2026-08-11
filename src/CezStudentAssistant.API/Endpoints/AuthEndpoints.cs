@@ -38,6 +38,15 @@ public static class AuthEndpoints
             });
 
         group.MapPost(
+            "/refresh",
+            async (RefreshTokenCommand? command, IMediator mediator) =>
+            {
+                var response = await mediator.Send(command ?? new RefreshTokenCommand());
+
+                return Results.Ok(response);
+            });
+
+        group.MapPost(
             "/logout",
             async (ICurrentUserService currentUserService) =>
             {

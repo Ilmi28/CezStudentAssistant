@@ -13,6 +13,7 @@ using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using MockQueryable.NSubstitute;
 using NSubstitute;
 using NUnit.Framework;
@@ -54,7 +55,8 @@ public class AIServiceTests
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
         _unitOfWork.Repository<IQuizRepository>().Returns(_quizRepository);
 
-        _sut = new AIService(_aiClient, _unitOfWork, _fileService, _jobService);
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
+        _sut = new AIService(_aiClient, _unitOfWork, _fileService, _jobService, configuration);
     }
 
     [TearDown]

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { api, type CourseDto, type QuizDto } from "../services/api";
+import { authService, courseService, quizService, cezService, type CourseDto, type QuizDto } from "../services";
 
 interface AppContextType {
   // Auth
@@ -85,12 +85,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const courseList = await api.getCourses();
+      const courseList = await courseService.getCourses();
       setCourses(courseList);
-      const quizList = await api.getQuizzes();
+      const quizList = await quizService.getQuizzes();
       setQuizzes(quizList);
       try {
-        const cezStatus = await api.getCezStatus();
+        const cezStatus = await cezService.getCezStatus();
         setIsCezConnected(cezStatus.isConnected);
         setLastCezSync(cezStatus.lastSyncAt);
       } catch {
@@ -130,12 +130,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUsername(user);
     setLoading(true);
     try {
-      const courseList = await api.getCourses();
+      const courseList = await courseService.getCourses();
       setCourses(courseList);
-      const quizList = await api.getQuizzes();
+      const quizList = await quizService.getQuizzes();
       setQuizzes(quizList);
       try {
-        const cezStatus = await api.getCezStatus();
+        const cezStatus = await cezService.getCezStatus();
         setIsCezConnected(cezStatus.isConnected);
         setLastCezSync(cezStatus.lastSyncAt);
       } catch {
@@ -151,7 +151,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     try {
-      await api.logout();
+      await authService.logout();
     } catch {
       // Ignore network/server errors on logout
     }
@@ -170,12 +170,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSyncing(true);
     setSuccess(t("courses.syncBtnLoading") + "...");
     try {
-      await api.syncCourses();
+      await cezService.syncCourses();
       setSuccess(t("common.syncSuccess"));
-      const courseList = await api.getCourses();
+      const courseList = await courseService.getCourses();
       setCourses(courseList);
       try {
-        const cezStatus = await api.getCezStatus();
+        const cezStatus = await cezService.getCezStatus();
         setIsCezConnected(cezStatus.isConnected);
         setLastCezSync(cezStatus.lastSyncAt);
       } catch {
@@ -191,7 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const handleCezLinkSubmit = async (cezUser: string, cezPass: string) => {
     setLoading(true);
     try {
-      await api.loginCez(cezUser, cezPass);
+      await authService.loginCez(cezUser, cezPass);
       setIsCezConnected(true);
       setSuccess(t("common.syncSuccess"));
       setShowCezModal(false);
@@ -206,12 +206,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const handleRefreshLists = async () => {
     setLoading(true);
     try {
-      const courseList = await api.getCourses();
+      const courseList = await courseService.getCourses();
       setCourses(courseList);
-      const quizList = await api.getQuizzes();
+      const quizList = await quizService.getQuizzes();
       setQuizzes(quizList);
       try {
-        const cezStatus = await api.getCezStatus();
+        const cezStatus = await cezService.getCezStatus();
         setIsCezConnected(cezStatus.isConnected);
         setLastCezSync(cezStatus.lastSyncAt);
       } catch {

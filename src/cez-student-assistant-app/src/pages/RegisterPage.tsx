@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { api } from "../services/api";
+import { authService } from "../services";
 import { AuthLayout } from "../components/AuthLayout";
 import { Input } from "../components/Input";
 import { Alert } from "../components/Alert";
@@ -31,7 +31,7 @@ export default function RegisterPage({
     setFormError(null);
     setLoading(true);
     try {
-      await api.register(regUser, regPass);
+      await authService.register(regUser, regPass);
       setSuccess(t("auth.registerSuccess"));
       navigate("/login");
     } catch (err: any) {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { api } from "../services/api";
+import { authService } from "../services";
 import { AuthLayout } from "../components/AuthLayout";
 import { Input } from "../components/Input";
 import { Alert } from "../components/Alert";
@@ -34,7 +34,7 @@ export default function LoginPage({
     setFormError(null);
     setLoading(true);
     try {
-      await api.login(loginUser, loginPass);
+      await authService.login(loginUser, loginPass);
       onLoginSuccess(loginUser);
       setSuccess(t("auth.loginSuccess"));
     } catch (err: any) {

@@ -7,6 +7,7 @@ using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
+using Microsoft.Extensions.Configuration;
 
 namespace CezStudentAssistant.Application.Commands.Course;
 
@@ -19,8 +20,15 @@ public class UploadCourseFileCommand : ICommand<Guid>, IUserRequest
     public required string ContentType { get; set; }
 }
 
-public class UploadCourseFileCommandHandler(IUnitOfWork unitOfWork, IFileService fileService) : BaseCommandHandler<UploadCourseFileCommand, Guid>
+public class UploadCourseFileCommandHandler(
+    IUnitOfWork unitOfWork,
+    IFileService fileService,
+    IConfiguration configuration) : BaseCommandHandler<UploadCourseFileCommand, Guid>
 {
+    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
+        ?? configuration["CourseFilesContainer"]
+        ?? "course-files";
+
     protected override string SuccessMessage => CourseMessageConsts.UploadCourseFileSuccess;
     protected override string ErrorMessage => CourseMessageConsts.UploadCourseFileError;
 
@@ -49,7 +57,7 @@ public class UploadCourseFileCommandHandler(IUnitOfWork unitOfWork, IFileService
         var contentName = $"{Guid.NewGuid()}_{command.FileName}";
         var filePath = $"{course.Id}/{contentName}";
 
-        await fileService.UploadAsync(command.FileStream, filePath, ContainerNameConsts.CourseFilesContainer, command.ContentType, ct);
+        await fileService.UploadAsync(command.FileStream, filePath, _containerName, command.ContentType, ct);
 
         var resource = new Resource
         {

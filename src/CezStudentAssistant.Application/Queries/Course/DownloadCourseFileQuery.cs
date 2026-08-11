@@ -7,6 +7,7 @@ using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 
 namespace CezStudentAssistant.Application.Queries.Course;
 
@@ -17,8 +18,15 @@ public class DownloadCourseFileQuery : IRequest<FileResultDto>, IUserRequest
     public Guid FileId { get; set; }
 }
 
-public class DownloadCourseFileQueryHandler(IUnitOfWork unitOfWork, IFileService fileService) : IRequestHandler<DownloadCourseFileQuery, FileResultDto>
+public class DownloadCourseFileQueryHandler(
+    IUnitOfWork unitOfWork,
+    IFileService fileService,
+    IConfiguration configuration) : IRequestHandler<DownloadCourseFileQuery, FileResultDto>
 {
+    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
+        ?? configuration["CourseFilesContainer"]
+        ?? "course-files";
+
     public async Task<FileResultDto> Handle(DownloadCourseFileQuery request, CancellationToken cancellationToken)
     {
         var courseRepository = unitOfWork.Repository<ICourseRepository>();
@@ -43,7 +51,7 @@ public class DownloadCourseFileQueryHandler(IUnitOfWork unitOfWork, IFileService
         }
 
         var filePath = $"{course.Id}/{resource.Name}";
-        var stream = await fileService.DownloadAsync(filePath, ContainerNameConsts.CourseFilesContainer, cancellationToken);
+        var stream = await fileService.DownloadAsync(filePath, _containerName, cancellationToken);
 
         return new FileResultDto
         {

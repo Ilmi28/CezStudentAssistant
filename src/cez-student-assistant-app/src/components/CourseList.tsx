@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Layers } from "lucide-react";
-import type { CourseDto } from "../services/api";
+import type { CourseDto } from "../services";
 
 interface CourseListProps {
   courses: CourseDto[];

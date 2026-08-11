@@ -52,7 +52,7 @@ public class TokenService : ITokenService, IScopedService
         return tokenHandler.WriteToken(token);
     }
 
-    public async Task<string> HandleRefreshToken(Guid userId, CancellationToken ct)
+    public async Task<string> RotateRefreshTokenAsync(Guid userId, CancellationToken ct)
     {
         string refreshToken = GenerateRefreshToken();
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
-import { api } from "../services/api";
+import { authService } from "../services";
 import { AuthLayout } from "../components/AuthLayout";
 import { Input } from "../components/Input";
 import { Alert } from "../components/Alert";
@@ -34,7 +34,7 @@ export default function CezLoginPage({
     setFormError(null);
     setLoading(true);
     try {
-      await api.loginCez(cezUser, cezPass);
+      await authService.loginCez(cezUser, cezPass);
       onLoginSuccess(cezUser);
       setSuccess(t("auth.cezSuccess"));
     } catch (err: any) {

@@ -7,6 +7,7 @@ using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using NUnit.Framework;
 using System;
@@ -40,7 +41,8 @@ public class UploadCourseFileCommandHandlerTests
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
 
-        _sut = new UploadCourseFileCommandHandler(_unitOfWork, _fileService);
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
+        _sut = new UploadCourseFileCommandHandler(_unitOfWork, _fileService, configuration);
     }
 
     [TearDown]
@@ -85,7 +87,7 @@ public class UploadCourseFileCommandHandlerTests
         await _fileService.Received(1).UploadAsync(
             memoryStream,
             Arg.Is<string>(path => path.StartsWith($"{courseId}/")),
-            ContainerNameConsts.CourseFilesContainer,
+            "course-files",
             "application/pdf",
             Arg.Any<CancellationToken>()
         );

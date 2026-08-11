@@ -6,6 +6,7 @@ using CezStudentAssistant.Application.Queries.Course;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using NUnit.Framework;
 using System;
@@ -39,7 +40,8 @@ public class DownloadCourseFileQueryHandlerTests
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
 
-        _sut = new DownloadCourseFileQueryHandler(_unitOfWork, _fileService);
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
+        _sut = new DownloadCourseFileQueryHandler(_unitOfWork, _fileService, configuration);
     }
 
     [TearDown]
@@ -78,7 +80,7 @@ public class DownloadCourseFileQueryHandlerTests
             .Returns(resource);
 
         using var memoryStream = new MemoryStream(new byte[] { 10, 20, 30 });
-        _fileService.DownloadAsync($"{courseId}/guid_file.pdf", ContainerNameConsts.CourseFilesContainer, Arg.Any<CancellationToken>())
+        _fileService.DownloadAsync($"{courseId}/guid_file.pdf", "course-files", Arg.Any<CancellationToken>())
             .Returns(memoryStream);
 
         var query = new DownloadCourseFileQuery { UserId = userId, CourseId = courseId, FileId = fileId };

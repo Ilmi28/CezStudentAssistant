@@ -1,4 +1,4 @@
-import type { CourseDto } from "../services/api";
+import type { CourseDto } from "../services";
 import SyncBanner from "../components/SyncBanner";
 import CourseList from "../components/CourseList";
 

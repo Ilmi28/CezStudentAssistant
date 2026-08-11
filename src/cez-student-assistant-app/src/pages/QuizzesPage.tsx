@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Brain } from "lucide-react";
-import type { QuizDto } from "../services/api";
+import type { QuizDto } from "../services";
 import Card from "../components/Card";
 import { PrimaryButton } from "../components/Button";
 

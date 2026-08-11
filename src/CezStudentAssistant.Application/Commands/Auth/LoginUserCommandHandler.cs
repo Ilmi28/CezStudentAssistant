@@ -28,7 +28,7 @@ public class LoginUserCommandHandler(
         if (user == null || user.PasswordHash == null || !passwordService.VerifyPassword(command.Password, user.PasswordHash))
             throw new UnauthorizedException(AuthMessagesConsts.LoginInvalidCredentials);
 
-        var refreshToken = await tokenService.HandleRefreshToken(user.Id, ct);
+        var refreshToken = await tokenService.RotateRefreshTokenAsync(user.Id, ct);
         var accessToken = tokenService.GenerateAccessToken(user.Id);
 
         currentUserService.SetSession(accessToken, refreshToken);

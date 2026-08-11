@@ -54,27 +54,27 @@ public class TokenServiceTests
     }
 
     [Test]
-    public async Task HandleRefreshToken_ShouldCreateNewToken_WhenNoneExists()
+    public async Task RotateRefreshTokenAsync_ShouldCreateNewToken_WhenNoneExists()
     {
         var userId = Guid.NewGuid();
         _refreshTokenRepository.GetSingleAsync(Arg.Any<Expression<Func<RefreshToken, bool>>>(), Arg.Any<CancellationToken>())
             .Returns((RefreshToken?)null);
 
-        var refreshToken = await _sut.HandleRefreshToken(userId, CancellationToken.None);
+        var refreshToken = await _sut.RotateRefreshTokenAsync(userId, CancellationToken.None);
 
         refreshToken.Should().NotBeNullOrWhiteSpace();
         await _refreshTokenRepository.Received(1).AddAsync(Arg.Is<RefreshToken>(t => t.UserId == userId), Arg.Any<CancellationToken>());
     }
 
     [Test]
-    public async Task HandleRefreshToken_ShouldUpdateExistingToken_WhenOneExists()
+    public async Task RotateRefreshTokenAsync_ShouldUpdateExistingToken_WhenOneExists()
     {
         var userId = Guid.NewGuid();
         var existingToken = new RefreshToken { UserId = userId, Token = "old", ExpiryTime = DateTime.UtcNow };
         _refreshTokenRepository.GetSingleAsync(Arg.Any<Expression<Func<RefreshToken, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(existingToken);
 
-        var refreshToken = await _sut.HandleRefreshToken(userId, CancellationToken.None);
+        var refreshToken = await _sut.RotateRefreshTokenAsync(userId, CancellationToken.None);
 
         refreshToken.Should().NotBe("old");
         existingToken.Token.Should().NotBe("old");

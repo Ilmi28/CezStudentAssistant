@@ -11,6 +11,7 @@ using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using HeyRed.Mime;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace CezStudentAssistant.Application.Services;
 
@@ -19,8 +20,12 @@ public class CezService(
     IUnitOfWork unitOfWork,
     IFileService fileService,
     IJobScheduler jobScheduler,
-    IJobService jobService) : ICezService
+    IJobService jobService,
+    IConfiguration configuration) : ICezService
 {
+    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
+        ?? configuration["CourseFilesContainer"]
+        ?? "course-files";
     public async Task<Guid> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
     {
         var loginResponse = await cezApiClient.LoginToCez(new CezLoginRequest
@@ -206,7 +211,7 @@ public class CezService(
                     Token = courseRequest.Token,
                     FileUrl = content.FileUrl
                 });
-                await fileService.UploadAsync(fileContent, $"{course.Id}/{contentName}", ContainerNameConsts.CourseFilesContainer, content.MimeType, cancellationToken);
+                await fileService.UploadAsync(fileContent, $"{course.Id}/{contentName}", _containerName, content.MimeType, cancellationToken);
             }
         }
 

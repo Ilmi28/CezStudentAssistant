@@ -11,23 +11,34 @@ using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using MockQueryable.NSubstitute;
 using NSubstitute;
+using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CezStudentAssistant.UnitTests.Application.Services;
 
+[TestFixture]
 public class CezServiceTests
 {
     private ICezApiClient _cezApiClient = null!;
     private IUnitOfWork _unitOfWork = null!;
+    private IFileService _fileService = null!;
+    private IJobScheduler _jobScheduler = null!;
+    private IJobService _jobService = null!;
+
     private IUserRepository _userRepository = null!;
     private ICezUserRepository _cezUserRepository = null!;
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _cezResourceRepository = null!;
-    private IFileService _fileService = null!;
-    private IJobScheduler _jobScheduler = null!;
-    private IJobService _jobService = null!;
+
     private CezService _sut = null!;
     private Job _existingJob = null!;
 
@@ -37,11 +48,11 @@ public class CezServiceTests
         _cezApiClient = Substitute.For<ICezApiClient>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _fileService = Substitute.For<IFileService>();
+        _jobScheduler = Substitute.For<IJobScheduler>();
         _userRepository = Substitute.For<IUserRepository>();
         _cezUserRepository = Substitute.For<ICezUserRepository>();
         _courseRepository = Substitute.For<ICourseRepository>();
         _cezResourceRepository = Substitute.For<ICezResourceRepository>();
-        _jobScheduler = Substitute.For<IJobScheduler>();
         _jobService = Substitute.For<IJobService>();
 
         _unitOfWork.Repository<IUserRepository>().Returns(_userRepository);
@@ -53,7 +64,8 @@ public class CezServiceTests
         _jobService.GetLatestJobAsync(Arg.Any<Guid>(), JobType.CezSync, Arg.Any<CancellationToken>())
             .Returns(_existingJob);
 
-        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler, _jobService);
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
+        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler, _jobService, configuration);
     }
 
     [TearDown]

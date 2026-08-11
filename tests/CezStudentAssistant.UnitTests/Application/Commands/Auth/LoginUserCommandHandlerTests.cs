@@ -51,7 +51,7 @@ public class LoginUserCommandHandlerTests
             .Returns(user);
 
         _passwordService.VerifyPassword(command.Password, user.PasswordHash).Returns(true);
-        _tokenService.HandleRefreshToken(userId, Arg.Any<CancellationToken>())
+        _tokenService.RotateRefreshTokenAsync(userId, Arg.Any<CancellationToken>())
             .Returns("refresh-token");
         _tokenService.GenerateAccessToken(userId).Returns("access-token");
 

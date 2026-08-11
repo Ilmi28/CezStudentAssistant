@@ -1,6 +1,8 @@
 using CezStudentAssistant.Infrastructure.Services;
+using CezStudentAssistant.Infrastructure.Settings;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using System.Security.Claims;
 
@@ -14,7 +16,12 @@ public class CurrentUserServiceTests
     public CurrentUserServiceTests()
     {
         _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
-        _sut = new CurrentUserService(_httpContextAccessor);
+        var jwtSettings = Options.Create(new JwtSettings 
+        { 
+            AccessTokenExpiryMinutes = 15,
+            RefreshTokenExpiryDays = 30 
+        });
+        _sut = new CurrentUserService(_httpContextAccessor, jwtSettings);
     }
 
     [Test]
@@ -44,15 +51,43 @@ public class CurrentUserServiceTests
     }
 
     [Test]
-    public void SetSession_ShouldAppendCookies()
+    public void SetSession_ShouldAppendCookiesWithRespectiveExpirations()
     {
         var httpContext = new DefaultHttpContext();
         _httpContextAccessor.HttpContext.Returns(httpContext);
 
         _sut.SetSession("access-token", "refresh-token");
 
-        var setCookieHeader = httpContext.Response.Headers["Set-Cookie"].ToString();
-        setCookieHeader.Should().Contain("accessToken=");
-        setCookieHeader.Should().Contain("refreshToken=");
+        var setCookieHeaders = httpContext.Response.Headers["Set-Cookie"].ToList();
+        var accessTokenCookie = setCookieHeaders.FirstOrDefault(c => c != null && c.StartsWith("accessToken="));
+        var refreshTokenCookie = setCookieHeaders.FirstOrDefault(c => c != null && c.StartsWith("refreshToken="));
+
+        accessTokenCookie.Should().NotBeNull();
+        refreshTokenCookie.Should().NotBeNull();
+        accessTokenCookie.Should().Contain("expires=");
+        refreshTokenCookie.Should().Contain("expires=");
+    }
+
+    [Test]
+    public void GetRefreshToken_ShouldReturnToken_WhenCookieExists()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Cookie"] = "refreshToken=my-refresh-token";
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+
+        var result = _sut.GetRefreshToken();
+
+        result.Should().Be("my-refresh-token");
+    }
+
+    [Test]
+    public void GetRefreshToken_ShouldReturnNull_WhenCookieDoesNotExist()
+    {
+        var httpContext = new DefaultHttpContext();
+        _httpContextAccessor.HttpContext.Returns(httpContext);
+
+        var result = _sut.GetRefreshToken();
+
+        result.Should().BeNull();
     }
 }
