@@ -1,36 +1,10 @@
 import { API_BASE_URL, customFetch, handleResponse } from "./baseClient";
 import { authService } from "./authService";
-
-export interface QuizDto {
-  id: string;
-  name: string;
-  displayName: string;
-  courseId: string;
-  courseName: string;
-}
-
-export interface QuestionOptionDto {
-  id: string;
-  content: string;
-  isCorrect?: boolean;
-}
-
-export interface QuestionDto {
-  id: string;
-  content: string;
-  type: number;
-  points: number;
-  options: QuestionOptionDto[];
-}
-
-export interface QuizDetailsDto {
-  id: string;
-  name: string;
-  displayName: string;
-  courseId: string;
-  courseName: string;
-  questions: QuestionDto[];
-}
+import type {
+  QuizDto,
+  QuizDetailsDto,
+  SubmitAnswerResponseDto,
+} from "../types";
 
 export const quizService = {
   async getQuizzes(): Promise<QuizDto[]> {
@@ -53,7 +27,11 @@ export const quizService = {
     return handleResponse<QuizDetailsDto>(res);
   },
 
-  async submitAnswer(quizAttemptId: string, questionId: string, questionOptionIds: string[]): Promise<any> {
+  async submitAnswer(
+    quizAttemptId: string,
+    questionId: string,
+    questionOptionIds: string[]
+  ): Promise<SubmitAnswerResponseDto> {
     const res = await customFetch(
       `${API_BASE_URL}/quiz/answer`,
       {
@@ -64,6 +42,6 @@ export const quizService = {
       false,
       authService.refreshToken
     );
-    return handleResponse(res);
+    return handleResponse<SubmitAnswerResponseDto>(res);
   },
 };

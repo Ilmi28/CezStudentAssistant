@@ -22,6 +22,7 @@ This file defines the project coding standards, UI design tokens, component arch
 3. **Generic Container Pattern**: Prefer generic, composable container components (e.g. `<Card borderLeftPrimary hoverEffect>`) with configurable props and children over fragmented, single-purpose component variants.
 4. **Form Error Display**: Form validation errors (empty fields, bad credentials) MUST be rendered inline inside forms using shared inline alert/banner components. NEVER use floating toast popups for form validation errors.
 5. **Domain-Specific Services**: Frontend API requests MUST be modularized into separate domain-specific service files (e.g. Auth, Course, Quiz, User) rather than bundled into a single monolithic API file. Low-level fetch wrappers, response parsing, and authentication interceptors MUST be encapsulated in a shared base client module.
+6. **Strongly-Typed Service API Contracts**: Frontend service methods MUST NEVER return `any` or use untyped promises. ALL request payloads and response DTOs MUST be strongly typed using domain-specific type definition files (e.g. Auth, Course, Quiz, User) re-exported through service barrel modules.
 
 ---
 

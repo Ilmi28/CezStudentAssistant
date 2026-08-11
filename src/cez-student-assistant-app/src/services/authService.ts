@@ -1,7 +1,7 @@
 import { API_BASE_URL, customFetch, handleResponse } from "./baseClient";
 
 export const authService = {
-  async login(userName: string, password: string): Promise<any> {
+  async login(userName: string, password: string): Promise<void> {
     const res = await customFetch(
       `${API_BASE_URL}/auth/login`,
       {
@@ -11,10 +11,10 @@ export const authService = {
       },
       true
     );
-    return handleResponse(res, true);
+    return handleResponse<void>(res, true);
   },
 
-  async register(userName: string, password: string): Promise<any> {
+  async register(userName: string, password: string): Promise<void> {
     const res = await customFetch(
       `${API_BASE_URL}/auth/register`,
       {
@@ -24,10 +24,10 @@ export const authService = {
       },
       true
     );
-    return handleResponse(res, true);
+    return handleResponse<void>(res, true);
   },
 
-  async loginCez(userName: string, password: string): Promise<any> {
+  async loginCez(userName: string, password: string): Promise<void> {
     const res = await customFetch(
       `${API_BASE_URL}/auth/login-cez`,
       {
@@ -37,18 +37,18 @@ export const authService = {
       },
       true
     );
-    return handleResponse(res, true);
+    return handleResponse<void>(res, true);
   },
 
-  async refreshToken(): Promise<any> {
+  async refreshToken(): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: "POST",
       credentials: "include",
     });
-    return handleResponse(res, true);
+    return handleResponse<void>(res, true);
   },
 
-  async logout(): Promise<any> {
+  async logout(): Promise<void> {
     const res = await customFetch(
       `${API_BASE_URL}/auth/logout`,
       {
@@ -56,6 +56,6 @@ export const authService = {
       },
       true
     );
-    return handleResponse(res, true);
+    return handleResponse<void>(res, true);
   },
 };

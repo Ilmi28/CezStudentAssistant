@@ -5,3 +5,4 @@ export * from "./quizService";
 export * from "./userService";
 export * from "./cezService";
 export * from "./api";
+export * from "../types";

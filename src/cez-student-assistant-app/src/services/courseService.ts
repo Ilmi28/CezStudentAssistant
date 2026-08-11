@@ -1,28 +1,11 @@
 import { API_BASE_URL, customFetch, handleResponse } from "./baseClient";
 import { authService } from "./authService";
-
-export interface CourseDto {
-  id: string;
-  name: string;
-  lastSynched: string | null;
-}
-
-export interface CourseResourceDto {
-  id: string;
-  displayName: string;
-  mimeType: string;
-  lastModified: string;
-  downloadUrl: string;
-}
-
-export interface CourseDetailsDto {
-  id: string;
-  name: string;
-  description: string | null;
-  type: number;
-  lastSynched: string | null;
-  files: CourseResourceDto[];
-}
+import type {
+  CourseDto,
+  CourseDetailsDto,
+  UploadCourseFileResponseDto,
+  GenerateQuizResponseDto,
+} from "../types";
 
 export const courseService = {
   async getCourses(): Promise<CourseDto[]> {
@@ -45,7 +28,7 @@ export const courseService = {
     return handleResponse<CourseDetailsDto>(res);
   },
 
-  async uploadCourseFile(courseId: string, file: File): Promise<any> {
+  async uploadCourseFile(courseId: string, file: File): Promise<UploadCourseFileResponseDto> {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -58,10 +41,14 @@ export const courseService = {
       false,
       authService.refreshToken
     );
-    return handleResponse(res);
+    return handleResponse<UploadCourseFileResponseDto>(res);
   },
 
-  async generateQuiz(courseId: string, questionCount: number, additionalInstructions?: string): Promise<any> {
+  async generateQuiz(
+    courseId: string,
+    questionCount: number,
+    additionalInstructions?: string
+  ): Promise<GenerateQuizResponseDto> {
     const res = await customFetch(
       `${API_BASE_URL}/course/${courseId}/generate-quiz`,
       {
@@ -72,7 +59,7 @@ export const courseService = {
       false,
       authService.refreshToken
     );
-    return handleResponse(res);
+    return handleResponse<GenerateQuizResponseDto>(res);
   },
 
   async getDownloadFileUrl(courseId: string, fileId: string): Promise<string> {
