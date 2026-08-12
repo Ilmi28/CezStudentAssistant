@@ -19,7 +19,7 @@ public class CurrentUserService(
     private CookieOptions CreateCookieOptions(DateTime expires) => new()
     {
         HttpOnly = true,
-        Secure = true,
+        Secure = httpContextAccessor.HttpContext?.Request.IsHttps ?? false,
         SameSite = SameSiteMode.None,
         Path = "/",
         Expires = expires
