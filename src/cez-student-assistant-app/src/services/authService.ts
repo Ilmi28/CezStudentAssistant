@@ -1,4 +1,4 @@
-import { API_BASE_URL, customFetch, handleResponse } from "./baseClient";
+import { API_BASE_URL, customFetch, handleResponse, UnauthorizedError } from "./baseClient";
 
 export const authService = {
   async login(userName: string, password: string): Promise<void> {
@@ -45,7 +45,24 @@ export const authService = {
       method: "POST",
       credentials: "include",
     });
-    return handleResponse<void>(res, true);
+
+    if (!res.ok) {
+      throw new UnauthorizedError();
+    }
+
+    let body: any = null;
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      try {
+        body = await res.json();
+      } catch (parseError) {
+        console.warn("[authService] Failed to parse refresh token JSON response:", parseError);
+      }
+    }
+
+    if (body && !body.success) {
+      throw new UnauthorizedError(body.message || "Unauthorized access");
+    }
   },
 
   async logout(): Promise<void> {

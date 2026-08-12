@@ -1,12 +1,14 @@
 import { RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AppProvider, useApp } from "./contexts/AppContext";
+import { AppProvider } from "./contexts";
+import { useAuth, useUI } from "./hooks";
 import AppRoutes from "./AppRoutes";
 import Toast from "./components/Toast";
 import pbLogo from "./assets/pb-logo.png";
 
 function AppShell() {
-  const { isAuthChecking, errorMsg, successMsg, setErrorMsg, setSuccessMsg } = useApp();
+  const { isAuthChecking } = useAuth();
+  const { errorMsg, successMsg, setErrorMsg, setSuccessMsg } = useUI();
   const { t } = useTranslation();
 
   if (isAuthChecking) {

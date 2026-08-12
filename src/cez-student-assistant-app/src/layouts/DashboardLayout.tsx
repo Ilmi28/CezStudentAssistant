@@ -1,20 +1,39 @@
 import { Outlet } from "react-router-dom";
-import { useApp } from "../contexts/AppContext";
+import { useTranslation } from "react-i18next";
+import { useAuth, useUI, useCourse, useQuiz } from "../hooks";
 import Topbar from "../components/Topbar";
 import CezModal from "../components/CezModal";
+import { cezService, UnauthorizedError } from "../services";
 
 export default function DashboardLayout() {
-  const {
-    loading,
-    handleRefreshLists,
-    username,
-    handleLogout,
-    darkMode,
-    toggleDarkMode,
-    showCezModal,
-    setShowCezModal,
-    handleCezLinkSubmit,
-  } = useApp();
+  const { username, handleLogout, handleCezLinkSubmit, setIsCezConnected, setLastCezSync } = useAuth();
+  const { loading, setLoading, darkMode, toggleDarkMode, showCezModal, setShowCezModal, setError, setSuccess } = useUI();
+  const { refreshCourses } = useCourse();
+  const { refreshQuizzes } = useQuiz();
+  const { t } = useTranslation();
+
+  const handleRefreshLists = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([refreshCourses(), refreshQuizzes()]);
+      try {
+        const cezStatus = await cezService.getCezStatus();
+        setIsCezConnected(cezStatus.isConnected);
+        setLastCezSync(cezStatus.lastSyncAt);
+      } catch {
+        // Fallback
+      }
+      setSuccess(t("common.refreshSuccess"));
+    } catch (err: any) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+        return;
+      }
+      setError(t("common.errorConnection"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useApp } from "./contexts/AppContext";
+import { useAuth, useCourse, useQuiz, useUI } from "./hooks";
 
 import DashboardLayout from "./layouts/DashboardLayout";
 import LoginPage from "./pages/LoginPage";
@@ -12,18 +12,10 @@ import CourseDetailsPage from "./pages/CourseDetailsPage";
 import QuizSolverPage from "./pages/QuizSolverPage";
 
 export default function AppRoutes() {
-  const {
-    isAuthenticated,
-    isCezConnected,
-    lastCezSync,
-    handleLoginSuccess,
-    setError,
-    setSuccess,
-    courses,
-    quizzes,
-    syncing,
-    handleSyncCourses,
-  } = useApp();
+  const { isAuthenticated, isCezConnected, lastCezSync, handleLoginSuccess } = useAuth();
+  const { courses, handleSyncCourses } = useCourse();
+  const { quizzes } = useQuiz();
+  const { syncing, setError, setSuccess } = useUI();
 
   return (
     <Routes>

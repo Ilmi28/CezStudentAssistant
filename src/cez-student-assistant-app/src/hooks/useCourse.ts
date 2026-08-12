@@ -1,0 +1,81 @@
+import { useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { CourseContext } from "../contexts/CourseContext";
+import { courseService, cezService, UnauthorizedError } from "../services";
+import { useAuth } from "./useAuth";
+import { useUI } from "./useUI";
+
+export function useCourse() {
+  const ctx = useContext(CourseContext);
+  if (!ctx) {
+    throw new Error("useCourse must be used within a CourseProvider");
+  }
+
+  const { t } = useTranslation();
+  const { isAuthenticated, isAuthChecking, handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
+  const { setError, setSuccess, setSyncing } = useUI();
+
+  const fetchCourses = async () => {
+    try {
+      const courseList = await courseService.getCourses();
+      ctx.setCourses(courseList);
+    } catch (err: any) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && !isAuthChecking) {
+      fetchCourses();
+    } else if (!isAuthenticated) {
+      ctx.setCourses([]);
+    }
+  }, [isAuthenticated, isAuthChecking]);
+
+  const refreshCourses = async () => {
+    try {
+      const courseList = await courseService.getCourses();
+      ctx.setCourses(courseList);
+    } catch (err: any) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+        throw err;
+      }
+      setError(t("common.errorConnection"));
+    }
+  };
+
+  const handleSyncCourses = async () => {
+    setSyncing(true);
+    setSuccess(t("courses.syncBtnLoading") + "...");
+    try {
+      await cezService.syncCourses();
+      setSuccess(t("common.syncSuccess"));
+      await refreshCourses();
+      try {
+        const cezStatus = await cezService.getCezStatus();
+        setIsCezConnected(cezStatus.isConnected);
+        setLastCezSync(cezStatus.lastSyncAt);
+      } catch (cezErr) {
+        console.debug("[useCourse] CEZ status fallback on sync:", cezErr);
+      }
+    } catch (err: any) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+        return;
+      }
+      setError(err.message || t("common.errorConnection"));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return {
+    courses: ctx.courses,
+    setCourses: ctx.setCourses,
+    refreshCourses,
+    handleSyncCourses,
+  };
+}

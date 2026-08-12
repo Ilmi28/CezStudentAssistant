@@ -1,5 +1,24 @@
 import i18n from "../i18n";
 
+export class ApiError extends Error {
+  public statusCode: number;
+  public errors: string[] | null;
+
+  constructor(message: string, statusCode: number, errors: string[] | null = null) {
+    super(message);
+    this.name = "ApiError";
+    this.statusCode = statusCode;
+    this.errors = errors;
+  }
+}
+
+export class UnauthorizedError extends ApiError {
+  constructor(message = "Unauthorized access") {
+    super(message, 401);
+    this.name = "UnauthorizedError";
+  }
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   statusCode: number;
@@ -18,6 +37,36 @@ const onRefreshed = (success: boolean) => {
   refreshSubscribers = [];
 };
 
+const parseJsonResponse = async <T>(res: Response): Promise<ApiResponse<T> | null> => {
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return null;
+  }
+  try {
+    return (await res.json()) as ApiResponse<T>;
+  } catch (parseError) {
+    console.warn("[baseClient] Failed to parse JSON response body:", parseError);
+    return null;
+  }
+};
+
+const defaultRefreshToken = async (): Promise<void> => {
+  const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new UnauthorizedError();
+  }
+
+  const body = await parseJsonResponse<void>(res);
+
+  if (body && !body.success) {
+    throw new UnauthorizedError(body.message || "Unauthorized access");
+  }
+};
+
 export const customFetch = async (
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -31,17 +80,19 @@ export const customFetch = async (
 
   let res = await fetch(input, options);
 
-  if (res.status === 401 && !isAuthEndpoint && refreshTokenFn) {
+  if (res.status === 401 && !isAuthEndpoint) {
+    const refresh = refreshTokenFn || defaultRefreshToken;
     if (!isRefreshing) {
       isRefreshing = true;
       try {
-        await refreshTokenFn();
+        await refresh();
         isRefreshing = false;
         onRefreshed(true);
         res = await fetch(input, options);
-      } catch {
+      } catch (refreshError) {
         isRefreshing = false;
         onRefreshed(false);
+        console.warn("[baseClient] Token refresh failed:", refreshError);
       }
     } else {
       const refreshed = await new Promise<boolean>((resolve) => {
@@ -57,15 +108,10 @@ export const customFetch = async (
 };
 
 export const handleResponse = async <T>(res: Response, isAuthEndpoint = false): Promise<T> => {
-  let body: ApiResponse<T> | null = null;
-  try {
-    body = await res.json();
-  } catch {
-    // Non-JSON response
-  }
+  const body = await parseJsonResponse<T>(res);
 
   if (res.status === 401 && !isAuthEndpoint) {
-    throw new Error("UNAUTHORIZED");
+    throw new UnauthorizedError();
   }
 
   if (!res.ok || (body && !body.success)) {
@@ -79,10 +125,10 @@ export const handleResponse = async <T>(res: Response, isAuthEndpoint = false): 
     }
 
     if (serverMessage) {
-      throw new Error(serverMessage);
+      throw new ApiError(serverMessage, res.status, body?.errors);
     }
 
-    throw new Error(`Request failed with status ${res.status}`);
+    throw new ApiError(`Request failed with status ${res.status}`, res.status);
   }
 
   return body?.data as T;

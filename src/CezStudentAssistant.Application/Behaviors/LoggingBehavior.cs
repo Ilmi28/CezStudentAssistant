@@ -1,3 +1,4 @@
+using CezStudentAssistant.Application.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -33,6 +34,18 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
             );
 
             return response;
+        }
+        catch (AppException ex)
+        {
+            logger.LogWarning(
+                "\n{Separator}\n[MEDIATR] WARN: Handled application exception in {RequestName}\nMessage: {ErrorMessage}\n{Separator}\n",
+                Separator,
+                requestName,
+                ex.Message,
+                Separator
+            );
+
+            throw;
         }
         catch (Exception ex)
         {

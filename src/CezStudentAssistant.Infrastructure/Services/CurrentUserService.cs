@@ -21,6 +21,7 @@ public class CurrentUserService(
         HttpOnly = true,
         Secure = true,
         SameSite = SameSiteMode.None,
+        Path = "/",
         Expires = expires
     };
 
