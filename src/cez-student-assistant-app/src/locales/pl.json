@@ -151,5 +151,32 @@
         "submit": "Połącz konto",
         "submitLoading": "Integracja...",
         "cancel": "Anuluj"
+    },
+    "profile": {
+        "signedInAs": "Zalogowano jako",
+        "preferences": "Preferencje"
+    },
+    "preferences": {
+        "title": "Preferencje Użytkownika",
+        "subtitle": "Zarządzaj swoim profilem, motywem aplikacji i integracjami systemowymi",
+        "accountSection": "Profil Użytkownika",
+        "roleLabel": "Rola",
+        "roleStudent": "Student / Użytkownik",
+        "accountStatusLabel": "Status Konta",
+        "activeAccount": "Konto Aktywne",
+        "cezSection": "Integracja z CEZ",
+        "cezStatusLabel": "Status połączenia z CEZ",
+        "connected": "Połączono",
+        "notConnected": "Nie połączono",
+        "syncNow": "Synchronizuj teraz",
+        "relinkCez": "Połącz ponownie konto CEZ",
+        "appearanceSection": "Wygląd i Interfejs",
+        "themeLabel": "Motyw Kolorystyczny",
+        "themeLight": "Jasny",
+        "themeDark": "Ciemny",
+        "themeSystem": "Urządzenia / Systemowy",
+        "languageLabel": "Język Systemu",
+        "securitySection": "Bezpieczeństwo i Sesja",
+        "logoutDesc": "Wyloguj się ze swojego konta na tym urządzeniu."
     }
 }

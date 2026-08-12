@@ -151,5 +151,32 @@
         "submit": "Link Account",
         "submitLoading": "Integrating...",
         "cancel": "Cancel"
+    },
+    "profile": {
+        "signedInAs": "Signed in as",
+        "preferences": "Preferences"
+    },
+    "preferences": {
+        "title": "User Preferences",
+        "subtitle": "Manage your profile, application theme, and system integrations",
+        "accountSection": "User Profile",
+        "roleLabel": "Role",
+        "roleStudent": "Student / User",
+        "accountStatusLabel": "Account Status",
+        "activeAccount": "Account Active",
+        "cezSection": "CEZ Integration",
+        "cezStatusLabel": "CEZ Connection Status",
+        "connected": "Connected",
+        "notConnected": "Not Connected",
+        "syncNow": "Sync now",
+        "relinkCez": "Relink CEZ Account",
+        "appearanceSection": "Appearance & Interface",
+        "themeLabel": "Color Theme",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "themeSystem": "System default",
+        "languageLabel": "System Language",
+        "securitySection": "Security & Session",
+        "logoutDesc": "Sign out of your account on this device."
     }
 }

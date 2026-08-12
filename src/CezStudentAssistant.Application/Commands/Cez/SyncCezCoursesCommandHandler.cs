@@ -1,11 +1,7 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Services;
-using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Enums;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CezStudentAssistant.Application.Commands.Cez;
 

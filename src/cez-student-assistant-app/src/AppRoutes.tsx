@@ -10,6 +10,7 @@ import CoursesPage from "./pages/CoursesPage";
 import QuizzesPage from "./pages/QuizzesPage";
 import CourseDetailsPage from "./pages/CourseDetailsPage";
 import QuizSolverPage from "./pages/QuizSolverPage";
+import PreferencesPage from "./pages/PreferencesPage";
 
 export default function AppRoutes() {
   const { isAuthenticated, isCezConnected, lastCezSync, handleLoginSuccess } = useAuth();
@@ -31,6 +32,7 @@ export default function AppRoutes() {
         <Route path="/quizzes"    element={<QuizzesPage quizzes={quizzes} />} />
         <Route path="/course/:id" element={<CourseDetailsPage setError={setError} setSuccess={setSuccess} />} />
         <Route path="/quiz/:id"   element={<QuizSolverPage setError={setError} />} />
+        <Route path="/preferences" element={<PreferencesPage />} />
       </Route>
 
       {/* Catch-all */}

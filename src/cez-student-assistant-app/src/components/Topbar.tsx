@@ -6,8 +6,6 @@ interface TopbarProps {
   onRefresh: () => void;
   username: string | null;
   onLogout: () => void;
-  darkMode: boolean;
-  onToggleDarkMode: () => void;
 }
 
 export default function Topbar({
@@ -15,8 +13,6 @@ export default function Topbar({
   onRefresh,
   username,
   onLogout,
-  darkMode,
-  onToggleDarkMode,
 }: TopbarProps) {
   return (
     <header className="bg-sidebar px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-sidebar-border sticky top-0 z-30">
@@ -26,8 +22,6 @@ export default function Topbar({
         onRefresh={onRefresh}
         username={username}
         onLogout={onLogout}
-        darkMode={darkMode}
-        onToggleDarkMode={onToggleDarkMode}
       />
     </header>
   );

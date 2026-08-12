@@ -1,3 +1,4 @@
+using CezStudentAssistant.Application.Commands.UserConfiguration;
 using CezStudentAssistant.Application.Queries.User;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -16,6 +17,12 @@ public static class UserEndpoints
         {
             var query = new GetUserConfigurationQuery();
             var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPut("/configuration", async (UpdateUserConfigurationCommand command, IMediator mediator) =>
+        {
+            var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
     }
