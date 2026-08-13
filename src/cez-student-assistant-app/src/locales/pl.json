@@ -90,7 +90,14 @@
         "courseNamePlaceholder": "np. Algorytmy i struktury danych",
         "courseDescLabel": "Opis (opcjonalnie)",
         "courseDescPlaceholder": "np. Przedmiot realizowany w semestrze 4",
-        "addCourseSuccess": "Przedmiot został pomyślnie dodany!"
+        "addCourseSuccess": "Przedmiot został pomyślnie dodany!",
+        "editCourseModalTitle": "Edytuj przedmiot",
+        "editCourseBtn": "Zapisz",
+        "editCourseSuccess": "Przedmiot został pomyślnie zaktualizowany!",
+        "deleteCourseModalTitle": "Usuń przedmiot",
+        "deleteCourseConfirmMsg": "Czy na pewno chcesz usunąć ten przedmiot? Ta operacja jest nieodwracalna.",
+        "deleteCourseBtn": "Usuń",
+        "deleteCourseSuccess": "Przedmiot został pomyślnie usunięty!"
     },
     "quizzes": {
         "title": "Moje Quizy",
@@ -184,11 +191,11 @@
         "syncNow": "Synchronizuj teraz",
         "relinkCez": "Połącz ponownie konto CEZ",
         "appearanceSection": "Wygląd i Interfejs",
-        "themeLabel": "Motyw Kolorystyczny",
+        "themeLabel": "Motyw",
         "themeLight": "Jasny",
         "themeDark": "Ciemny",
-        "themeSystem": "Urządzenia / Systemowy",
-        "languageLabel": "Język Systemu",
+        "themeSystem": "Systemowy",
+        "languageLabel": "Język",
         "securitySection": "Bezpieczeństwo i Sesja",
         "logoutDesc": "Wyloguj się ze swojego konta na tym urządzeniu."
     }

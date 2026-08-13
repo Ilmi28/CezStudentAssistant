@@ -102,4 +102,28 @@ export const courseService = {
     );
     return handleResponse<string>(res);
   },
+
+  async updateCourse(courseId: string, name: string, description?: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId, name, description }),
+      },
+      false,
+      authService.refreshToken
+    );
+    await handleResponse(res);
+  },
+
+  async deleteCourse(courseId: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course/${courseId}`,
+      { method: "DELETE" },
+      false,
+      authService.refreshToken
+    );
+    await handleResponse(res);
+  },
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
 export interface ModalProps {
@@ -27,26 +27,64 @@ export const Modal: React.FC<ModalProps> = ({
   className = "",
   icon,
 }) => {
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender && !isClosing) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 160);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  const handleClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+      setShouldRender(false);
+    }, 160);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        handleClose();
       }
     };
-    if (isOpen) {
+    if (shouldRender) {
       document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [shouldRender, isClosing]);
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs animate-in fade-in duration-150">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 ${
+        isClosing ? "animate-modal-backdrop-exit" : "animate-modal-backdrop"
+      }`}
+    >
       <div
-        className={`w-full ${maxWidthClasses[maxWidth]} bg-card rounded-2xl border border-border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 ${className}`}
+        className={`w-full ${maxWidthClasses[maxWidth]} bg-card rounded-2xl border border-border shadow-2xl overflow-hidden ${
+          isClosing ? "animate-modal-content-exit" : "animate-modal-content"
+        } ${className}`}
       >
         {/* Header - Clean card background without dark blue bar */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-border">
@@ -58,7 +96,7 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="text-muted-foreground hover:text-foreground p-1.5 rounded-xl hover:bg-muted transition-colors cursor-pointer"
             aria-label="Close"
           >

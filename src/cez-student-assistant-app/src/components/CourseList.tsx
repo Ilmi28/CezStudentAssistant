@@ -39,28 +39,21 @@ export default function CourseList({ courses, onOpenAddModal }: CourseListProps)
           <p className="text-sm text-muted-foreground">{t("courses.noCourses")}</p>
         </div>
       ) : (
-        <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between px-5.5 py-3.5 bg-muted/60 border-b border-border text-xs uppercase tracking-wider text-muted-foreground font-bold font-sans">
-            <span>{t("courses.thName")}</span>
-          </div>
-          {sortedCourses.map((c, i) => (
+        <div className="space-y-3">
+          {sortedCourses.map((c) => (
             <div
               key={c.id}
               onClick={() => navigate(`/course/${c.id}`)}
-              className={`flex items-center justify-between px-5.5 py-4 hover:bg-muted/50 transition-colors cursor-pointer group ${
-                i < sortedCourses.length - 1 ? "border-b border-border" : ""
-              }`}
+              className="bg-card rounded-xl border border-border px-5.5 py-4 hover:border-primary/40 hover:shadow-md transition-all cursor-pointer group flex items-center justify-between shadow-xs"
             >
               <div className="min-w-0 pr-4">
-                <div className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{c.name}</div>
+                <div className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                  {c.name}
+                </div>
               </div>
-              {c.isCez !== false ? (
+              {c.isCez && (
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
                   {t("courses.tagCez")}
-                </span>
-              ) : (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-muted text-muted-foreground border border-border shrink-0">
-                  {t("courses.tagCustom")}
                 </span>
               )}
             </div>

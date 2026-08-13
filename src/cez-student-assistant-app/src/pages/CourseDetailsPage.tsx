@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, FileText, Upload, X, RefreshCw, ChevronDown, Download } from "lucide-react";
+import { ChevronLeft, FileText, Upload, X, RefreshCw, ChevronDown, Download, Pencil, Trash2 } from "lucide-react";
 import { courseService, type CourseDetailsDto } from "../services";
 import { PrimaryButton } from "../components/Button";
+import EditCourseModal from "../components/EditCourseModal";
+import ConfirmModal from "../components/ConfirmModal";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
@@ -23,6 +25,9 @@ export default function CourseDetailsPage({
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isFilesExpanded, setIsFilesExpanded] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   useEffect(() => {
     loadCourseDetails();
@@ -40,6 +45,29 @@ export default function CourseDetailsPage({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoBack = () => {
+    if (isNavigatingBack) return;
+    setIsNavigatingBack(true);
+    setTimeout(() => {
+      navigate("/courses");
+    }, 170);
+  };
+
+  const handleEditCourseSubmit = async (name: string, description?: string) => {
+    if (!id) return;
+    await courseService.updateCourse(id, name, description);
+    setSuccess(t("courses.editCourseSuccess"));
+    const details = await courseService.getCourseDetails(id);
+    setSelectedCourse(details);
+  };
+
+  const handleDeleteCourseConfirm = async () => {
+    if (!id) return;
+    await courseService.deleteCourse(id);
+    setSuccess(t("courses.deleteCourseSuccess"));
+    navigate("/courses");
   };
 
   const handleFileUploadSubmit = async (e: React.FormEvent) => {
@@ -80,33 +108,60 @@ export default function CourseDetailsPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
-      {/* Header & Back Action */}
-      <div className="flex items-center">
+    <div
+      className={`max-w-4xl mx-auto space-y-6 ${
+        isNavigatingBack
+          ? "animate-slide-out-right"
+          : "animate-in fade-in duration-300"
+      }`}
+    >
+      {/* Header & Actions */}
+      <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate("/courses")}
+          type="button"
+          onClick={handleGoBack}
           title={t("courseDetails.backBtn")}
           aria-label={t("courseDetails.backBtn")}
           className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer"
         >
           <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
         </button>
+
+        {!selectedCourse.isCez && (
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              title={t("courses.editCourseModalTitle")}
+              aria-label={t("courses.editCourseModalTitle")}
+              className="w-10 h-10 rounded-xl bg-primary hover:bg-primary/90 text-white flex items-center justify-center shadow-sm hover:shadow-md transition-colors cursor-pointer"
+            >
+              <Pencil size={20} strokeWidth={2.25} className="shrink-0" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsDeleteModalOpen(true)}
+              title={t("courses.deleteCourseModalTitle")}
+              aria-label={t("courses.deleteCourseModalTitle")}
+              className="w-10 h-10 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground flex items-center justify-center shadow-sm hover:shadow-md transition-colors cursor-pointer"
+            >
+              <Trash2 size={20} strokeWidth={2.25} className="shrink-0" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Course Header Card */}
       <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            {selectedCourse.isCez !== false ? (
+            {selectedCourse.isCez && (
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
                 {t("courses.tagCez")}
               </span>
-            ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-muted text-muted-foreground border border-border">
-                {t("courses.tagCustom")}
-              </span>
             )}
-            <h1 className="text-xl font-bold text-foreground mt-2">
+            <h1 className={`text-xl font-bold text-foreground ${selectedCourse.isCez ? "mt-2" : ""}`}>
               {selectedCourse.name}
             </h1>
           </div>
@@ -215,6 +270,24 @@ export default function CourseDetailsPage({
           </PrimaryButton>
         </form>
       </div>
+
+      <EditCourseModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleEditCourseSubmit}
+        initialName={selectedCourse.name}
+        initialDescription={selectedCourse.description}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteCourseConfirm}
+        title={t("courses.deleteCourseModalTitle")}
+        message={t("courses.deleteCourseConfirmMsg")}
+        confirmBtnText={t("courses.deleteCourseBtn")}
+        isDestructive
+      />
     </div>
   );
 }
