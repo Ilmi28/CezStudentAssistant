@@ -1,6 +1,9 @@
 import { createContext, useState, useEffect, type ReactNode } from "react";
+import { UserTheme } from "../types";
 
 export interface UIContextType {
+  currentTheme: UserTheme;
+  setCurrentTheme: React.Dispatch<React.SetStateAction<UserTheme>>;
   darkMode: boolean;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
@@ -18,6 +21,7 @@ export interface UIContextType {
 export const UIContext = createContext<UIContextType | null>(null);
 
 export function UIProvider({ children }: { children: ReactNode }) {
+  const [currentTheme, setCurrentTheme] = useState<UserTheme>(UserTheme.Dark);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const stored = localStorage.getItem("darkMode");
     return stored !== null ? stored === "true" : true;
@@ -42,6 +46,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
   return (
     <UIContext.Provider
       value={{
+        currentTheme,
+        setCurrentTheme,
         darkMode,
         setDarkMode,
         loading,

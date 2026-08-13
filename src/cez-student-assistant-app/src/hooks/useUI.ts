@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { UIContext } from "../contexts/UIContext";
 import { userService } from "../services";
 import { UserTheme, UserLanguage } from "../types";
@@ -10,6 +10,7 @@ export function useUI() {
   }
 
   const applyTheme = (theme: UserTheme) => {
+    ctx.setCurrentTheme(theme);
     let isDark = false;
     if (theme === UserTheme.Dark) {
       isDark = true;
@@ -25,6 +26,25 @@ export function useUI() {
       document.documentElement.classList.remove("dark");
     }
   };
+
+  useEffect(() => {
+    if (ctx.currentTheme !== UserTheme.System || !window.matchMedia) return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      const isDark = e.matches;
+      ctx.setDarkMode(isDark);
+      if (isDark) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [ctx.currentTheme, ctx.setDarkMode]);
 
   const updateTheme = async (theme: UserTheme) => {
     applyTheme(theme);

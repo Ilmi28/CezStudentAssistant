@@ -65,7 +65,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -109,7 +109,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -159,7 +159,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -208,7 +208,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -250,7 +250,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -292,7 +292,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -324,7 +324,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -354,7 +354,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns(user);
 
@@ -381,7 +381,7 @@ public class UpdateUserConfigurationCommandHandlerTests
         _userRepository.GetByIdAsync(
             userId,
             Arg.Any<CancellationToken>(),
-            true,
+            false,
             Arg.Any<Expression<Func<User, object>>[]>())
             .Returns((User?)null);
 

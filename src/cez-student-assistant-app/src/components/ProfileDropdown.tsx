@@ -52,14 +52,18 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg border border-white/15 text-white transition-all cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-primary/50"
+        className={`flex items-center gap-2.5 px-3.5 py-2 text-white transition-all cursor-pointer focus:outline-none ${
+          isOpen
+            ? "rounded-t-xl rounded-b-none border border-white/20 bg-white/15 relative z-20"
+            : "rounded-xl border border-white/15 bg-white/10 hover:bg-white/20"
+        }`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <div className="w-7 h-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold flex-shrink-0 uppercase shadow-xs">
+        <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold flex-shrink-0 uppercase shadow-xs">
           {username ? username.substring(0, 2) : t("common.avatarDefault")}
         </div>
-        <span className="text-[12px] font-medium truncate max-w-[110px]" title={username || "Student"}>
+        <span className="text-xs font-medium truncate max-w-[110px]" title={username || "Student"}>
           {username || "Student"}
         </span>
         <ChevronDown
@@ -70,9 +74,9 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
 
       {/* Popover Menu - Uses popover design tokens for light and dark modes */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-52 rounded-xl bg-popover text-popover-foreground border border-border shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute right-0 top-full -mt-px w-52 rounded-b-xl rounded-tl-xl bg-card text-card-foreground border border-border shadow-2xl overflow-hidden z-50 animate-in fade-in duration-100">
           {/* User Info Header */}
-          <div className="px-4 py-2.5 border-b border-border">
+          <div className="px-4 py-2.5 border-b border-border bg-muted/30">
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               {t("profile.signedInAs")}
             </p>
@@ -82,11 +86,11 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
           </div>
 
           {/* Menu Options */}
-          <div className="py-1">
+          <div>
             <button
               type="button"
               onClick={handlePreferencesClick}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer text-left"
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer text-left"
             >
               <Settings size={15} className="text-primary" />
               <span>{t("profile.preferences")}</span>
@@ -95,7 +99,7 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
             <button
               type="button"
               onClick={handleLogoutClick}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer text-left"
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-destructive hover:bg-destructive/15 transition-colors cursor-pointer text-left last:rounded-b-xl"
             >
               <LogOut size={15} />
               <span>{t("common.logout")}</span>

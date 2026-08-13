@@ -10,15 +10,15 @@ export interface BaseButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 const sizeStyles = {
-  sm: "text-[12px] px-3 py-1.5",
-  md: "text-[13px] px-4 py-2.5",
-  lg: "text-[14px] px-6 py-3",
+  sm: "text-xs font-medium px-3.5 py-2 rounded-lg",
+  md: "text-xs font-semibold px-4.5 py-2.5 rounded-xl",
+  lg: "text-sm font-semibold px-6 py-3 rounded-xl",
 };
 
 const spinnerSizes = {
-  sm: 13,
-  md: 15,
-  lg: 16,
+  sm: 14,
+  md: 16,
+  lg: 18,
 };
 
 /**
@@ -38,10 +38,11 @@ export const PrimaryButton: React.FC<BaseButtonProps> = ({
     <button
       disabled={disabled || loading}
       className={`
-        font-medium rounded transition-all cursor-pointer select-none
-        bg-primary hover:bg-primary/90 text-white shadow-sm
+        font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
+        bg-primary hover:bg-primary/90 active:scale-[0.98] text-white shadow-sm hover:shadow-md
+        focus:outline-none
         inline-flex items-center justify-center gap-2
-        disabled:opacity-75 disabled:cursor-not-allowed
+        disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
         ${sizeStyles[size]}
         ${fullWidth ? "w-full" : ""}
         ${className}
@@ -75,10 +76,11 @@ export const SecondaryButton: React.FC<BaseButtonProps> = ({
     <button
       disabled={disabled || loading}
       className={`
-        font-medium rounded transition-all cursor-pointer select-none
-        border border-border hover:border-primary/40 hover:bg-muted/50 text-foreground shadow-xs
+        font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
+        bg-card border border-border hover:border-muted-foreground/30 hover:bg-muted/80 active:scale-[0.98] text-foreground shadow-xs
+        focus:outline-none
         inline-flex items-center justify-center gap-2
-        disabled:opacity-75 disabled:cursor-not-allowed
+        disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
         ${sizeStyles[size]}
         ${fullWidth ? "w-full" : ""}
         ${className}

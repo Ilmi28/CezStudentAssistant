@@ -11,7 +11,7 @@ This file defines the project coding standards, UI design tokens, component arch
 - **Dark Slate Sidebar & Topbar Header**: `#182238` / Tailwind `bg-sidebar`
 - **Neutral Dark Borders**: `#1e293b` / Tailwind `border-border`
 - **CEZ WI PB Brand Primary Blue**: `#0f4c81` (Light Primary), `#0284c7` (Hover Accent) & `#2563eb` (Dark Primary)
-- **Typography**: `Roboto Slab, serif` for headings, `Inter / sans-serif` for body, `font-mono` for index numbers/IDs/code inputs.
+- **Typography**: `Inter / sans-serif` for ALL headings, subheadings, body text, labels, user details, inputs, badges, and controls. Maintain 100% consistent typography across the entire application.
 
 ---
 

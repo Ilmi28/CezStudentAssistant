@@ -24,17 +24,17 @@ export default function SyncBanner({
     : null;
 
   return (
-    <div className="bg-card rounded-lg border border-border p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="bg-card rounded-xl border border-border p-5.5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-primary flex-shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary flex-shrink-0">
           <RefreshCw size={20} className={syncing ? "animate-spin" : ""} />
         </div>
         <div>
-          <h3 style={{ fontFamily: "Roboto Slab, serif" }} className="text-[14px] font-semibold text-foreground">
+          <h3 className="text-sm font-semibold text-foreground">
             {t("courses.syncTitle")}
           </h3>
           {formattedDate && (
-            <p className="text-[12px] text-muted-foreground font-mono mt-0.5">
+            <p className="text-[12px] text-muted-foreground mt-0.5">
               {t("courses.syncSubtitleDate", { date: formattedDate })}
             </p>
           )}

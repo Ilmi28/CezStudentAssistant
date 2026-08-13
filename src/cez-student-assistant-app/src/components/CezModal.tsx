@@ -38,20 +38,20 @@ export default function CezModal({
       setCezUser("");
       setCezPass("");
     } catch (err: any) {
-      setModalError(err.message || t("auth.emptyFields"));
+      setModalError(err.message || t("auth.genericError"));
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs">
-      <div className="w-full max-w-md bg-card rounded-lg border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="w-full max-w-md bg-card rounded-2xl border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Modal header */}
         <div className="bg-sidebar px-6 py-4 flex items-center justify-between border-b border-sidebar-border">
           <div className="flex items-center gap-2 text-white">
             <div className="w-6 h-6 rounded-full bg-white p-0.5 flex items-center justify-center flex-shrink-0 shadow-xs">
               <img src={cezLogo} alt="CEZ" className="w-full h-full object-contain" />
             </div>
-            <span style={{ fontFamily: "Roboto Slab, serif" }} className="text-[14px] font-semibold">{t("cezModal.title")}</span>
+            <span className="text-sm font-semibold">{t("cezModal.title")}</span>
           </div>
           <button onClick={() => { setModalError(null); onClose(); }} className="text-white/60 hover:text-white cursor-pointer">
             <X size={16} />

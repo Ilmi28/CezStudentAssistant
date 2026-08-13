@@ -33,10 +33,10 @@ export default function HomePage({ courses, quizzes }: HomePageProps) {
                 <s.icon size={13} className="text-primary" />
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{s.label}</span>
               </div>
-              <div className="text-[24px] font-bold text-foreground" style={{ fontFamily: "Roboto Slab, serif" }}>
+              <div className="text-2xl font-bold text-foreground">
                 {s.value}
               </div>
-              <div className="text-[11px] text-muted-foreground/60 mt-1">{s.note}</div>
+              <div className="text-xs text-muted-foreground/60 mt-1">{s.note}</div>
             </div>
           </Card>
         ))}
@@ -45,18 +45,18 @@ export default function HomePage({ courses, quizzes }: HomePageProps) {
       {/* Latest Quizzes Preview using generic Card */}
       <div>
         <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-          <h3 style={{ fontFamily: "Roboto Slab, serif" }} className="text-[14px] font-bold uppercase tracking-wider text-foreground">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
             {t("home.latestQuizzes")}
           </h3>
-          <span className="text-[10px] text-muted-foreground font-mono">{t("home.latestQuizzesTag")}</span>
+          <span className="text-xs text-muted-foreground">{t("home.latestQuizzesTag")}</span>
         </div>
 
         {quizzes.length === 0 ? (
           <Card className="p-8 text-center shadow-sm">
             <div>
               <Brain size={32} className="mx-auto text-muted-foreground/30 mb-2" />
-              <p className="text-[13px] text-muted-foreground">{t("home.noQuizzes")}</p>
-              <p className="text-[11px] text-muted-foreground/60 mt-1">{t("home.noQuizzesSubtitle")}</p>
+              <p className="text-sm text-muted-foreground">{t("home.noQuizzes")}</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">{t("home.noQuizzesSubtitle")}</p>
             </div>
           </Card>
         ) : (
@@ -66,12 +66,12 @@ export default function HomePage({ courses, quizzes }: HomePageProps) {
                 <Card key={q.id} hoverEffect>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[9px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded font-mono uppercase">
+                      <span className="text-[10px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded uppercase">
                         QUIZ AI
                       </span>
-                      <span className="text-[10px] text-muted-foreground/40 font-mono truncate max-w-[120px]">{q.id.substring(0, 8)}</span>
+                      <span className="text-xs text-muted-foreground/40 truncate max-w-[120px]">{q.id.substring(0, 8)}</span>
                     </div>
-                    <h4 style={{ fontFamily: "Roboto Slab, serif" }} className="text-[14px] font-bold text-foreground mb-1 line-clamp-1">
+                    <h4 className="text-sm font-bold text-foreground mb-1 line-clamp-1">
                       {q.displayName || q.name}
                     </h4>
                     <p className="text-[11px] text-muted-foreground mb-4 line-clamp-1">

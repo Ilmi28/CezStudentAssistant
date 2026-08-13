@@ -22,7 +22,7 @@ export const Input: React.FC<InputProps> = ({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-[11px] uppercase tracking-wider text-muted-foreground font-semibold font-sans"
+          className="block text-xs font-medium text-foreground"
         >
           {label}
         </label>
@@ -31,9 +31,9 @@ export const Input: React.FC<InputProps> = ({
         id={inputId}
         type={type}
         className={`
-          w-full px-3 py-2 text-[13px] border rounded bg-card text-foreground font-mono
-          transition-colors focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary
-          ${error ? "border-red-500/60 focus:ring-red-500" : "border-border"}
+          w-full px-3.5 py-2.5 text-xs border rounded-xl bg-card text-foreground font-sans
+          transition-all focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary
+          ${error ? "border-red-500/60 focus:ring-red-500" : "border-border hover:border-primary/50"}
           ${className}
         `.trim()}
         {...props}

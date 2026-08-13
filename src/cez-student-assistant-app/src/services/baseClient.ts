@@ -119,9 +119,19 @@ export const handleResponse = async <T>(res: Response, isAuthEndpoint = false): 
 
     if (isAuthEndpoint) {
       if (serverMessage === "Username already exists.") {
-        throw new Error(i18n.t("auth.usernameTaken") || "Użytkownik o podanej nazwie już istnieje.");
+        throw new ApiError(i18n.t("auth.usernameTaken"), res.status, body?.errors);
       }
-      throw new Error(i18n.t("auth.invalidCredentials") || "Nieprawidłowa nazwa użytkownika lub hasło.");
+      
+      const isCredentialError =
+        serverMessage === "Invalid username or password." ||
+        serverMessage === "Invalid username or password for CEZ login." ||
+        serverMessage === "Invalid login credentials for CEZ.";
+
+      if (isCredentialError) {
+        throw new ApiError(i18n.t("auth.invalidCredentials"), res.status, body?.errors);
+      }
+
+      throw new ApiError(i18n.t("auth.genericError"), res.status, body?.errors);
     }
 
     if (serverMessage) {

@@ -18,7 +18,7 @@ export default function Navbar() {
       <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/home")}>
         <img src={pbEmblem} alt="Politechnika Białostocka" className="h-10 w-auto object-contain flex-shrink-0" />
         <div>
-          <div style={{ fontFamily: "Roboto Slab, serif" }} className="text-white font-semibold text-[15px] leading-tight">
+          <div className="text-white font-semibold text-base leading-tight">
             CEZStudentAssistant
           </div>
           <div className="text-[9px] tracking-[0.15em] uppercase text-white/40 mt-0.5 font-medium">

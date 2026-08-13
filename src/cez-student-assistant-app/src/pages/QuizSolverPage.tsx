@@ -151,17 +151,17 @@ export default function QuizSolverPage({
           <Trophy size={32} />
         </div>
         <div className="space-y-2">
-          <h2 style={{ fontFamily: "Roboto Slab, serif" }} className="text-xl font-bold text-foreground">{t("quizSolver.finishedTitle")}</h2>
-          <p className="text-[13px] text-muted-foreground">{t("quizSolver.finishedDesc")}</p>
+          <h2 className="text-xl font-bold text-foreground">{t("quizSolver.finishedTitle")}</h2>
+          <p className="text-sm text-muted-foreground">{t("quizSolver.finishedDesc")}</p>
         </div>
 
         {/* Score metrics */}
         <div className="max-w-xs mx-auto bg-muted rounded-lg p-5 border border-border space-y-1">
           <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t("quizSolver.finishedScoreLabel")}</div>
-          <div className="text-[36px] font-bold text-primary" style={{ fontFamily: "Roboto Slab, serif" }}>
+          <div className="text-4xl font-bold text-primary">
             {score.toFixed(1)} pkt
           </div>
-          <div className="text-[12px] text-muted-foreground font-mono">
+          <div className="text-xs text-muted-foreground">
             {t("quizSolver.finishedMaxLabel", { max: totalPointsMax })}
           </div>
         </div>
@@ -211,7 +211,7 @@ export default function QuizSolverPage({
           <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             {t("quizSolver.solvingQuiz", { course: selectedQuiz.courseName })}
           </span>
-          <h2 style={{ fontFamily: "Roboto Slab, serif" }} className="text-base font-bold text-foreground mt-0.5 line-clamp-1">
+          <h2 className="text-base font-bold text-foreground mt-0.5 line-clamp-1">
             {selectedQuiz.displayName || selectedQuiz.name}
           </h2>
         </div>
@@ -230,10 +230,10 @@ export default function QuizSolverPage({
       <div className="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
         {/* Question progress header */}
         <div className="bg-muted px-6 py-3 border-b border-border flex justify-between items-center">
-          <span className="text-[11px] font-mono text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {t("quizSolver.questionProgress", { current: qIndex + 1, total: qCount })}
           </span>
-          <span className="text-[9px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded font-mono uppercase">
+          <span className="text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded uppercase">
             {t("quizSolver.points", { points: question.points })}
           </span>
         </div>
@@ -248,7 +248,7 @@ export default function QuizSolverPage({
 
         <div className="p-6 md:p-8 space-y-6">
           {/* Question text */}
-          <h3 style={{ fontFamily: "Roboto Slab, serif" }} className="text-base font-bold text-foreground leading-relaxed">
+          <h3 className="text-base font-bold text-foreground leading-relaxed">
             {question.content}
           </h3>
 

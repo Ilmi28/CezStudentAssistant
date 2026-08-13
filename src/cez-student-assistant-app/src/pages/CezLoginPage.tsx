@@ -38,7 +38,7 @@ export default function CezLoginPage({
       onLoginSuccess(cezUser);
       setSuccess(t("auth.cezSuccess"));
     } catch (err: any) {
-      setFormError(err.message || t("auth.emptyFields"));
+      setFormError(err.message || t("auth.genericError"));
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export default function CezLoginPage({
     <AuthLayout>
       <form onSubmit={handleCezLoginSubmit} className="space-y-5">
         <div>
-          <h2 style={{ fontFamily: "Roboto Slab, serif" }} className="text-base font-semibold text-foreground mb-0.5 uppercase tracking-wide border-b border-border pb-2">
+          <h2 className="text-base font-semibold text-foreground mb-0.5 uppercase tracking-wide border-b border-border pb-2">
             {t("auth.cezTitle")}
           </h2>
         </div>

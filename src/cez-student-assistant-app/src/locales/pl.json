@@ -43,6 +43,7 @@
         "emptyFields": "Proszę wypełnić wszystkie pola.",
         "invalidCredentials": "Nieprawidłowa nazwa użytkownika lub hasło.",
         "usernameTaken": "Użytkownik o podanej nazwie już istnieje.",
+        "genericError": "Coś poszło nie tak, spróbuj ponownie później.",
         "loginSuccess": "Zalogowano pomyślnie",
         "cezSuccess": "Zalogowano przez CEZ",
         "registerSuccess": "Konto zostało utworzone"
@@ -78,7 +79,9 @@
         "noCourses": "Brak zapisanych przedmiotów. Uruchom synchronizację, aby pobrać kursy z CEZ.",
         "thName": "Nazwa Przedmiotu",
         "thSyncDate": "Ostatnia synchronizacja",
-        "noSyncDate": "brak danych"
+        "noSyncDate": "brak danych",
+        "tagCez": "CEZ",
+        "tagCustom": "Własny"
     },
     "quizzes": {
         "title": "Wszystkie Dostępne Quizy",
@@ -97,6 +100,7 @@
         "filesTitle": "Pliki i Materiały dydaktyczne",
         "noFiles": "Brak wgranych materiałów dla tego przedmiotu.",
         "download": "Pobierz",
+        "downloadFile": "Pobierz plik",
         "uploadTitle": "Wgraj plik dydaktyczny",
         "uploadPlaceholder": "Wybierz plik z dysku",
         "uploadFormats": "Wspierane formaty: PDF, TXT, DOCX",

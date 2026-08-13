@@ -21,6 +21,7 @@ export default function DashboardLayout() {
         applyTheme(config.theme);
         const lang = config.language === UserLanguage.English ? "en" : "pl";
         i18n.changeLanguage(lang);
+        localStorage.setItem("language", lang);
       } catch (err) {
         console.debug("[DashboardLayout] Configuration load fallback:", err);
       }

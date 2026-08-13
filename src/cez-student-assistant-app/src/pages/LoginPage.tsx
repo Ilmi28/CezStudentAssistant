@@ -38,7 +38,7 @@ export default function LoginPage({
       onLoginSuccess(loginUser);
       setSuccess(t("auth.loginSuccess"));
     } catch (err: any) {
-      setFormError(err.message || t("auth.emptyFields"));
+      setFormError(err.message || t("auth.genericError"));
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,7 @@ export default function LoginPage({
   return (
     <AuthLayout>
       <form onSubmit={handleLogin} className="space-y-4">
-        <h2 style={{ fontFamily: "Roboto Slab, serif" }} className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
+        <h2 className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
           {t("auth.loginTitle")}
         </h2>
 

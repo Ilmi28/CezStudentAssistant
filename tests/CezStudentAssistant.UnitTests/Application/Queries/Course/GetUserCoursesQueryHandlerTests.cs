@@ -43,14 +43,22 @@ public class GetUserCoursesQueryHandlerTests
     {
         var userId = Guid.NewGuid();
         var user = new UserEntity { Id = userId, UserName = "student" };
-        var course = new CourseEntity
+        var courseCez = new CourseEntity
         {
             Id = Guid.NewGuid(),
             Name = "Data Structures",
+            CezExternalId = 12345,
+            Users = new List<UserEntity> { user }
+        };
+        var courseCustom = new CourseEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "My Custom Course",
+            CezExternalId = null,
             Users = new List<UserEntity> { user }
         };
 
-        var mockDbSet = new List<CourseEntity> { course }.BuildMockDbSet();
+        var mockDbSet = new List<CourseEntity> { courseCez, courseCustom }.BuildMockDbSet();
         _courseRepository.Find(Arg.Any<Expression<Func<CourseEntity, bool>>>()).Returns(mockDbSet);
 
         var query = new GetUserCoursesQuery { UserId = userId };
@@ -59,7 +67,8 @@ public class GetUserCoursesQueryHandlerTests
 
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCount(1);
-        result.Data![0].Name.Should().Be("Data Structures");
+        result.Data.Should().HaveCount(2);
+        result.Data![0].IsCez.Should().BeTrue();
+        result.Data![1].IsCez.Should().BeFalse();
     }
 }

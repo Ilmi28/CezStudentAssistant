@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse } from "../hooks";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
+import { Select } from "../components/Select";
 import { userService } from "../services";
 import { UserTheme, UserLanguage } from "../types";
 
@@ -23,6 +24,7 @@ export default function PreferencesPage() {
         setLanguageState(config.language);
         const code = config.language === UserLanguage.English ? "en" : "pl";
         await i18n.changeLanguage(code);
+        localStorage.setItem("language", code);
       } catch {
         // Default fallbacks
       } finally {
@@ -30,7 +32,7 @@ export default function PreferencesPage() {
       }
     }
     loadConfig();
-  }, [i18n]);
+  }, []);
 
   const handleThemeSelect = (newTheme: UserTheme) => {
     setThemeState(newTheme);
@@ -40,10 +42,21 @@ export default function PreferencesPage() {
   const handleLanguageSelect = async (newLang: UserLanguage) => {
     setLanguageState(newLang);
     const code = newLang === UserLanguage.English ? "en" : "pl";
-    await i18n.changeLanguage(code);
     localStorage.setItem("language", code);
+    await i18n.changeLanguage(code);
     await updateUserLanguage(newLang);
   };
+
+  const themeOptions = [
+    { value: UserTheme.Light, label: t("preferences.themeLight") },
+    { value: UserTheme.Dark, label: t("preferences.themeDark") },
+    { value: UserTheme.System, label: t("preferences.themeSystem") },
+  ];
+
+  const languageOptions = [
+    { value: UserLanguage.Polish, label: "Polski" },
+    { value: UserLanguage.English, label: "English" },
+  ];
 
   const formattedSyncDate = lastCezSync
     ? new Date(lastCezSync).toLocaleString(i18n.language === "pl" ? "pl-PL" : "en-US", {
@@ -56,7 +69,7 @@ export default function PreferencesPage() {
     <div className="max-w-2xl mx-auto space-y-10 py-4 animate-in fade-in duration-150">
       {/* Main Page Title */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground font-heading tracking-tight">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">
           {t("preferences.title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -67,18 +80,18 @@ export default function PreferencesPage() {
       {/* Section 1: User Profile */}
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground font-heading tracking-wide">
+          <h2 className="text-base font-bold text-foreground tracking-wide">
             {t("preferences.accountSection")}
           </h2>
         </div>
-        <div className="text-xs">
-          <div>
-            <span className="block text-muted-foreground text-[11px] font-mono uppercase tracking-wider mb-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-foreground">
               {t("auth.usernameLabel")}
-            </span>
-            <span className="font-mono text-sm text-foreground font-semibold">
-              {username || "Student"}
-            </span>
+            </label>
+            <div className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs font-medium flex items-center justify-between shadow-xs">
+              <span>{username || "Student"}</span>
+            </div>
           </div>
         </div>
       </section>
@@ -86,7 +99,7 @@ export default function PreferencesPage() {
       {/* Section 2: Appearance & Interface */}
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground font-heading tracking-wide">
+          <h2 className="text-base font-bold text-foreground tracking-wide">
             {t("preferences.appearanceSection")}
           </h2>
         </div>
@@ -96,17 +109,13 @@ export default function PreferencesPage() {
             <label htmlFor="themeSelect" className="block text-xs font-medium text-foreground">
               {t("preferences.themeLabel")}
             </label>
-            <select
+            <Select
               id="themeSelect"
               value={theme}
+              options={themeOptions}
               disabled={fetchingConfig}
-              onChange={(e) => handleThemeSelect(Number(e.target.value) as UserTheme)}
-              className="w-full px-3 py-2 rounded-lg bg-background text-foreground border border-border focus:border-primary focus:outline-hidden text-xs cursor-pointer shadow-xs"
-            >
-              <option value={UserTheme.Light}>{t("preferences.themeLight")}</option>
-              <option value={UserTheme.Dark}>{t("preferences.themeDark")}</option>
-              <option value={UserTheme.System}>{t("preferences.themeSystem")}</option>
-            </select>
+              onChange={handleThemeSelect}
+            />
           </div>
 
           {/* Language Selector */}
@@ -114,16 +123,13 @@ export default function PreferencesPage() {
             <label htmlFor="langSelect" className="block text-xs font-medium text-foreground">
               {t("preferences.languageLabel")}
             </label>
-            <select
+            <Select
               id="langSelect"
               value={language}
+              options={languageOptions}
               disabled={fetchingConfig}
-              onChange={(e) => handleLanguageSelect(Number(e.target.value) as UserLanguage)}
-              className="w-full px-3 py-2 rounded-lg bg-background text-foreground border border-border focus:border-primary focus:outline-hidden text-xs cursor-pointer shadow-xs"
-            >
-              <option value={UserLanguage.Polish}>Polski</option>
-              <option value={UserLanguage.English}>English</option>
-            </select>
+              onChange={handleLanguageSelect}
+            />
           </div>
         </div>
       </section>
@@ -131,7 +137,7 @@ export default function PreferencesPage() {
       {/* Section 3: CEZ Integration */}
       <section className="space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground font-heading tracking-wide">
+          <h2 className="text-base font-bold text-foreground tracking-wide">
             {t("preferences.cezSection")}
           </h2>
           <span className={`px-2.5 py-0.5 rounded text-xs font-medium border ${
@@ -162,7 +168,7 @@ export default function PreferencesPage() {
       {/* Section 4: Security & Session */}
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground font-heading tracking-wide">
+          <h2 className="text-base font-bold text-foreground tracking-wide">
             {t("preferences.securitySection")}
           </h2>
         </div>

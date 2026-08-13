@@ -162,8 +162,6 @@ public class Program
                     _ => new ServerErrorResponse()
                 };
 
-                Console.WriteLine($"[DEBUG] API EXCEPTION: {exception}");
-
                 context.Response.StatusCode = (int)apiResponse.StatusCode;
                 await context.Response.WriteAsJsonAsync((object)apiResponse);
             });

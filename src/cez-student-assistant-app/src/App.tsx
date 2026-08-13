@@ -18,7 +18,7 @@ function AppShell() {
           <img src={pbLogo} alt="Politechnika Białostocka" className="w-16 h-16 object-contain animate-pulse" />
           <div className="flex items-center gap-2">
             <RefreshCw size={15} className="animate-spin text-primary" />
-            <span className="text-[13px] font-medium text-muted-foreground font-mono">{t("common.loading")}</span>
+            <span className="text-sm font-medium text-muted-foreground">{t("common.loading")}</span>
           </div>
         </div>
       </div>

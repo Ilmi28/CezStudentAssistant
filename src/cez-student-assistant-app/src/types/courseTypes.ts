@@ -2,6 +2,7 @@ export interface CourseDto {
   id: string;
   name: string;
   lastSynched: string | null;
+  isCez?: boolean;
 }
 
 export interface CourseResourceDto {
@@ -19,6 +20,7 @@ export interface CourseDetailsDto {
   type: number;
   lastSynched: string | null;
   files: CourseResourceDto[];
+  isCez?: boolean;
 }
 
 export interface UploadCourseFileResponseDto {

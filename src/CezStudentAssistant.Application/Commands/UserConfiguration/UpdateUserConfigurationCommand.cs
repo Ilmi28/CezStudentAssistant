@@ -3,12 +3,8 @@ using CezStudentAssistant.Application.Dtos.User;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
-using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CezStudentAssistant.Application.Commands.UserConfiguration;
 
@@ -31,7 +27,7 @@ public class UpdateUserConfigurationCommandHandler(IUnitOfWork unitOfWork)
         var user = await userRepo.GetByIdAsync(
             command.UserId,
             ct,
-            true,
+            false,
             x => x.CezUser!,
             x => x.Configuration!
         ) ?? throw new NotFoundException(UserMessageConsts.UserNotFound);

@@ -65,4 +65,27 @@ export const courseService = {
   async getDownloadFileUrl(courseId: string, fileId: string): Promise<string> {
     return `${API_BASE_URL}/course/${courseId}/file/${fileId}/download`;
   },
+
+  async downloadCourseFile(courseId: string, fileId: string, fileName: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course/${courseId}/file/${fileId}/download`,
+      { method: "GET" },
+      false,
+      authService.refreshToken
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to download file.");
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  },
 };

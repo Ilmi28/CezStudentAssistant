@@ -30,6 +30,7 @@ public class GetUserCoursesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
                 Id = c.Id,
                 Name = c.Name,
                 LastSynched = c.LastSynched,
+                IsCez = c.CezExternalId != null,
             })
             .ToListAsync(ct);
     }

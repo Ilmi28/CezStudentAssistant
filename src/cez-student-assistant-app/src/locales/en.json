@@ -43,6 +43,7 @@
         "emptyFields": "Please fill in all fields.",
         "invalidCredentials": "Invalid username or password.",
         "usernameTaken": "Username already exists.",
+        "genericError": "Something went wrong, please try again later.",
         "loginSuccess": "Logged in successfully",
         "cezSuccess": "Logged in with CEZ",
         "registerSuccess": "Account created successfully"
@@ -78,7 +79,9 @@
         "noCourses": "No enrolled courses. Run synchronization to retrieve courses from CEZ.",
         "thName": "Course Name",
         "thSyncDate": "Last Synchronized",
-        "noSyncDate": "no data"
+        "noSyncDate": "no data",
+        "tagCez": "CEZ",
+        "tagCustom": "Custom"
     },
     "quizzes": {
         "title": "All Available Quizzes (AI Quizzes)",
@@ -97,6 +100,7 @@
         "filesTitle": "Files & Educational Materials",
         "noFiles": "No files uploaded for this course.",
         "download": "Download",
+        "downloadFile": "Download file",
         "uploadTitle": "Upload Educational File",
         "uploadPlaceholder": "Choose a file from disk",
         "uploadFormats": "Supported formats: PDF, TXT, DOCX",

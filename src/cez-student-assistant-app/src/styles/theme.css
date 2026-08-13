@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 16px;
+  --font-size: 17px;
   --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
@@ -128,7 +128,7 @@
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Roboto Slab', serif;
+    font-family: 'Inter', sans-serif;
   }
 
   h1 {

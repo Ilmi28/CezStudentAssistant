@@ -45,6 +45,7 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
             Description = course.Description,
             Type = course.Type,
             LastSynched = course.LastSynched,
+            IsCez = course.CezExternalId != null,
             Files = resources.Select(r => new CourseResourceDto
             {
                 Id = r.Id,

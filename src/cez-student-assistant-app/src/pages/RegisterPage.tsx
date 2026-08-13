@@ -35,7 +35,7 @@ export default function RegisterPage({
       setSuccess(t("auth.registerSuccess"));
       navigate("/login");
     } catch (err: any) {
-      setFormError(err.message || t("auth.emptyFields"));
+      setFormError(err.message || t("auth.genericError"));
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ export default function RegisterPage({
   return (
     <AuthLayout>
       <form onSubmit={handleRegister} className="space-y-5">
-        <h2 style={{ fontFamily: "Roboto Slab, serif" }} className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
+        <h2 className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
           {t("auth.registerTitle")}
         </h2>
 

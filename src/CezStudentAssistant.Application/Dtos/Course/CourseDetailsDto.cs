@@ -9,5 +9,6 @@ public class CourseDetailsDto
     public string? Description { get; set; }
     public CourseType Type { get; set; }
     public DateTime LastSynched { get; set; }
+    public bool IsCez { get; set; }
     public List<CourseResourceDto> Files { get; set; } = new();
 }

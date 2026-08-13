@@ -10,10 +10,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    // Strona logowania/rejestracji niech będzie po polsku i z jasnym motywem zawsze
-    i18n.changeLanguage("pl");
+    const savedLang = localStorage.getItem("language") || "pl";
+    if (i18n.language !== savedLang) {
+      i18n.changeLanguage(savedLang);
+    }
     document.documentElement.classList.remove("dark");
-  }, [i18n]);
+  }, []);
 
   return (
     <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-background relative">
@@ -23,7 +25,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           <div className="flex justify-center mb-4">
             <img src={pbLogo} alt="Politechnika Białostocka" className="w-24 h-24 sm:w-28 sm:h-28 object-contain" />
           </div>
-          <h1 style={{ fontFamily: "Roboto Slab, serif" }} className="text-white text-xl font-semibold leading-tight">
+          <h1 className="text-white text-xl font-semibold leading-tight">
             CEZ Student Assistant
           </h1>
           <p className="text-[10px] tracking-[0.15em] uppercase text-white/55 mt-1 font-medium">
