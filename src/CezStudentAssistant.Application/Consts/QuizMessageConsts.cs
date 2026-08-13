@@ -27,5 +27,5 @@ public static class QuizMessageConsts
     public const string StartQuizSuccess = "Quiz started successfully.";
     public const string StartQuizError = "An error occurred while starting the quiz.";
     public const string UnauthorizedStartAccess = "You are not authorized to start this quiz attempt.";
-    public const string QuizAttemptNotNotStarted = "This quiz attempt has already been started or completed.";
+    public const string QuizAttemptNotReady = "This quiz attempt is not ready to be started.";
 }

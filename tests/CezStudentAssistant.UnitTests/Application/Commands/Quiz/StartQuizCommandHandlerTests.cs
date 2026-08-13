@@ -55,7 +55,7 @@ public class StartQuizCommandHandlerTests
         {
             Id = quizAttemptId,
             UserId = userId,
-            Status = QuizAttemptStatus.NotStarted
+            Status = QuizAttemptStatus.Ready
         };
 
         _quizAttemptRepository.GetByIdAsync(quizAttemptId, Arg.Any<CancellationToken>())
@@ -112,7 +112,7 @@ public class StartQuizCommandHandlerTests
         {
             Id = quizAttemptId,
             UserId = otherUserId,
-            Status = QuizAttemptStatus.NotStarted
+            Status = QuizAttemptStatus.Ready
         };
 
         _quizAttemptRepository.GetByIdAsync(quizAttemptId, Arg.Any<CancellationToken>())
@@ -127,7 +127,7 @@ public class StartQuizCommandHandlerTests
     }
 
     [Test]
-    public async Task Handle_ShouldThrowBadRequestException_WhenQuizAttemptNotNotStarted()
+    public async Task Handle_ShouldThrowBadRequestException_WhenQuizAttemptNotReady()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -154,6 +154,6 @@ public class StartQuizCommandHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<BadRequestException>()
-            .WithMessage(QuizMessageConsts.QuizAttemptNotNotStarted);
+            .WithMessage(QuizMessageConsts.QuizAttemptNotReady);
     }
 }

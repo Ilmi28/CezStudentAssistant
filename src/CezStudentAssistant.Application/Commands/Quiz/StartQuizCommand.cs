@@ -27,8 +27,8 @@ public class StartQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandle
         if (command.UserId != quizAttempt.UserId)
             throw new ForbiddenException(QuizMessageConsts.UnauthorizedStartAccess);
 
-        if (quizAttempt.Status != Domain.Enums.QuizAttemptStatus.NotStarted)
-            throw new BadRequestException(QuizMessageConsts.QuizAttemptNotNotStarted);
+        if (quizAttempt.Status != Domain.Enums.QuizAttemptStatus.Ready)
+            throw new BadRequestException(QuizMessageConsts.QuizAttemptNotReady);
 
         quizAttempt.Status = Domain.Enums.QuizAttemptStatus.InProgress;
         quizAttempt.StartedAt = DateTime.UtcNow;

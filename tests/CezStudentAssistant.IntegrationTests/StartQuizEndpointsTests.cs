@@ -110,7 +110,7 @@ public class StartQuizEndpointsTests
                 User = user,
                 Quiz = quiz,
                 Course = course,
-                Status = QuizAttemptStatus.NotStarted
+                Status = QuizAttemptStatus.Ready
             };
 
             db.Courses.Add(course);
@@ -189,7 +189,7 @@ public class StartQuizEndpointsTests
                 User = user,
                 Quiz = quiz,
                 Course = course,
-                Status = QuizAttemptStatus.NotStarted
+                Status = QuizAttemptStatus.Ready
             };
 
             db.Courses.Add(course);
