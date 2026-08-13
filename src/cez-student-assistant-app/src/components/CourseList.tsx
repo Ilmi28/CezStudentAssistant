@@ -1,25 +1,39 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Layers } from "lucide-react";
+import { Layers, Plus } from "lucide-react";
 import type { CourseDto } from "../services";
 
 interface CourseListProps {
   courses: CourseDto[];
+  onOpenAddModal?: () => void;
 }
 
-export default function CourseList({ courses }: CourseListProps) {
+export default function CourseList({ courses, onOpenAddModal }: CourseListProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const sortedCourses = [...courses].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <div>
-      <div className="mb-3 border-b border-border pb-2">
+      <div className="mb-3 border-b border-border pb-2.5 flex items-center justify-between">
         <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
           {t("courses.title")}
         </h3>
+        {onOpenAddModal && (
+          <button
+            type="button"
+            onClick={onOpenAddModal}
+            title={t("courses.addCourseBtn")}
+            aria-label={t("courses.addCourseBtn")}
+            className="w-10 h-10 rounded-xl bg-primary hover:bg-primary/90 text-white flex items-center justify-center shadow-sm hover:shadow-md transition-colors cursor-pointer"
+          >
+            <Plus size={22} strokeWidth={2.25} className="shrink-0" />
+          </button>
+        )}
       </div>
 
-      {courses.length === 0 ? (
+      {sortedCourses.length === 0 ? (
         <div className="bg-card rounded-xl border border-border p-8 text-center shadow-sm">
           <Layers size={32} className="mx-auto text-muted-foreground/30 mb-2" />
           <p className="text-sm text-muted-foreground">{t("courses.noCourses")}</p>
@@ -29,12 +43,12 @@ export default function CourseList({ courses }: CourseListProps) {
           <div className="flex items-center justify-between px-5.5 py-3.5 bg-muted/60 border-b border-border text-xs uppercase tracking-wider text-muted-foreground font-bold font-sans">
             <span>{t("courses.thName")}</span>
           </div>
-          {courses.map((c, i) => (
+          {sortedCourses.map((c, i) => (
             <div
               key={c.id}
               onClick={() => navigate(`/course/${c.id}`)}
               className={`flex items-center justify-between px-5.5 py-4 hover:bg-muted/50 transition-colors cursor-pointer group ${
-                i < courses.length - 1 ? "border-b border-border" : ""
+                i < sortedCourses.length - 1 ? "border-b border-border" : ""
               }`}
             >
               <div className="min-w-0 pr-4">

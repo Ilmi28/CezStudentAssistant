@@ -65,6 +65,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
+        services.AddMemoryCache();
         services.Scan(scan =>
             scan.FromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
                 .AddClasses(classes => classes.AssignableTo(typeof(IScopedService)))

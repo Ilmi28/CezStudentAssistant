@@ -88,4 +88,18 @@ export const courseService = {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   },
+
+  async createCourse(name: string, description?: string): Promise<string> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description }),
+      },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<string>(res);
+  },
 };

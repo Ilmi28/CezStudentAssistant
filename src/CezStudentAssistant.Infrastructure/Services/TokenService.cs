@@ -4,6 +4,7 @@ using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using CezStudentAssistant.Infrastructure.Settings;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,11 +18,13 @@ public class TokenService : ITokenService, IScopedService
 {
     private readonly JwtSettings _jwtSettings;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMemoryCache _memoryCache;
 
-    public TokenService(IOptions<JwtSettings> jwtOptions, IUnitOfWork unitOfWork)
+    public TokenService(IOptions<JwtSettings> jwtOptions, IUnitOfWork unitOfWork, IMemoryCache memoryCache)
     {
         _jwtSettings = jwtOptions.Value;
         _unitOfWork = unitOfWork;
+        _memoryCache = memoryCache;
     }
 
     public string GenerateAccessToken(Guid userId)
@@ -71,6 +74,12 @@ public class TokenService : ITokenService, IScopedService
         }
         else
         {
+            string oldRefreshToken = currentToken.Token;
+            int gracePeriodSeconds = _jwtSettings.RefreshTokenGracePeriodSeconds > 0 ? _jwtSettings.RefreshTokenGracePeriodSeconds : 30;
+
+            var cacheKey = GetCacheKey(oldRefreshToken);
+            _memoryCache.Set(cacheKey, (refreshToken, userId), TimeSpan.FromSeconds(gracePeriodSeconds));
+
             currentToken.Token = refreshToken;
             currentToken.ExpiryTime = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
             await tokenRepo.UpdateAsync(currentToken, ct);
@@ -78,6 +87,14 @@ public class TokenService : ITokenService, IScopedService
 
         return refreshToken;
     }
+
+    public bool TryGetGracePeriodToken(string token, out (string NewRefreshToken, Guid UserId) graceTokenInfo)
+    {
+        var cacheKey = GetCacheKey(token);
+        return _memoryCache.TryGetValue(cacheKey, out graceTokenInfo);
+    }
+
+    private static string GetCacheKey(string token) => $"grace_period_token:{token}";
 
     private string GenerateRefreshToken()
     {

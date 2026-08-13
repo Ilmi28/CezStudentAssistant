@@ -8,6 +8,7 @@
         "logout": "Log out",
         "avatarDefault": "ST",
         "back": "Back",
+        "cancel": "Cancel",
         "switchLanguage": "Przełącz na polski",
         "switchLanguageLabel": "PL"
     },
@@ -81,16 +82,24 @@
         "thSyncDate": "Last Synchronized",
         "noSyncDate": "no data",
         "tagCez": "CEZ",
-        "tagCustom": "Custom"
+        "tagCustom": "Custom",
+        "addCourseBtn": "Add",
+        "addCourseModalTitle": "Add New Course",
+        "addCourseModalDesc": "Enter the details for the new course. Manually added courses are tagged as custom.",
+        "courseNameLabel": "Course Name",
+        "courseNamePlaceholder": "e.g. Data Structures & Algorithms",
+        "courseDescLabel": "Description (optional)",
+        "courseDescPlaceholder": "e.g. Course conducted in semester 4",
+        "addCourseSuccess": "Course added successfully!"
     },
     "quizzes": {
-        "title": "All Available Quizzes (AI Quizzes)",
+        "title": "My quizzes",
         "subtitle": "GENERATED AUTOMATICALLY",
         "noQuizzes": "No quizzes yet.",
         "noQuizzesSubtitle": "Go to the Courses tab, select a course, and generate a quiz from your educational files."
     },
     "courseDetails": {
-        "backBtn": "Back to courses",
+        "backBtn": "Back",
         "tag": "Academic Course",
         "thType": "Type",
         "lecture": "Lecture",

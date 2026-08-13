@@ -11,14 +11,14 @@ export interface BaseButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 
 const sizeStyles = {
   sm: "text-xs font-medium px-3.5 py-2 rounded-lg",
-  md: "text-xs font-semibold px-4.5 py-2.5 rounded-xl",
-  lg: "text-sm font-semibold px-6 py-3 rounded-xl",
+  md: "text-sm font-medium px-5 py-3 rounded-xl",
+  lg: "text-base font-semibold px-6 py-3.5 rounded-xl",
 };
 
 const spinnerSizes = {
   sm: 14,
-  md: 16,
-  lg: 18,
+  md: 18,
+  lg: 20,
 };
 
 /**
@@ -52,7 +52,7 @@ export const PrimaryButton: React.FC<BaseButtonProps> = ({
       {loading ? (
         <Loader2 size={spinnerSizes[size]} className="animate-spin shrink-0" />
       ) : (
-        icon && <span className="shrink-0">{icon}</span>
+        icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
       )}
       <span>{children}</span>
     </button>
@@ -90,7 +90,7 @@ export const SecondaryButton: React.FC<BaseButtonProps> = ({
       {loading ? (
         <Loader2 size={spinnerSizes[size]} className="animate-spin shrink-0" />
       ) : (
-        icon && <span className="shrink-0">{icon}</span>
+        icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
       )}
       <span>{children}</span>
     </button>

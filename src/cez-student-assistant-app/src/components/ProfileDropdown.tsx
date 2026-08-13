@@ -52,35 +52,35 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex items-center gap-2.5 px-3.5 py-2 text-white transition-all cursor-pointer focus:outline-none ${
+        className={`flex items-center gap-3 px-4 py-2.5 text-white transition-all cursor-pointer focus:outline-none ${
           isOpen
             ? "rounded-t-xl rounded-b-none border border-white/20 bg-white/15 relative z-20"
-            : "rounded-xl border border-white/15 bg-white/10 hover:bg-white/20"
+            : "rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 shadow-xs"
         }`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold flex-shrink-0 uppercase shadow-xs">
+        <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold flex-shrink-0 uppercase shadow-xs">
           {username ? username.substring(0, 2) : t("common.avatarDefault")}
         </div>
-        <span className="text-xs font-medium truncate max-w-[110px]" title={username || "Student"}>
+        <span className="text-sm font-medium truncate max-w-[140px]" title={username || "Student"}>
           {username || "Student"}
         </span>
         <ChevronDown
-          size={14}
+          size={16}
           className={`text-white/70 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
-      {/* Popover Menu - Uses popover design tokens for light and dark modes */}
+      {/* Popover Menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full -mt-px w-52 rounded-b-xl rounded-tl-xl bg-card text-card-foreground border border-border shadow-2xl overflow-hidden z-50 animate-in fade-in duration-100">
+        <div className="absolute right-0 top-full -mt-px w-56 rounded-b-xl rounded-tl-xl bg-card text-card-foreground border border-border shadow-2xl overflow-hidden z-50 animate-in fade-in duration-100">
           {/* User Info Header */}
-          <div className="px-4 py-2.5 border-b border-border bg-muted/30">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               {t("profile.signedInAs")}
             </p>
-            <p className="text-xs font-semibold text-foreground truncate mt-0.5">
+            <p className="text-sm font-semibold text-foreground truncate mt-0.5">
               {username || "Student"}
             </p>
           </div>
@@ -90,18 +90,18 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
             <button
               type="button"
               onClick={handlePreferencesClick}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer text-left"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors cursor-pointer text-left"
             >
-              <Settings size={15} className="text-primary" />
+              <Settings size={16} className="text-primary" />
               <span>{t("profile.preferences")}</span>
             </button>
 
             <button
               type="button"
               onClick={handleLogoutClick}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-destructive hover:bg-destructive/15 transition-colors cursor-pointer text-left last:rounded-b-xl"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/15 transition-colors cursor-pointer text-left last:rounded-b-xl"
             >
-              <LogOut size={15} />
+              <LogOut size={16} />
               <span>{t("common.logout")}</span>
             </button>
           </div>

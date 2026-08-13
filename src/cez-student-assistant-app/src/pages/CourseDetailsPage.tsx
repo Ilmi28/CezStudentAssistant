@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, FileText, Upload, X, RefreshCw, ChevronDown, Download } from "lucide-react";
+import { ChevronLeft, FileText, Upload, X, RefreshCw, ChevronDown, Download } from "lucide-react";
 import { courseService, type CourseDetailsDto } from "../services";
 import { PrimaryButton } from "../components/Button";
 
@@ -82,12 +82,14 @@ export default function CourseDetailsPage({
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
       {/* Header & Back Action */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <button
           onClick={() => navigate("/courses")}
-          className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-semibold cursor-pointer"
+          title={t("courseDetails.backBtn")}
+          aria-label={t("courseDetails.backBtn")}
+          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer"
         >
-          <ArrowLeft size={14} /> {t("courseDetails.backBtn")}
+          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
         </button>
       </div>
 
@@ -115,8 +117,8 @@ export default function CourseDetailsPage({
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
         <div
           onClick={() => setIsFilesExpanded(!isFilesExpanded)}
-          className={`flex items-center justify-between cursor-pointer select-none group transition-all duration-200 ${
-            isFilesExpanded ? "border-b border-border pb-2.5 mb-4" : ""
+          className={`flex items-center justify-between cursor-pointer select-none group ${
+            isFilesExpanded ? "pb-3.5 mb-2" : ""
           }`}
         >
           <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
@@ -204,11 +206,10 @@ export default function CourseDetailsPage({
           </div>
           <PrimaryButton
             type="submit"
-            size="sm"
             fullWidth
             loading={uploading}
             disabled={!selectedFile}
-            icon={!uploading ? <Upload size={13} /> : undefined}
+            icon={!uploading ? <Upload size={16} /> : undefined}
           >
             {t("courseDetails.uploadBtn")}
           </PrimaryButton>

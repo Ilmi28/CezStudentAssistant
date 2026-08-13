@@ -2,7 +2,8 @@
 
 public enum QuizAttemptStatus
 {
-    NotStarted = 1,
-    InProgress = 2,
-    Completed = 3
+    Generating = 1,
+    Ready = 2,
+    InProgress = 3,
+    Completed = 4
 }

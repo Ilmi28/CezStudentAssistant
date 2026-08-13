@@ -29,6 +29,7 @@ This file defines the project coding standards, UI design tokens, component arch
 10. **Pure State Context Containers**: Context files in `src/contexts/` MUST serve exclusively as pure, lightweight state containers storing raw state and state setters. NEVER define business logic, API service calls, navigation, side-effects, or custom hook implementations inside context files.
 11. **Hook-Driven Business Logic Layer**: ALL domain business logic, API service requests, navigation triggers, side-effects, and state mutation orchestrations MUST reside in dedicated standalone custom hooks located in `src/hooks/`. Components MUST consume state and actions strictly through these custom hooks.
 12. **Clean Provider Composition**: Root provider wrappers MUST compose domain providers using clean functional composition (e.g. `reduceRight`) or flat composition — NEVER construct deeply nested inline provider JSX hierarchies.
+13. **Modal Dialog Architecture & Styling Standards**: ALL modal dialogs MUST be extracted into standalone reusable components in `src/components/`, utilize design system tokens (`bg-card`, `border-border`, `backdrop-blur-xs`, `shadow-2xl`), render inline form validation alerts via `<Alert>`, and consume shared `<PrimaryButton>` and `<SecondaryButton>` controls.
 
 ---
 

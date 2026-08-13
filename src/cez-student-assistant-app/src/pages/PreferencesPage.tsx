@@ -84,12 +84,12 @@ export default function PreferencesPage() {
             {t("preferences.accountSection")}
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-foreground">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               {t("auth.usernameLabel")}
             </label>
-            <div className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs font-medium flex items-center justify-between shadow-xs">
+            <div className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground text-sm font-medium flex items-center justify-between shadow-xs">
               <span>{username || "Student"}</span>
             </div>
           </div>
@@ -103,10 +103,10 @@ export default function PreferencesPage() {
             {t("preferences.appearanceSection")}
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
           {/* Theme Selector */}
           <div className="space-y-1.5">
-            <label htmlFor="themeSelect" className="block text-xs font-medium text-foreground">
+            <label htmlFor="themeSelect" className="block text-sm font-medium text-foreground mb-1.5">
               {t("preferences.themeLabel")}
             </label>
             <Select
@@ -120,7 +120,7 @@ export default function PreferencesPage() {
 
           {/* Language Selector */}
           <div className="space-y-1.5">
-            <label htmlFor="langSelect" className="block text-xs font-medium text-foreground">
+            <label htmlFor="langSelect" className="block text-sm font-medium text-foreground mb-1.5">
               {t("preferences.languageLabel")}
             </label>
             <Select
@@ -140,7 +140,7 @@ export default function PreferencesPage() {
           <h2 className="text-base font-bold text-foreground tracking-wide">
             {t("preferences.cezSection")}
           </h2>
-          <span className={`px-2.5 py-0.5 rounded text-xs font-medium border ${
+          <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${
             isCezConnected
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
               : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
@@ -148,7 +148,7 @@ export default function PreferencesPage() {
             {isCezConnected ? t("preferences.connected") : t("preferences.notConnected")}
           </span>
         </div>
-        <div className="space-y-3 text-xs">
+        <div className="space-y-3.5 text-sm">
           <p className="text-muted-foreground">
             {t("courses.syncSubtitleDate", { date: formattedSyncDate })}
           </p>
@@ -156,8 +156,6 @@ export default function PreferencesPage() {
             <SecondaryButton
               onClick={() => (isCezConnected ? handleSyncCourses() : setShowCezModal(true))}
               loading={syncing}
-              size="sm"
-              className="text-xs"
             >
               {isCezConnected ? t("preferences.syncNow") : t("courses.connectCezBtn")}
             </SecondaryButton>
@@ -172,15 +170,14 @@ export default function PreferencesPage() {
             {t("preferences.securitySection")}
           </h2>
         </div>
-        <div className="space-y-3 text-xs">
+        <div className="space-y-3.5 text-sm">
           <p className="text-muted-foreground">
             {t("preferences.logoutDesc")}
           </p>
           <div>
             <PrimaryButton
               onClick={handleLogout}
-              size="sm"
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-none text-xs"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-none"
             >
               {t("common.logout")}
             </PrimaryButton>

@@ -25,6 +25,7 @@ public class GetUserCoursesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
 
         return await courseRepo.Find(c => c.Users.Any())
             .Where(c => c.Users.Any(u => u.Id == query.UserId))
+            .OrderBy(c => c.Name)
             .Select(c => new CourseDto
             {
                 Id = c.Id,

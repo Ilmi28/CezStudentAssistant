@@ -119,6 +119,32 @@ public class RefreshTokenCommandHandlerTests
     }
 
     [Test]
+    public async Task Handle_ShouldSetSession_WhenTokenFoundInGracePeriodCache()
+    {
+        var userId = Guid.NewGuid();
+        var oldToken = "old-token-in-grace-period";
+        var command = new RefreshTokenCommand(oldToken);
+
+        _refreshTokenRepository.GetSingleAsync(Arg.Any<Expression<Func<RefreshToken, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns((RefreshToken?)null);
+
+        (string NewRefreshToken, Guid UserId) graceInfo = ("new-token-from-grace", userId);
+        _tokenService.TryGetGracePeriodToken(oldToken, out Arg.Any<(string, Guid)>())
+            .Returns(x =>
+            {
+                x[1] = graceInfo;
+                return true;
+            });
+
+        _tokenService.GenerateAccessToken(userId).Returns("grace-access-token");
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        _currentUserService.Received(1).SetSession("grace-access-token", "new-token-from-grace");
+    }
+
+    [Test]
     public async Task Handle_ShouldThrowUnauthorizedException_WhenRefreshTokenIsExpired()
     {
         var validToken = "expired-token";

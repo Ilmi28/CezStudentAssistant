@@ -30,7 +30,19 @@ public class RefreshTokenCommandHandler(
         var tokenRepo = unitOfWork.Repository<IRefreshTokenRepository>();
         var existingToken = await tokenRepo.GetSingleAsync(x => x.Token == refreshToken, ct);
 
-        if (existingToken is null || existingToken.ExpiryTime <= DateTime.UtcNow)
+        if (existingToken is null)
+        {
+            if (tokenService.TryGetGracePeriodToken(refreshToken, out var graceInfo))
+            {
+                var graceAccessToken = tokenService.GenerateAccessToken(graceInfo.UserId);
+                currentUserService.SetSession(graceAccessToken, graceInfo.NewRefreshToken);
+                return;
+            }
+
+            throw new UnauthorizedException(AuthMessagesConsts.InvalidRefreshToken);
+        }
+
+        if (existingToken.ExpiryTime <= DateTime.UtcNow)
             throw new UnauthorizedException(AuthMessagesConsts.InvalidRefreshToken);
 
         var newRefreshToken = await tokenService.RotateRefreshTokenAsync(existingToken.UserId, ct);

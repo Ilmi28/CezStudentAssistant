@@ -14,7 +14,7 @@ import PreferencesPage from "./pages/PreferencesPage";
 
 export default function AppRoutes() {
   const { isAuthenticated, isCezConnected, lastCezSync, handleLoginSuccess } = useAuth();
-  const { courses, handleSyncCourses } = useCourse();
+  const { courses, handleSyncCourses, createCourse } = useCourse();
   const { quizzes } = useQuiz();
   const { syncing, setError, setSuccess } = useUI();
 
@@ -28,7 +28,7 @@ export default function AppRoutes() {
       {/* Protected */}
       <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" replace />}>
         <Route path="/home"       element={<HomePage courses={courses} quizzes={quizzes} />} />
-        <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
+        <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} onCreateCourse={createCourse} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
         <Route path="/quizzes"    element={<QuizzesPage quizzes={quizzes} />} />
         <Route path="/course/:id" element={<CourseDetailsPage setError={setError} setSuccess={setSuccess} />} />
         <Route path="/quiz/:id"   element={<QuizSolverPage setError={setError} />} />

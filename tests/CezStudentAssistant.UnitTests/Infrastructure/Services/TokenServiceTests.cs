@@ -4,6 +4,7 @@ using CezStudentAssistant.Domain.Interfaces.Repositories;
 using CezStudentAssistant.Infrastructure.Services;
 using CezStudentAssistant.Infrastructure.Settings;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using System.Linq.Expressions;
@@ -15,6 +16,7 @@ public class TokenServiceTests
     private IOptions<JwtSettings> _jwtOptions = null!;
     private IUnitOfWork _unitOfWork = null!;
     private IRefreshTokenRepository _refreshTokenRepository = null!;
+    private IMemoryCache _memoryCache = null!;
     private TokenService _sut = null!;
 
     [SetUp]
@@ -26,21 +28,24 @@ public class TokenServiceTests
             Issuer = "TestIssuer",
             Audience = "TestAudience",
             AccessTokenExpiryMinutes = 15,
-            RefreshTokenExpiryDays = 30
+            RefreshTokenExpiryDays = 30,
+            RefreshTokenGracePeriodSeconds = 30
         });
 
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _refreshTokenRepository = Substitute.For<IRefreshTokenRepository>();
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
 
         _unitOfWork.Repository<IRefreshTokenRepository>().Returns(_refreshTokenRepository);
 
-        _sut = new TokenService(_jwtOptions, _unitOfWork);
+        _sut = new TokenService(_jwtOptions, _unitOfWork, _memoryCache);
     }
 
     [TearDown]
     public void TearDown()
     {
         _unitOfWork.Dispose();
+        _memoryCache.Dispose();
     }
 
     [Test]
@@ -67,17 +72,22 @@ public class TokenServiceTests
     }
 
     [Test]
-    public async Task RotateRefreshTokenAsync_ShouldUpdateExistingToken_WhenOneExists()
+    public async Task RotateRefreshTokenAsync_ShouldUpdateExistingTokenAndStoreOldInCache_WhenOneExists()
     {
         var userId = Guid.NewGuid();
-        var existingToken = new RefreshToken { UserId = userId, Token = "old", ExpiryTime = DateTime.UtcNow };
+        var existingToken = new RefreshToken { UserId = userId, Token = "old-token", ExpiryTime = DateTime.UtcNow };
         _refreshTokenRepository.GetSingleAsync(Arg.Any<Expression<Func<RefreshToken, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(existingToken);
 
-        var refreshToken = await _sut.RotateRefreshTokenAsync(userId, CancellationToken.None);
+        var newRefreshToken = await _sut.RotateRefreshTokenAsync(userId, CancellationToken.None);
 
-        refreshToken.Should().NotBe("old");
-        existingToken.Token.Should().NotBe("old");
+        newRefreshToken.Should().NotBe("old-token");
+        existingToken.Token.Should().NotBe("old-token");
         await _refreshTokenRepository.Received(1).UpdateAsync(existingToken, Arg.Any<CancellationToken>());
+
+        var hasGraceToken = _sut.TryGetGracePeriodToken("old-token", out var graceInfo);
+        hasGraceToken.Should().BeTrue();
+        graceInfo.NewRefreshToken.Should().Be(newRefreshToken);
+        graceInfo.UserId.Should().Be(userId);
     }
 }

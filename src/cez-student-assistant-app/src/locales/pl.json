@@ -8,6 +8,7 @@
         "logout": "Wyloguj się",
         "avatarDefault": "ST",
         "back": "Powrót",
+        "cancel": "Anuluj",
         "switchLanguage": "Switch to English",
         "switchLanguageLabel": "EN"
     },
@@ -81,16 +82,24 @@
         "thSyncDate": "Ostatnia synchronizacja",
         "noSyncDate": "brak danych",
         "tagCez": "CEZ",
-        "tagCustom": "Własny"
+        "tagCustom": "Własny",
+        "addCourseBtn": "Dodaj",
+        "addCourseModalTitle": "Dodaj nowy przedmiot",
+        "addCourseModalDesc": "Wprowadź nazwę nowego przedmiotu. Przedmioty dodane ręcznie są oznaczane jako własne.",
+        "courseNameLabel": "Nazwa przedmiotu",
+        "courseNamePlaceholder": "np. Algorytmy i struktury danych",
+        "courseDescLabel": "Opis (opcjonalnie)",
+        "courseDescPlaceholder": "np. Przedmiot realizowany w semestrze 4",
+        "addCourseSuccess": "Przedmiot został pomyślnie dodany!"
     },
     "quizzes": {
-        "title": "Wszystkie Dostępne Quizy",
+        "title": "Moje Quizy",
         "subtitle": "GENEROWANE AUTOMATYCZNIE",
         "noQuizzes": "Brak quizów.",
         "noQuizzesSubtitle": "Wejdź w zakładkę Kursy, wybierz przedmiot i wygeneruj quiz ze swoich plików dydaktycznych."
     },
     "courseDetails": {
-        "backBtn": "Powrót do przedmiotów",
+        "backBtn": "Powrót",
         "tag": "Przedmiot akademicki",
         "thType": "Typ",
         "lecture": "Wykład",

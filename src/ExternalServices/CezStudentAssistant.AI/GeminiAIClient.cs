@@ -1,5 +1,5 @@
-using CezStudentAssistant.AI.Services;
 using CezStudentAssistant.AI.Consts;
+using CezStudentAssistant.AI.Services;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses.AI.Quiz;

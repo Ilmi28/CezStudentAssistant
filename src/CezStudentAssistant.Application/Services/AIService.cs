@@ -6,16 +6,11 @@ using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Requests.AI;
-using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CezStudentAssistant.Application.Services;
 
@@ -26,9 +21,7 @@ public class AIService(
     IJobService jobService,
     IConfiguration configuration) : IAIService, IScopedService
 {
-    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
-        ?? configuration["CourseFilesContainer"]
-        ?? "course-files";
+    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"] ?? string.Empty;
 
     public async Task GenerateQuiz(GenerateQuizDto dto, CancellationToken ct = default)
     {

@@ -53,4 +53,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
     public DbSet<Resource> Resources { get; set; }
     public DbSet<Job> Jobs { get; set; }
+    public DbSet<TokenUsage> TokenUsages { get; set; }
 }

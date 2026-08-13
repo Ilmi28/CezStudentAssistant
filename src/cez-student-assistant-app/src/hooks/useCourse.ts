@@ -49,7 +49,6 @@ export function useCourse() {
 
   const handleSyncCourses = async () => {
     setSyncing(true);
-    setSuccess(t("courses.syncBtnLoading") + "...");
     try {
       await cezService.syncCourses();
       setSuccess(t("common.syncSuccess"));
@@ -72,10 +71,25 @@ export function useCourse() {
     }
   };
 
+  const createCourse = async (name: string, description?: string) => {
+    try {
+      await courseService.createCourse(name, description);
+      setSuccess(t("courses.addCourseSuccess"));
+      await refreshCourses();
+    } catch (err: any) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+        throw err;
+      }
+      throw err;
+    }
+  };
+
   return {
     courses: ctx.courses,
     setCourses: ctx.setCourses,
     refreshCourses,
     handleSyncCourses,
+    createCourse,
   };
 }
