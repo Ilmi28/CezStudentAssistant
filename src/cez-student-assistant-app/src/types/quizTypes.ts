@@ -40,10 +40,6 @@ export interface SubmitAnswerResponseDto {
   score?: number;
 }
 
-export enum QuizAttemptStatus {
-  Generating = 1,
-  Ready = 2,
-  InProgress = 3,
-  Completed = 4,
-}
+export { QuizAttemptStatus, QuestionType } from '../enums/quizEnums';
+
 

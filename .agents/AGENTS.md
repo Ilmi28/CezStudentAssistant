@@ -30,6 +30,7 @@ This file defines the project coding standards, UI design tokens, component arch
 11. **Hook-Driven Business Logic Layer**: ALL domain business logic, API service requests, navigation triggers, side-effects, and state mutation orchestrations MUST reside in dedicated standalone custom hooks located in `src/hooks/`. Components MUST consume state and actions strictly through these custom hooks.
 12. **Clean Provider Composition**: Root provider wrappers MUST compose domain providers using clean functional composition (e.g. `reduceRight`) or flat composition — NEVER construct deeply nested inline provider JSX hierarchies.
 13. **Modal Dialog Architecture & Styling Standards**: ALL modal dialogs MUST be extracted into standalone reusable components in `src/components/`, utilize design system tokens (`bg-card`, `border-border`, `backdrop-blur-xs`, `shadow-2xl`), render inline form validation alerts via `<Alert>`, and consume shared `<PrimaryButton>` and `<SecondaryButton>` controls.
+14. **Modularized Domain Enum Architecture**: ALL frontend domain enums MUST be organized into dedicated, module-grouped files located in `src/enums/` (categorized by domain feature area) and exported through a central `index.ts` barrel file. NEVER define inline enums inside UI components, pages, context containers, or monolithic type files.
 
 ---
 

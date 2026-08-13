@@ -36,3 +36,6 @@ export interface GenerateQuizResponseDto {
   quizId?: string;
   jobId?: string;
 }
+
+export { CourseType } from '../enums/courseEnums';
+
