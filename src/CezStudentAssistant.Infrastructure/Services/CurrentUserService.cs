@@ -16,14 +16,18 @@ public class CurrentUserService(
     private HttpResponse Response => httpContextAccessor.HttpContext.Response;
     private readonly JwtSettings _jwtSettings = jwtOptions.Value;
 
-    private CookieOptions CreateCookieOptions(DateTime expires) => new()
+    private CookieOptions CreateCookieOptions(DateTime expires)
     {
-        HttpOnly = true,
-        Secure = httpContextAccessor.HttpContext?.Request.IsHttps ?? false,
-        SameSite = SameSiteMode.None,
-        Path = "/",
-        Expires = expires
-    };
+        var isHttps = httpContextAccessor.HttpContext?.Request.IsHttps ?? false;
+        return new()
+        {
+            HttpOnly = true,
+            Secure = isHttps,
+            SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax,
+            Path = "/",
+            Expires = expires
+        };
+    }
 
     public Guid? GetCurrentUserId() => Guid.TryParse(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : null;
 

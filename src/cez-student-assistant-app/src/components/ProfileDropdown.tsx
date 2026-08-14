@@ -10,9 +10,25 @@ interface ProfileDropdownProps {
 
 export default function ProfileDropdown({ username, onLogout }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender && !isClosing) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 140);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -26,7 +42,7 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
       }
     }
 
-    if (isOpen) {
+    if (shouldRender) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleKeyDown);
     }
@@ -34,7 +50,7 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [shouldRender]);
 
   const handlePreferencesClick = () => {
     setIsOpen(false);
@@ -73,8 +89,12 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
       </button>
 
       {/* Popover Menu */}
-      {isOpen && (
-        <div className="absolute right-0 top-full -mt-px w-56 rounded-b-xl rounded-tl-xl bg-card text-card-foreground border border-border shadow-2xl overflow-hidden z-50 animate-in fade-in duration-100">
+      {shouldRender && (
+        <div
+          className={`absolute right-0 top-full -mt-px w-56 rounded-b-xl rounded-tl-xl bg-card text-card-foreground border border-border shadow-2xl overflow-hidden z-50 ${
+            isClosing ? "animate-dropdown-exit" : "animate-dropdown-enter"
+          }`}
+        >
           {/* User Info Header */}
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">

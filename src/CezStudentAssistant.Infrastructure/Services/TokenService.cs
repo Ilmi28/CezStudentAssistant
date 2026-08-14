@@ -85,6 +85,8 @@ public class TokenService : ITokenService, IScopedService
             await tokenRepo.UpdateAsync(currentToken, ct);
         }
 
+        await _unitOfWork.SaveChangesAsync(ct);
+
         return refreshToken;
     }
 

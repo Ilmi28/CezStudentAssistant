@@ -55,7 +55,7 @@ public class StartQuizCommandHandlerTests
         {
             Id = quizAttemptId,
             UserId = userId,
-            Status = QuizAttemptStatus.Ready
+            Status = QuizAttemptStatus.NotStarted
         };
 
         _quizAttemptRepository.GetByIdAsync(quizAttemptId, Arg.Any<CancellationToken>())
@@ -112,7 +112,7 @@ public class StartQuizCommandHandlerTests
         {
             Id = quizAttemptId,
             UserId = otherUserId,
-            Status = QuizAttemptStatus.Ready
+            Status = QuizAttemptStatus.NotStarted
         };
 
         _quizAttemptRepository.GetByIdAsync(quizAttemptId, Arg.Any<CancellationToken>())

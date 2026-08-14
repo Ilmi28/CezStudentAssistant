@@ -1,8 +1,7 @@
 export enum QuizAttemptStatus {
-  Generating = 1,
-  Ready = 2,
-  InProgress = 3,
-  Completed = 4,
+  NotStarted = 1,
+  InProgress = 2,
+  Completed = 3,
 }
 
 export enum QuestionType {

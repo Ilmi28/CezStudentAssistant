@@ -26,9 +26,25 @@ export function Select<T extends string | number>({
   placeholder,
 }: SelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender && !isClosing) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 140);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -42,7 +58,7 @@ export function Select<T extends string | number>({
       }
     }
 
-    if (isOpen) {
+    if (shouldRender) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleKeyDown);
     }
@@ -50,7 +66,7 @@ export function Select<T extends string | number>({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [shouldRender]);
 
   const handleSelect = (optionValue: T) => {
     onChange(optionValue);
@@ -85,10 +101,12 @@ export function Select<T extends string | number>({
         />
       </button>
 
-      {isOpen && (
+      {shouldRender && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 top-full -mt-px rounded-b-xl bg-card text-card-foreground border-x border-b border-border shadow-2xl overflow-hidden z-50 animate-in fade-in duration-100 max-h-60 overflow-y-auto border-t border-t-border/50"
+          className={`absolute left-0 right-0 top-full -mt-px rounded-b-xl bg-card text-card-foreground border-x border-b border-border shadow-2xl overflow-hidden z-50 max-h-60 overflow-y-auto border-t border-t-border/50 ${
+            isClosing ? "animate-dropdown-exit" : "animate-dropdown-enter"
+          }`}
         >
           {options.map((option) => {
             const isSelected = option.value === value;
