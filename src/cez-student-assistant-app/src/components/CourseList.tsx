@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Layers, Plus } from "lucide-react";
+import { SecondaryButton } from "./Button";
 import type { CourseDto } from "../services";
 
 interface CourseListProps {
@@ -21,17 +22,18 @@ export default function CourseList({ courses, onOpenAddModal }: CourseListProps)
           {t("courses.title")}
         </h3>
         {onOpenAddModal && (
-          <button
+          <SecondaryButton
             type="button"
             onClick={onOpenAddModal}
             title={t("courses.addCourseBtn")}
             aria-label={t("courses.addCourseBtn")}
-            className="w-10 h-10 rounded-xl bg-primary hover:bg-primary/90 text-white flex items-center justify-center shadow-sm hover:shadow-md transition-colors cursor-pointer"
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
           >
             <Plus size={22} strokeWidth={2.25} className="shrink-0" />
-          </button>
+          </SecondaryButton>
         )}
       </div>
+
 
       {sortedCourses.length === 0 ? (
         <div className="bg-card rounded-xl border border-border p-8 text-center shadow-sm">

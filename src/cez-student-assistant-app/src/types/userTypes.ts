@@ -21,3 +21,10 @@ export interface UpdateUserConfigurationPayload {
   theme?: UserTheme;
   language?: UserLanguage;
 }
+
+export interface UserUsageDto {
+  dailyTokensUsed: number;
+  dailyTokenLimit: number;
+  dailyUsagePercentage: number;
+}
+

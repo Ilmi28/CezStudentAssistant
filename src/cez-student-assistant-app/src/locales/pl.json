@@ -204,7 +204,14 @@
         "themeDark": "Ciemny",
         "themeSystem": "Systemowy",
         "languageLabel": "Język",
+        "usageSection": "Limit Dzienny",
+        "dailyLimitLabel": "Dzienny Limit Tokenów",
+
+        "dailyUsagePercentage": "Dzienny Zużycie",
+        "tokensUsedFormat": "{{used}} / {{limit}} tokenów",
+
         "securitySection": "Bezpieczeństwo i Sesja",
         "logoutDesc": "Wyloguj się ze swojego konta na tym urządzeniu."
     }
 }
+

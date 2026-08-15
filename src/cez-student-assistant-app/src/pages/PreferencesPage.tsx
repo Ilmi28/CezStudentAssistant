@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth, useUI, useCourse } from "../hooks";
+import { useAuth, useUI, useCourse, useUser } from "../hooks";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import { Select } from "../components/Select";
 import { userService } from "../services";
@@ -14,7 +14,9 @@ export default function PreferencesPage() {
   const { username, isCezConnected, lastCezSync, handleLogout } = useAuth();
   const { updateTheme, updateUserLanguage, setShowCezModal, syncing } = useUI();
   const { handleSyncCourses } = useCourse();
+  const { usage, loadingUsage } = useUser();
   const { t, i18n } = useTranslation();
+
 
   useEffect(() => {
     async function loadConfig() {
@@ -134,7 +136,45 @@ export default function PreferencesPage() {
         </div>
       </section>
 
-      {/* Section 3: CEZ Integration */}
+      {/* Section 3: Limit Dzienny */}
+      <section className="space-y-4">
+
+        <div className="border-b border-border pb-2.5">
+          <h2 className="text-base font-bold text-foreground tracking-wide">
+            {t("preferences.usageSection")}
+          </h2>
+        </div>
+        <div className="space-y-2 py-1">
+          {loadingUsage ? (
+            <div className="h-6 animate-pulse bg-muted rounded-lg" />
+          ) : usage ? (
+            <>
+              <div className="flex justify-between items-baseline">
+                <span className="text-base font-bold text-primary">
+                  {usage.dailyUsagePercentage}%
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {t("preferences.tokensUsedFormat", {
+                    used: usage.dailyTokensUsed.toLocaleString(),
+                    limit: usage.dailyTokenLimit.toLocaleString(),
+                  })}
+                </span>
+              </div>
+              <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${Math.min(100, Math.max(0, usage.dailyUsagePercentage))}%` }}
+                />
+              </div>
+            </>
+          ) : null}
+        </div>
+
+      </section>
+
+
+      {/* Section 4: CEZ Integration */}
+
       <section className="space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-2.5">
           <h2 className="text-base font-bold text-foreground tracking-wide">

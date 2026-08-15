@@ -25,5 +25,13 @@ public static class UserEndpoints
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
+
+        group.MapGet("/usage", async (IMediator mediator) =>
+        {
+            var query = new GetUserUsageQuery();
+            var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
     }
 }
+

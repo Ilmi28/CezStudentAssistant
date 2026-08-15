@@ -204,7 +204,14 @@
         "themeDark": "Dark",
         "themeSystem": "System",
         "languageLabel": "Language",
+        "usageSection": "Daily Limit",
+        "dailyLimitLabel": "Daily Token Quota",
+
+        "dailyUsagePercentage": "Daily Usage",
+        "tokensUsedFormat": "{{used}} / {{limit}} tokens",
+
         "securitySection": "Security & Session",
         "logoutDesc": "Sign out of your account on this device."
     }
 }
+
