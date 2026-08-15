@@ -82,8 +82,8 @@ public class CourseDetailsEndpointsTests
         // Upload file
         using var formData = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3, 4, 5 });
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
-        formData.Add(fileContent, "file", "testfile.bin");
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pdf");
+        formData.Add(fileContent, "file", "testfile.pdf");
 
         var uploadResponse = await _client.PostAsync($"/course/file/upload?courseId={courseId}", formData);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -96,15 +96,33 @@ public class CourseDetailsEndpointsTests
         var detailsContent = await detailsResponse.Content.ReadFromJsonAsync<ApiResponse<CourseDetailsDto>>(_jsonOptions);
         
         detailsContent!.Data!.Files.Should().HaveCount(1);
-        detailsContent.Data.Files[0].DisplayName.Should().Be("testfile.bin");
+        detailsContent.Data.Files[0].DisplayName.Should().Be("testfile.pdf");
         detailsContent.Data.Files[0].DownloadUrl.Should().Be($"/course/{courseId}/file/{fileId}/download");
 
         // Download File
         var downloadResponse = await _client.GetAsync($"/course/{courseId}/file/{fileId}/download");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        downloadResponse.Content.Headers.ContentType!.MediaType.Should().Be("application/octet-stream");
+        downloadResponse.Content.Headers.ContentType!.MediaType.Should().Be("application/pdf");
         
         var downloadedBytes = await downloadResponse.Content.ReadAsByteArrayAsync();
         downloadedBytes.Should().Equal(new byte[] { 1, 2, 3, 4, 5 });
+    }
+
+    [Test]
+    public async Task UploadFile_ShouldReturnBadRequest_WhenFileFormatIsUnsupported()
+    {
+        await RegisterAndLogin("unsupporteduser", "Password123!");
+
+        var addResponse = await _client.PostAsJsonAsync("/course", new AddUserCourseCommand { Name = "Unsupported File Course" });
+        var addContent = await addResponse.Content.ReadFromJsonAsync<ApiResponse<Guid>>(_jsonOptions);
+        var courseId = addContent!.Data;
+
+        using var formData = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3 });
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-msdownload");
+        formData.Add(fileContent, "file", "malware.exe");
+
+        var uploadResponse = await _client.PostAsync($"/course/file/upload?courseId={courseId}", formData);
+        uploadResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

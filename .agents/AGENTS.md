@@ -67,6 +67,9 @@ This file defines the project coding standards, UI design tokens, component arch
 ### 6. Clean Code & Minimal Noise Standards
 - **No Defensive Noise or Diagnostic Workarounds in Production Code**: NEVER introduce defensive try-catch wrappers, empty exception handlers, or verbose diagnostic comments into production C# code to work around testing nuances or transient execution states. Production logic MUST focus strictly on direct domain functionality and clean exception flows.
 
+### 7. Helper Naming & Organization Standards
+- **Helper Classes in Helpers Folder with Helper Suffix**: ALL shared utility algorithms, format validators, or static helper classes MUST reside in a `Helpers` directory (e.g. `src/CezStudentAssistant.Application/Helpers/`) and MUST be suffixed with `Helper` (e.g. `*Helper.cs`). NEVER place generic helper classes in root layer folders or misnamed directories without the `Helper` suffix.
+
 ---
 
 ## 🧪 Testing Guidelines & Standards

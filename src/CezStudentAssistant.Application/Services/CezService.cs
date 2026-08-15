@@ -1,3 +1,4 @@
+using CezStudentAssistant.Application.Helpers;
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Exceptions;

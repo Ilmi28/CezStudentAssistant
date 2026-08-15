@@ -112,4 +112,32 @@ public class FileContentProcessorTests
         processed.Text.Should().Contain("application/x-unknown-binary");
         processed.Text.Should().Contain("binary format unsupported");
     }
+
+    [Test]
+    public async Task ProcessFileAsync_ShouldExtractText_WhenMimeTypeIsEpub()
+    {
+        var htmlContent = "<html><body><h1>Wiedźmin</h1><p>Rozdział 1: Pani Jeziora</p></body></html>";
+
+        using var ms = new MemoryStream();
+        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+        {
+            var entry = archive.CreateEntry("OEBPS/Text/chapter1.xhtml");
+            using var writer = new StreamWriter(entry.Open());
+            writer.Write(htmlContent);
+        }
+
+        ms.Position = 0;
+        var aiFile = new AIFile
+        {
+            Stream = ms,
+            MimeType = "application/epub+zip"
+        };
+
+        var processed = await _service.ProcessFileAsync(aiFile);
+
+        processed.Should().NotBeNull();
+        processed!.IsTextFormat.Should().BeTrue();
+        processed.Text.Should().Contain("Wiedźmin");
+        processed.Text.Should().Contain("Pani Jeziora");
+    }
 }

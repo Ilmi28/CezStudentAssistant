@@ -11,6 +11,20 @@ interface UploadFileModalProps {
   onSubmit: (file: File) => Promise<void>;
 }
 
+const ALLOWED_EXTENSIONS = [
+  ".pdf", ".docx", ".odt", ".pptx", ".odp", ".epub", ".rtf", ".html", ".htm",
+  ".txt", ".md", ".csv", ".tsv", ".json", ".xml", ".yaml", ".yml",
+  ".cs", ".js", ".ts", ".jsx", ".tsx", ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".sql", ".sh", ".ps1", ".css",
+  ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp",
+  ".mp3", ".wav", ".ogg", ".m4a",
+  ".mp4", ".webm", ".avi", ".mov"
+];
+
+const isFileSupported = (file: File) => {
+  const ext = "." + file.name.split(".").pop()?.toLowerCase();
+  return ALLOWED_EXTENSIONS.includes(ext) || file.type.startsWith("image/") || file.type.startsWith("text/") || file.type.startsWith("audio/") || file.type.startsWith("video/");
+};
+
 export default function UploadFileModal({
   isOpen,
   onClose,
@@ -25,6 +39,10 @@ export default function UploadFileModal({
     e.preventDefault();
     if (!selectedFile) {
       setModalError(t("auth.emptyFields"));
+      return;
+    }
+    if (!isFileSupported(selectedFile)) {
+      setModalError(t("courseDetails.unsupportedFormatError"));
       return;
     }
     setModalError(null);
@@ -67,8 +85,14 @@ export default function UploadFileModal({
             </span>
             <input
               type="file"
+              accept=".pdf,.docx,.odt,.pptx,.odp,.epub,.rtf,.html,.htm,.txt,.md,.csv,.tsv,.json,.xml,.yaml,.yml,.cs,.js,.ts,.jsx,.tsx,.py,.java,.c,.cpp,.h,.hpp,.sql,.sh,.ps1,.css,image/*,audio/*,video/*"
               onChange={(e) => {
                 const file = e.target.files?.[0] || null;
+                if (file && !isFileSupported(file)) {
+                  setSelectedFile(null);
+                  setModalError(t("courseDetails.unsupportedFormatError"));
+                  return;
+                }
                 setSelectedFile(file);
                 if (modalError) setModalError(null);
               }}

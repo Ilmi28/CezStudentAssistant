@@ -1,5 +1,6 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Helpers;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
@@ -34,6 +35,11 @@ public class UploadCourseFileCommandHandler(
 
     protected override async Task<Guid> ExecuteAsync(UploadCourseFileCommand command, CancellationToken ct)
     {
+        if (!SupportedFileFormatsHelper.IsSupported(command.ContentType, command.FileName))
+        {
+            throw new BadRequestException(CourseMessageConsts.UnsupportedFileFormat);
+        }
+
         var courseRepository = unitOfWork.Repository<ICourseRepository>();
         var course = await courseRepository.GetByIdAsync(command.CourseId, ct, false, c => c.Users);
 

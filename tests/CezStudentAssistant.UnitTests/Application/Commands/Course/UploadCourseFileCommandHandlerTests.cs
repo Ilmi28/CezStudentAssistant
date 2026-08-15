@@ -119,4 +119,26 @@ public class UploadCourseFileCommandHandlerTests
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage(CourseMessageConsts.CourseNotFound);
     }
+
+    [Test]
+    public async Task Handle_ShouldThrowBadRequestException_WhenFileFormatIsUnsupported()
+    {
+        var userId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+
+        using var memoryStream = new MemoryStream();
+        var command = new UploadCourseFileCommand
+        {
+            UserId = userId,
+            CourseId = courseId,
+            FileName = "malware.exe",
+            ContentType = "application/x-msdownload",
+            FileStream = memoryStream
+        };
+
+        Func<Task> act = async () => await _sut.Handle(command, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BadRequestException>()
+            .WithMessage(CourseMessageConsts.UnsupportedFileFormat);
+    }
 }

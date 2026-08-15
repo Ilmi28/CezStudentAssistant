@@ -42,8 +42,25 @@ public class FileContentProcessorService : IFileContentProcessorService
             return new ProcessedFileContent(null, formattedText, mime, IsTextFormat: true);
         }
 
+        if (IsUtf8Text(bytes))
+        {
+            var rawText = Encoding.UTF8.GetString(bytes);
+            var formattedText = $"--- Content of attached file ({mime}) ---\n{rawText}\n--- End of file ---";
+            return new ProcessedFileContent(null, formattedText, mime, IsTextFormat: true);
+        }
+
         var fallbackText = $"[Attached file: {mime} - binary format unsupported for direct AI ingestion]";
         return new ProcessedFileContent(null, fallbackText, mime, IsTextFormat: true);
+    }
+
+    private static bool IsUtf8Text(byte[] bytes)
+    {
+        var sampleLength = Math.Min(bytes.Length, 1024);
+        for (var i = 0; i < sampleLength; i++)
+        {
+            if (bytes[i] == 0) return false;
+        }
+        return true;
     }
 
     private static bool IsSupportedByGemini(string mime) =>
@@ -58,6 +75,25 @@ public class FileContentProcessorService : IFileContentProcessorService
         try
         {
             using var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
+
+            // 1. Check for EPUB HTML/XHTML entries
+            var htmlEntries = archive.Entries
+                .Where(e => e.FullName.EndsWith(".xhtml", StringComparison.OrdinalIgnoreCase)
+                         || e.FullName.EndsWith(".html", StringComparison.OrdinalIgnoreCase)
+                         || e.FullName.EndsWith(".htm", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(e => e.FullName)
+                .ToList();
+
+            if (htmlEntries.Count > 0)
+            {
+                var epubsText = htmlEntries
+                    .Select(e => { using var r = new StreamReader(e.Open(), Encoding.UTF8); return CleanXml(r.ReadToEnd()); })
+                    .Where(t => !string.IsNullOrWhiteSpace(t));
+                var epubResult = string.Join("\n", epubsText);
+                if (!string.IsNullOrWhiteSpace(epubResult)) return epubResult;
+            }
+
+            // 2. Check for OpenDocument (content.xml) or Word (word/document.xml)
             var entry = archive.GetEntry("content.xml") ?? archive.GetEntry("word/document.xml");
 
             if (entry != null)
@@ -66,6 +102,7 @@ public class FileContentProcessorService : IFileContentProcessorService
                 return CleanXml(reader.ReadToEnd());
             }
 
+            // 3. Check for PowerPoint slides (ppt/slides/slide*.xml)
             var slideTexts = archive.Entries
                 .Where(e => e.FullName.StartsWith("ppt/slides/slide", StringComparison.OrdinalIgnoreCase) && e.FullName.EndsWith(".xml"))
                 .Select(e => { using var r = new StreamReader(e.Open(), Encoding.UTF8); return CleanXml(r.ReadToEnd()); })
@@ -79,7 +116,7 @@ public class FileContentProcessorService : IFileContentProcessorService
 
     private static string CleanXml(string xml)
     {
-        var withNewlines = Regex.Replace(xml, @"</?(p|w:p|text:p|br|w:br|text:line-break)[^>]*>", "\n", RegexOptions.IgnoreCase);
+        var withNewlines = Regex.Replace(xml, @"</?(p|w:p|text:p|h[1-6]|div|br|w:br|text:line-break)[^>]*>", "\n", RegexOptions.IgnoreCase);
         var rawText = Regex.Replace(withNewlines, @"<[^>]+>", " ");
         var decoded = WebUtility.HtmlDecode(rawText);
         return string.Join("\n", decoded.Split('\n').Select(l => Regex.Replace(l, @"\s+", " ").Trim()).Where(l => l.Length > 0));
