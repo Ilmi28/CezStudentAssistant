@@ -22,8 +22,7 @@ public class DeleteCourseFileCommandHandler(
     IConfiguration configuration) : BaseCommandHandler<DeleteCourseFileCommand>
 {
     private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
-        ?? configuration["CourseFilesContainer"]
-        ?? "course-files";
+        ?? throw new InvalidOperationException(CourseMessageConsts.CourseFilesContainerConfigMissing);
 
     protected override string SuccessMessage => CourseMessageConsts.DeleteCourseFileSuccess;
     protected override string ErrorMessage => CourseMessageConsts.DeleteCourseFileError;

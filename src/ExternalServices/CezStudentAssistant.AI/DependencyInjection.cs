@@ -13,7 +13,9 @@ public static class DependencyInjection
     {
         public IServiceCollection AddAI(IConfiguration configuration)
         {
-            services.AddSingleton(x => new Client(apiKey: configuration["Gemini:ApiKey"]));
+            var apiKey = configuration["Gemini:ApiKey"]
+                ?? throw new InvalidOperationException("Configuration 'Gemini:ApiKey' is missing or empty.");
+            services.AddSingleton(x => new Client(apiKey: apiKey));
             services.AddScoped<IFileContentProcessorService, FileContentProcessorService>();
             services.AddScoped<IAIQuizService, AIQuizService>();
             services.AddScoped<IAIClient, GeminiAIClient>();

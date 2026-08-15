@@ -24,8 +24,7 @@ public class CezService(
     IConfiguration configuration) : ICezService
 {
     private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
-        ?? configuration["CourseFilesContainer"]
-        ?? "course-files";
+        ?? throw new InvalidOperationException(CourseMessageConsts.CourseFilesContainerConfigMissing);
     public async Task<Guid> LoginWithCezAsync(string userName, string password, CancellationToken ct = default)
     {
         var loginResponse = await cezApiClient.LoginToCez(new CezLoginRequest

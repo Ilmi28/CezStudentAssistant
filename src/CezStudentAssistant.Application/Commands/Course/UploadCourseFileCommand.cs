@@ -27,8 +27,7 @@ public class UploadCourseFileCommandHandler(
     IConfiguration configuration) : BaseCommandHandler<UploadCourseFileCommand, Guid>
 {
     private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
-        ?? configuration["CourseFilesContainer"]
-        ?? "course-files";
+        ?? throw new InvalidOperationException(CourseMessageConsts.CourseFilesContainerConfigMissing);
 
     protected override string SuccessMessage => CourseMessageConsts.UploadCourseFileSuccess;
     protected override string ErrorMessage => CourseMessageConsts.UploadCourseFileError;

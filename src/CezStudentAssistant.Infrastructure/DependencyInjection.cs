@@ -34,7 +34,7 @@ public static class DependencyInjection
 
         if (string.IsNullOrEmpty(connectionString))
         {
-            return services;
+            throw new InvalidOperationException("Connection string 'DefaultConnection' is missing or empty.");
         }
 
         services.AddDbContext<AppDbContext>(options =>
@@ -85,6 +85,10 @@ public static class DependencyInjection
     private static IServiceCollection AddHangfireConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'DefaultConnection' is missing or empty.");
+        }
 
         services.AddHangfire(config => config
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -101,6 +105,10 @@ public static class DependencyInjection
     private static IServiceCollection AddAzureBlobStorage(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'AzureBlobStorage' is missing or empty.");
+        }
 
         services.AddSingleton(x => new BlobServiceClient(connectionString));
 

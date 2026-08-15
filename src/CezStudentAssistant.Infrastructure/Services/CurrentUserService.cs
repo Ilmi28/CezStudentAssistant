@@ -14,7 +14,7 @@ public class CurrentUserService(
 {
     private ClaimsPrincipal? User => httpContextAccessor.HttpContext?.User;
     private HttpResponse Response => httpContextAccessor.HttpContext.Response;
-    private readonly JwtSettings _jwtSettings = jwtOptions.Value;
+    private readonly JwtSettings _jwtSettings = jwtOptions.Value.Validate();
 
     private CookieOptions CreateCookieOptions(DateTime expires)
     {

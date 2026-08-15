@@ -18,8 +18,12 @@ public class CurrentUserServiceTests
         _httpContextAccessor = Substitute.For<IHttpContextAccessor>();
         var jwtSettings = Options.Create(new JwtSettings 
         { 
+            Secret = "SuperSecretKeyForDevelopmentAndTestingNeedsToBeAtLeast32BytesLong!",
+            Issuer = "CezStudentAssistant",
+            Audience = "CezStudentAssistantUsers",
             AccessTokenExpiryMinutes = 15,
-            RefreshTokenExpiryDays = 30 
+            RefreshTokenExpiryDays = 30,
+            RefreshTokenGracePeriodSeconds = 30
         });
         _sut = new CurrentUserService(_httpContextAccessor, jwtSettings);
     }

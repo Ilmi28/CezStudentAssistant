@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Application.Interfaces.External;
+using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Cez.Interfaces;
 using CezStudentAssistant.Cez.Services;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +14,9 @@ public static class DependencyInjection
         {
             services.AddHttpClient<ICezRequestService, CezRequestService>(client =>
             {
-                client.BaseAddress = new Uri(configuration["Cez:ApiBaseUrl"] ?? string.Empty);
+                var apiBaseUrl = configuration["Cez:ApiBaseUrl"]
+                    ?? throw new InvalidOperationException("Configuration 'Cez:ApiBaseUrl' is missing or empty.");
+                client.BaseAddress = new Uri(apiBaseUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
             services.AddScoped<ICezApiClient, CezApiClient>();

@@ -18,8 +18,11 @@ public class GeminiAIClient(
     IAIQuizService quizService,
     IFileContentProcessorService fileContentProcessor) : IAIClient
 {
-    private readonly string _model = configuration["Gemini:DefaultModel"] ?? throw new ArgumentNullException(nameof(configuration), AIErrorMessages.DefaultModelConfigMissing);
-    private readonly int _maxAttempts = int.TryParse(configuration["Gemini:MaxAttempts"], out var attempts) && attempts > 0 ? attempts : 6;
+    private readonly string _model = configuration["Gemini:DefaultModel"]
+        ?? throw new InvalidOperationException("Configuration 'Gemini:DefaultModel' is missing or empty.");
+    private readonly int _maxAttempts = int.TryParse(configuration["Gemini:MaxAttempts"], out var attempts) && attempts > 0
+        ? attempts
+        : throw new InvalidOperationException("Configuration 'Gemini:MaxAttempts' is missing or invalid.");
     private readonly int[] _retryDelaysMs = GetRetryDelays(configuration);
 
     public async Task<AIQuizResponse> GenerateQuizAsync(AIQuizRequest request)
@@ -131,7 +134,11 @@ public class GeminiAIClient(
                 delays.Add(delay);
             }
         }
-        return delays.Count > 0 ? delays.ToArray() : new[] { 1000, 2000, 4000, 8000, 16000, 32000 };
+        if (delays.Count == 0)
+        {
+            throw new InvalidOperationException("Configuration 'Gemini:RetryDelaysMs' is missing or empty.");
+        }
+        return delays.ToArray();
     }
 
     private async Task<Content> BuildContentAsync(string prompt, IEnumerable<AIFile>? files)

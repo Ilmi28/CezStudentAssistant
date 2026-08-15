@@ -26,7 +26,12 @@ public class GeminiAIClientTests
     [SetUp]
     public void SetUp()
     {
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            { "Gemini:DefaultModel", "gemini-2.5-flash" },
+            { "Gemini:MaxAttempts", "6" },
+            { "Gemini:RetryDelaysMs:0", "1000" }
+        }).Build();
         _clientLogger = Substitute.For<ILogger<GeminiAIClient>>();
         _serviceLogger = Substitute.For<ILogger<AIQuizService>>();
         _client = new Client(apiKey: "dummy-api-key");

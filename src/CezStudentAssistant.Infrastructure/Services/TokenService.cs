@@ -22,7 +22,7 @@ public class TokenService : ITokenService, IScopedService
 
     public TokenService(IOptions<JwtSettings> jwtOptions, IUnitOfWork unitOfWork, IMemoryCache memoryCache)
     {
-        _jwtSettings = jwtOptions.Value;
+        _jwtSettings = jwtOptions.Value.Validate();
         _unitOfWork = unitOfWork;
         _memoryCache = memoryCache;
     }
@@ -75,7 +75,7 @@ public class TokenService : ITokenService, IScopedService
         else
         {
             string oldRefreshToken = currentToken.Token;
-            int gracePeriodSeconds = _jwtSettings.RefreshTokenGracePeriodSeconds > 0 ? _jwtSettings.RefreshTokenGracePeriodSeconds : 30;
+            int gracePeriodSeconds = _jwtSettings.RefreshTokenGracePeriodSeconds;
 
             var cacheKey = GetCacheKey(oldRefreshToken);
             _memoryCache.Set(cacheKey, (refreshToken, userId), TimeSpan.FromSeconds(gracePeriodSeconds));

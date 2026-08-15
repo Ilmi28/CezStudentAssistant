@@ -24,8 +24,7 @@ public class DownloadCourseFileQueryHandler(
     IConfiguration configuration) : IRequestHandler<DownloadCourseFileQuery, FileResultDto>
 {
     private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
-        ?? configuration["CourseFilesContainer"]
-        ?? "course-files";
+        ?? throw new InvalidOperationException(CourseMessageConsts.CourseFilesContainerConfigMissing);
 
     public async Task<FileResultDto> Handle(DownloadCourseFileQuery request, CancellationToken cancellationToken)
     {

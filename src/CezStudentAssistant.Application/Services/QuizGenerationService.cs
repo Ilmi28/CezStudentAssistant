@@ -22,7 +22,8 @@ public class QuizGenerationService(
     IJobService jobService,
     IConfiguration configuration) : IQuizGenerationService, IScopedService
 {
-    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"] ?? string.Empty;
+    private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
+        ?? throw new InvalidOperationException(CourseMessageConsts.CourseFilesContainerConfigMissing);
 
     public async Task GenerateQuiz(GenerateQuizDto dto, CancellationToken ct = default)
     {
