@@ -6,4 +6,5 @@ namespace CezStudentAssistant.Application.Interfaces.External;
 public interface IAIClient
 {
     Task<AIQuizResponse> GenerateQuizAsync(AIQuizRequest request);
+    Task<int> EstimateTokenUsageAsync(AIQuizRequest request);
 }

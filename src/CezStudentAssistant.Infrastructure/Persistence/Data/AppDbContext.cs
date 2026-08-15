@@ -10,7 +10,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyDeletedAtFilters();
-        modelBuilder.Entity<Quiz>().ToTable("Quiz");
+        modelBuilder.Entity<Quiz>(entity =>
+        {
+            entity.ToTable("Quiz");
+            entity.HasOne(q => q.User)
+                  .WithMany(u => u.Quizzes)
+                  .HasForeignKey(q => q.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)

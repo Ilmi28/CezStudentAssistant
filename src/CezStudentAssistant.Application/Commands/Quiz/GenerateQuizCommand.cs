@@ -1,13 +1,13 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.AI;
 using CezStudentAssistant.Application.Enums;
+using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
+using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
-using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Enums;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using CezStudentAssistant.Domain.Interfaces.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace CezStudentAssistant.Application.Commands.Quiz;
 
@@ -21,7 +21,8 @@ public sealed class GenerateQuizCommand : ICommand, IUserRequest
 
 public class GenerateQuizCommandHandler(
     IJobScheduler jobScheduler,
-    IJobService jobService) : BaseCommandHandler<GenerateQuizCommand>
+    IJobService jobService,
+    IUnitOfWork unitOfWork) : BaseCommandHandler<GenerateQuizCommand>
 {
     protected override string SuccessMessage => AIMessageConsts.QuizGenerationEnqueued;
 
@@ -29,10 +30,32 @@ public class GenerateQuizCommandHandler(
 
     protected override async Task ExecuteAsync(GenerateQuizCommand command, CancellationToken ct)
     {
+        var courseRepo = unitOfWork.Repository<ICourseRepository>();
+        var course = await courseRepo.GetByIdAsync(command.CourseId, ct);
+        if (course == null)
+            throw new NotFoundException(AIMessageConsts.CourseNotFound);
+
+        var quizRepo = unitOfWork.Repository<IQuizRepository>();
+        var existingQuizzes = quizRepo.Find(q => q.CourseId == command.CourseId).ToList();
+        var quizTitle = $"Quiz #{existingQuizzes.Count + 1}";
+
+        var quiz = new Domain.Entities.Quiz
+        {
+            UserId = command.UserId,
+            Name = quizTitle,
+            DisplayName = quizTitle,
+            CourseId = command.CourseId,
+            Status = QuizStatusEnum.Generating
+        };
+
+        await quizRepo.AddAsync(quiz, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+
         var job = await jobService.CreateJobAsync(command.UserId, JobType.QuizGeneration, ct);
 
         var dto = new GenerateQuizDto
         {
+            QuizId = quiz.Id,
             UserId = command.UserId,
             CourseId = command.CourseId,
             QuestionCount = command.QuestionCount,
@@ -40,8 +63,7 @@ public class GenerateQuizCommandHandler(
             AdditionalInstructions = command.AdditionalInstructions
         };
 
-        var jobId = jobScheduler.Enqueue<IAIService>(service => service.GenerateQuiz(dto, ct));
-
+        var jobId = jobScheduler.Enqueue<IQuizGenerationService>(service => service.GenerateQuiz(dto, ct));
         await jobService.UpdateJobAsync(job, JobStatus.Enqueued, jobId, ct);
     }
 }

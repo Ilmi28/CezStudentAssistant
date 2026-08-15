@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 namespace CezStudentAssistant.UnitTests.Application.Services;
 
 [TestFixture]
-public class AIServiceTests
+public class QuizGenerationServiceTests
 {
     private IAIClient _aiClient = null!;
     private IUnitOfWork _unitOfWork = null!;
@@ -37,7 +37,8 @@ public class AIServiceTests
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _resourceRepository = null!;
     private IQuizRepository _quizRepository = null!;
-    private AIService _sut = null!;
+    private ITokenUsageRepository _tokenUsageRepository = null!;
+    private QuizGenerationService _sut = null!;
 
     [SetUp]
     public void SetUp()
@@ -50,13 +51,18 @@ public class AIServiceTests
         _courseRepository = Substitute.For<ICourseRepository>();
         _resourceRepository = Substitute.For<ICezResourceRepository>();
         _quizRepository = Substitute.For<IQuizRepository>();
+        _tokenUsageRepository = Substitute.For<ITokenUsageRepository>();
 
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
         _unitOfWork.Repository<IQuizRepository>().Returns(_quizRepository);
+        _unitOfWork.Repository<ITokenUsageRepository>().Returns(_tokenUsageRepository);
+
+        _quizRepository.Find(Arg.Any<Expression<Func<Quiz, bool>>>())
+            .Returns(new List<Quiz>().AsQueryable());
 
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
-        _sut = new AIService(_aiClient, _unitOfWork, _fileService, _jobService, configuration);
+        _sut = new QuizGenerationService(_aiClient, _unitOfWork, _fileService, _jobService, configuration);
     }
 
     [TearDown]
@@ -116,7 +122,7 @@ public class AIServiceTests
             }
         };
         _aiClient.GenerateQuizAsync(Arg.Any<AIQuizRequest>())
-            .Returns(new AIQuizResponse { Success = true, Data = aiQuiz });
+            .Returns(new AIQuizResponse { Success = true, Data = aiQuiz, TotalTokens = 150 });
 
         var dto = new GenerateQuizDto
         {
@@ -131,6 +137,7 @@ public class AIServiceTests
 
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         await _quizRepository.Received(1).AddAsync(Arg.Is<Quiz>(q => q.Name == "Generated Quiz" && q.CourseId == courseId), Arg.Any<CancellationToken>());
+        await _tokenUsageRepository.Received(1).AddAsync(Arg.Is<TokenUsage>(tu => tu.UserId == userId && tu.UsageType == UsageTokenType.QuizGeneration && tu.UsageCount == 150), Arg.Any<CancellationToken>());
         
         await _jobService.Received(1).UpdateJobAsync(existingJob, JobStatus.Processing, null, Arg.Any<CancellationToken>());
         await _jobService.Received(1).UpdateJobAsync(existingJob, JobStatus.Succeeded, null, Arg.Any<CancellationToken>());

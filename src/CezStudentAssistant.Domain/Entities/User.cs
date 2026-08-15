@@ -9,4 +9,5 @@ public class User : BaseEntity
     public UserConfiguration? Configuration { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     public ICollection<Course> Courses { get; set; } = new List<Course>();
+    public ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
 }

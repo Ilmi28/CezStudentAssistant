@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Layers, Trophy, Zap, Target, Brain, ArrowRight } from "lucide-react";
 import type { CourseDto, QuizDto } from "../services";
 import Card from "../components/Card";
-import { PrimaryButton } from "../components/Button";
+import QuizCard from "../components/QuizCard";
 
 interface HomePageProps {
   courses: CourseDto[];
@@ -62,29 +62,8 @@ export default function HomePage({ courses, quizzes }: HomePageProps) {
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {latestQuizzes.map((q) => (
-                <Card key={q.id} hoverEffect>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded uppercase">
-                        QUIZ AI
-                      </span>
-                      <span className="text-xs text-muted-foreground/40 truncate max-w-[120px]">{q.id.substring(0, 8)}</span>
-                    </div>
-                    <h4 className="text-sm font-bold text-foreground mb-1 line-clamp-1">
-                      {q.displayName || q.name}
-                    </h4>
-                    <p className="text-[11px] text-muted-foreground mb-4 line-clamp-1">
-                      {q.courseName}
-                    </p>
-                  </div>
-                  <PrimaryButton
-                    onClick={() => navigate(`/quiz/${q.id}`)}
-                    icon={<Brain size={13} />}
-                  >
-                    {t("home.startQuiz")}
-                  </PrimaryButton>
-                </Card>
+              {latestQuizzes.map((q, idx) => (
+                <QuizCard key={q.id} quiz={q} index={idx + 1} />
               ))}
             </div>
 

@@ -29,7 +29,7 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
     {
         var quizRepo = unitOfWork.Repository<IQuizRepository>();
 
-        var quiz = await quizRepo.Find(q => q.Id == query.QuizId && q.Course.Users.Any(u => u.Id == query.UserId))
+        var quiz = await quizRepo.Find(q => q.Id == query.QuizId && (q.UserId == query.UserId || q.Course.Users.Any(u => u.Id == query.UserId)))
             .Include(q => q.Course)
             .Include(q => q.Questions)
                 .ThenInclude(q => q.Options)
@@ -41,6 +41,7 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
         return new QuizDetailsDto
         {
             Id = quiz.Id,
+            UserId = quiz.UserId,
             Name = quiz.Name,
             DisplayName = quiz.DisplayName,
             CourseId = quiz.CourseId,

@@ -109,7 +109,7 @@ public class SubmitQuizAnswerEndpointsTests
             var course = new Course { Id = courseId, Name = "Course 1", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, Name = "Quiz 1", DisplayName = "Quiz 1", Course = course };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", DisplayName = "Quiz 1", Course = course };
             var question = new Question { Id = questionId, Quiz = quiz, Content = "Q1", Type = QuestionType.SingleChoice, Points = 5m };
             var option = new QuestionOption { Id = optionId, Question = question, Content = "Opt 1", IsCorrect = true };
             question.Options.Add(option);
@@ -205,7 +205,7 @@ public class SubmitQuizAnswerEndpointsTests
             var course = new Course { Name = "Course B", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Name = "Quiz B", DisplayName = "Quiz B", Course = course };
+            var quiz = new Quiz { Name = "Quiz B", DisplayName = "Quiz B", Course = course, User = user };
             var attempt = new QuizAttempt
             {
                 Id = quizAttemptId,
@@ -257,7 +257,7 @@ public class SubmitQuizAnswerEndpointsTests
             var course = new Course { Name = "Course A", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Name = "Quiz A", DisplayName = "Quiz A", Course = course };
+            var quiz = new Quiz { Name = "Quiz A", DisplayName = "Quiz A", Course = course, User = user };
             var attempt = new QuizAttempt
             {
                 Id = quizAttemptId,
@@ -306,7 +306,7 @@ public class SubmitQuizAnswerEndpointsTests
             var course = new Course { Name = "Course Expired", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Name = "Quiz Expired", DisplayName = "Quiz Expired", Course = course };
+            var quiz = new Quiz { Name = "Quiz Expired", DisplayName = "Quiz Expired", Course = course, User = user };
             var attempt = new QuizAttempt
             {
                 Id = quizAttemptId,
@@ -360,7 +360,7 @@ public class SubmitQuizAnswerEndpointsTests
             var course = new Course { Id = courseId, Name = "Course Answered", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, Name = "Quiz Answered", DisplayName = "Quiz Answered", Course = course };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz Answered", DisplayName = "Quiz Answered", Course = course };
             var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Answered", Type = QuestionType.SingleChoice, Points = 5m };
             var option = new QuestionOption { Id = optionId, Question = question, Content = "Opt 1", IsCorrect = true };
             question.Options.Add(option);
@@ -427,7 +427,7 @@ public class SubmitQuizAnswerEndpointsTests
             var course = new Course { Id = courseId, Name = "Course Single", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, Name = "Quiz Single", DisplayName = "Quiz Single", Course = course };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz Single", DisplayName = "Quiz Single", Course = course };
             var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Single", Type = QuestionType.SingleChoice, Points = 5m };
             var option1 = new QuestionOption { Id = optionId1, Question = question, Content = "Opt 1", IsCorrect = true };
             var option2 = new QuestionOption { Id = optionId2, Question = question, Content = "Opt 2", IsCorrect = false };

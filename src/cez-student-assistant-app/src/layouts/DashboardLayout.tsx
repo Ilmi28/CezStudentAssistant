@@ -37,8 +37,8 @@ export default function DashboardLayout() {
         const cezStatus = await cezService.getCezStatus();
         setIsCezConnected(cezStatus.isConnected);
         setLastCezSync(cezStatus.lastSyncAt);
-      } catch {
-        // Fallback
+      } catch (cezErr) {
+        console.debug("[DashboardLayout] CEZ status fallback on refresh:", cezErr);
       }
       setSuccess(t("common.refreshSuccess"));
     } catch (err: any) {

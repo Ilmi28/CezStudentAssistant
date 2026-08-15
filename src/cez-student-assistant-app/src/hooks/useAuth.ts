@@ -23,8 +23,8 @@ export function useAuth() {
         const cezStatus = await cezService.getCezStatus();
         ctx.setIsCezConnected(cezStatus.isConnected);
         ctx.setLastCezSync(cezStatus.lastSyncAt);
-      } catch {
-        // Fallback
+      } catch (cezErr) {
+        console.debug("[useAuth] CEZ status check fallback:", cezErr);
       }
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {

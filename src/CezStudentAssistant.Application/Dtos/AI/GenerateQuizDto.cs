@@ -5,6 +5,7 @@ namespace CezStudentAssistant.Application.Dtos.AI;
 
 public class GenerateQuizDto
 {
+    public Guid QuizId { get; set; }
     public Guid UserId { get; set; }
     public Guid CourseId { get; set; }
     public int QuestionCount { get; set; }

@@ -1,6 +1,7 @@
 using CezStudentAssistant.AI.Consts;
 using CezStudentAssistant.AI.Services;
 using CezStudentAssistant.Application.Interfaces.External;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
 using Google.GenAI;
@@ -10,7 +11,12 @@ using Microsoft.Extensions.Logging;
 
 namespace CezStudentAssistant.AI;
 
-public class GeminiAIClient(Client client, IConfiguration configuration, ILogger<GeminiAIClient> logger, IAIQuizService quizService) : IAIClient
+public class GeminiAIClient(
+    Client client,
+    IConfiguration configuration,
+    ILogger<GeminiAIClient> logger,
+    IAIQuizService quizService,
+    IFileContentProcessorService fileContentProcessor) : IAIClient
 {
     private readonly string _model = configuration["Gemini:DefaultModel"] ?? throw new ArgumentNullException(nameof(configuration), AIErrorMessages.DefaultModelConfigMissing);
     private readonly int _maxAttempts = int.TryParse(configuration["Gemini:MaxAttempts"], out var attempts) && attempts > 0 ? attempts : 6;
@@ -44,7 +50,12 @@ public class GeminiAIClient(Client client, IConfiguration configuration, ILogger
                 };
             }
 
-            return quizService.ParseResponse(jsonText);
+            var quizResponse = quizService.ParseResponse(jsonText);
+            if (response.UsageMetadata?.TotalTokenCount.HasValue == true)
+            {
+                quizResponse.TotalTokens = response.UsageMetadata.TotalTokenCount.Value;
+            }
+            return quizResponse;
         }
         catch (Exception ex)
         {
@@ -54,6 +65,23 @@ public class GeminiAIClient(Client client, IConfiguration configuration, ILogger
                 Success = false,
                 Message = string.Format(AIErrorMessages.GeneralErrorMessageFormat, ex.Message)
             };
+        }
+    }
+
+    public async Task<int> EstimateTokenUsageAsync(AIQuizRequest request)
+    {
+        try
+        {
+            var prompt = quizService.BuildPrompt(request);
+            var content = await BuildContentAsync(prompt, request.Files);
+
+            var response = await client.Models.CountTokensAsync(_model, content);
+            return response.TotalTokens ?? 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[GEMINI] EstimateTokenUsageAsync failed: {Message}", ex.Message);
+            return 0;
         }
     }
 
@@ -106,7 +134,7 @@ public class GeminiAIClient(Client client, IConfiguration configuration, ILogger
         return delays.Count > 0 ? delays.ToArray() : new[] { 1000, 2000, 4000, 8000, 16000, 32000 };
     }
 
-    private static async Task<Content> BuildContentAsync(string prompt, IEnumerable<AIFile>? files)
+    private async Task<Content> BuildContentAsync(string prompt, IEnumerable<AIFile>? files)
     {
         var parts = new List<Part>
         {
@@ -117,12 +145,17 @@ public class GeminiAIClient(Client client, IConfiguration configuration, ILogger
         {
             foreach (var file in files)
             {
-                using var ms = new MemoryStream();
-                await file.Stream.CopyToAsync(ms);
-                var bytes = ms.ToArray();
-                if (bytes.Length > 0)
+                var processed = await fileContentProcessor.ProcessFileAsync(file);
+                if (processed != null)
                 {
-                    parts.Add(Part.FromBytes(bytes, file.MimeType, null));
+                    if (processed.IsTextFormat && processed.Text != null)
+                    {
+                        parts.Add(Part.FromText(processed.Text));
+                    }
+                    else if (processed.Bytes != null)
+                    {
+                        parts.Add(Part.FromBytes(processed.Bytes, processed.MimeType, null));
+                    }
                 }
             }
         }

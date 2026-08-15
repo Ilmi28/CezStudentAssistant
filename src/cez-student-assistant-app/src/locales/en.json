@@ -100,10 +100,12 @@
         "deleteCourseSuccess": "Course deleted successfully!"
     },
     "quizzes": {
-        "title": "My quizzes",
+        "title": "Quizzes",
         "subtitle": "GENERATED AUTOMATICALLY",
         "noQuizzes": "No quizzes yet.",
-        "noQuizzesSubtitle": "Go to the Courses tab, select a course, and generate a quiz from your educational files."
+        "noQuizzesSubtitle": "Go to the Courses tab, select a course, and generate a quiz from your educational files.",
+        "statusGenerating": "Generating...",
+        "btnGenerating": "Generating..."
     },
     "courseDetails": {
         "backBtn": "Back",
@@ -113,7 +115,7 @@
         "laboratory": "Laboratory / Exercise",
         "noDesc": "No course description in the system. You can upload a syllabus or lecture slides to generate a question database.",
         "lastSynched": "Last database update: {{date}}",
-        "filesTitle": "Files & Educational Materials",
+        "filesTitle": "Materials",
         "noFiles": "No files uploaded for this course.",
         "download": "Download",
         "downloadFile": "Download file",
@@ -122,7 +124,7 @@
         "uploadFormats": "Supported formats: PDF, TXT, DOCX",
         "uploadBtn": "Upload & Process File",
         "uploadBtnLoading": "Uploading...",
-        "generateTitle": "Generate AI Quiz",
+        "generateTitle": "Generate Quiz",
         "generateDesc": "The algorithm will analyze uploaded materials for this course and automatically generate a set of test questions.",
         "generateQuestionsCount": "Number of questions",
         "generateQuestionsCountOptions": {
@@ -131,7 +133,7 @@
             "10": "10 questions (detailed)",
             "15": "15 questions (mock exam)"
         },
-        "generateInstructions": "Instructions for AI (optional)",
+        "generateInstructions": "Additional instructions (optional)",
         "generateInstructionsPlaceholder": "E.g., Focus on theory from lecture 2, multiple-choice questions...",
         "generateBtn": "Generate Quiz",
         "generateBtnLoading": "Enqueuing...",

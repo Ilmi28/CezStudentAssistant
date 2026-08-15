@@ -31,11 +31,19 @@ internal sealed class ScopedImmediateJobScheduler(IServiceScopeFactory scopeFact
 
         var parameterTypes = call.Method.GetParameters().Select(parameter => parameter.ParameterType).ToArray();
         var method = target?.GetType().GetMethod(call.Method.Name, parameterTypes) ?? call.Method;
-        var result = method.Invoke(target, arguments);
-
-        if (result is Task task)
+        try
         {
-            task.GetAwaiter().GetResult();
+            var result = method.Invoke(target, arguments);
+
+            if (result is Task task)
+            {
+                task.GetAwaiter().GetResult();
+            }
+        }
+        catch (System.Reflection.TargetInvocationException ex) when (ex.InnerException != null)
+        {
+            Console.Error.WriteLine($"[TARGET_INVOCATION_EX]: {ex.InnerException}");
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
         }
 
         return Guid.NewGuid().ToString();

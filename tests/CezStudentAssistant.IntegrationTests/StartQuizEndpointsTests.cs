@@ -103,7 +103,7 @@ public class StartQuizEndpointsTests
             var course = new Course { Id = courseId, Name = "Course 1", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, Name = "Quiz 1", DisplayName = "Quiz 1", Course = course };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", DisplayName = "Quiz 1", Course = course };
             var attempt = new QuizAttempt
             {
                 Id = quizAttemptId,
@@ -182,7 +182,7 @@ public class StartQuizEndpointsTests
             var course = new Course { Name = "Course B", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Name = "Quiz B", DisplayName = "Quiz B", Course = course };
+            var quiz = new Quiz { Name = "Quiz B", DisplayName = "Quiz B", Course = course, User = user };
             var attempt = new QuizAttempt
             {
                 Id = quizAttemptId,
@@ -231,7 +231,7 @@ public class StartQuizEndpointsTests
             var course = new Course { Name = "Course A", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Name = "Quiz A", DisplayName = "Quiz A", Course = course };
+            var quiz = new Quiz { Name = "Quiz A", DisplayName = "Quiz A", Course = course, User = user };
             var attempt = new QuizAttempt
             {
                 Id = quizAttemptId,

@@ -1,4 +1,5 @@
 using CezStudentAssistant.Application.Interfaces.External;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.AI.Services;
 using Google.GenAI;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,7 @@ public static class DependencyInjection
         public IServiceCollection AddAI(IConfiguration configuration)
         {
             services.AddSingleton(x => new Client(apiKey: configuration["Gemini:ApiKey"]));
+            services.AddScoped<IFileContentProcessorService, FileContentProcessorService>();
             services.AddScoped<IAIQuizService, AIQuizService>();
             services.AddScoped<IAIClient, GeminiAIClient>();
 

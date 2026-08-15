@@ -1,7 +1,7 @@
 import { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { QuizContext } from "../contexts/QuizContext";
-import { quizService, UnauthorizedError } from "../services";
+import { quizService, signalRService, UnauthorizedError } from "../services";
 import { useAuth } from "./useAuth";
 import { useUI } from "./useUI";
 
@@ -29,8 +29,20 @@ export function useQuiz() {
   useEffect(() => {
     if (isAuthenticated && !isAuthChecking) {
       fetchQuizzes();
+      signalRService.startConnection();
+
+      const unsubscribe = signalRService.subscribeJobStatus((_jobId, status) => {
+        if (status === "Succeeded" || status === "Failed") {
+          fetchQuizzes();
+        }
+      });
+
+      return () => {
+        unsubscribe();
+      };
     } else if (!isAuthenticated) {
       ctx.setQuizzes([]);
+      signalRService.stopConnection();
     }
   }, [isAuthenticated, isAuthChecking]);
 

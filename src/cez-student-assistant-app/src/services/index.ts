@@ -4,5 +4,6 @@ export * from "./courseService";
 export * from "./quizService";
 export * from "./userService";
 export * from "./cezService";
+export * from "./signalRService";
 export * from "./api";
 export * from "../types";

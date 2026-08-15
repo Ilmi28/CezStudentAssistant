@@ -25,8 +25,8 @@ export default function PreferencesPage() {
         const code = config.language === UserLanguage.English ? "en" : "pl";
         await i18n.changeLanguage(code);
         localStorage.setItem("language", code);
-      } catch {
-        // Default fallbacks
+      } catch (configErr) {
+        console.debug("[PreferencesPage] Configuration load fallback:", configErr);
       } finally {
         setFetchingConfig(false);
       }

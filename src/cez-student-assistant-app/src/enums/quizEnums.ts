@@ -1,3 +1,8 @@
+export enum QuizStatusEnum {
+  Generating = 1,
+  Ready = 2,
+}
+
 export enum QuizAttemptStatus {
   NotStarted = 1,
   InProgress = 2,

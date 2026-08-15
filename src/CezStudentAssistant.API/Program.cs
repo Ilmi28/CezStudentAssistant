@@ -64,7 +64,16 @@ public class Program
             {
                 OnMessageReceived = context =>
                 {
-                    context.Token = context.Request.Cookies["accessToken"];
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/sync-hub"))
+                    {
+                        context.Token = accessToken;
+                    }
+                    else
+                    {
+                        context.Token = context.Request.Cookies["accessToken"];
+                    }
                     return Task.CompletedTask;
                 },
                 OnChallenge = async context =>
@@ -141,9 +150,12 @@ public class Program
         {
             appBuilder.Run(async context =>
             {
-                context.Response.ContentType = "application/json";
                 var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
                 var exception = exceptionFeature?.Error;
+                if (exception != null)
+                {
+                    File.WriteAllText(@"C:\Users\Ilmi\Source\Repos\CezStudentAssistant\debug_error.log", exception.ToString());
+                }
 
                 ApiResponse apiResponse = exception switch
                 {

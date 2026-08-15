@@ -42,7 +42,8 @@ public class GeminiAIClientTests
     [Test]
     public void GeminiAIClient_Constructor_ShouldInitializeCorrectly()
     {
-        var aiClient = new GeminiAIClient(_client, _configuration, _clientLogger, _quizService);
+        var processor = Substitute.For<CezStudentAssistant.Application.Interfaces.Services.IFileContentProcessorService>();
+        var aiClient = new GeminiAIClient(_client, _configuration, _clientLogger, _quizService, processor);
         Assert.That(aiClient, Is.Not.Null);
     }
 

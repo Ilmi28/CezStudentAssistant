@@ -28,14 +28,16 @@ public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
     {
         var quizRepo = unitOfWork.Repository<IQuizRepository>();
 
-        return await quizRepo.Find(q => q.Course.Users.Any(u => u.Id == query.UserId))
+        return await quizRepo.Find(q => q.UserId == query.UserId)
             .Select(q => new QuizDto
             {
                 Id = q.Id,
+                UserId = q.UserId,
                 Name = q.Name,
                 DisplayName = q.DisplayName,
                 CourseId = q.CourseId,
-                CourseName = q.Course.Name
+                CourseName = q.Course.Name,
+                Status = q.Status
             })
             .ToListAsync(ct);
     }

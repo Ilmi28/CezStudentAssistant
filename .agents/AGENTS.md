@@ -64,6 +64,9 @@ This file defines the project coding standards, UI design tokens, component arch
 - **No Hardcoded Configuration or Expiration Durations**: NEVER hardcode configuration values (e.g. container names, cookie TTLs, token expiration times, API timeout limits, or retry counts) directly in C# code files. ALL configuration parameters MUST be defined in `appsettings.json`.
 - **Direct IConfiguration Injection for Simple Settings**: For simple configuration strings, container names, or individual keys, inject `IConfiguration` directly instead of creating single-property wrapper classes or `IOptions<T>` objects. Reserve strongly-typed `IOptions<T>` settings classes strictly for complex multi-property settings sections (e.g. `JwtSettings`).
 
+### 6. Clean Code & Minimal Noise Standards
+- **No Defensive Noise or Diagnostic Workarounds in Production Code**: NEVER introduce defensive try-catch wrappers, empty exception handlers, or verbose diagnostic comments into production C# code to work around testing nuances or transient execution states. Production logic MUST focus strictly on direct domain functionality and clean exception flows.
+
 ---
 
 ## 🧪 Testing Guidelines & Standards

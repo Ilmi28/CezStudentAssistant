@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace CezStudentAssistant.Application.Interfaces.Services;
 
-public interface IAIService
+public interface IQuizGenerationService
 {
     Task GenerateQuiz(GenerateQuizDto dto, CancellationToken ct = default);
 }

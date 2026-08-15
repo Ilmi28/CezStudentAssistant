@@ -49,7 +49,8 @@ export default function QuizSolverPage({
         answers: [],
         finished: false
       });
-    } catch {
+    } catch (quizErr) {
+      console.warn("[QuizSolverPage] Failed to load quiz details:", quizErr);
       setError(t("quizSolver.loadingQuiz"));
       navigate("/quizzes");
     } finally {
