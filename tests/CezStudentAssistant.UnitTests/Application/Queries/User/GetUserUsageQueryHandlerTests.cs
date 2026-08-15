@@ -132,7 +132,9 @@ public class GetUserUsageQueryHandlerTests
         Func<Task> act = async () => await _sut.Handle(query, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
+        var exceptionAssertion = await act.Should().ThrowAsync<AppException>();
+        exceptionAssertion.WithInnerException<InvalidOperationException>()
             .WithMessage(UserMessageConsts.MaximumDailyTokensConfigMissing);
     }
 }
+
