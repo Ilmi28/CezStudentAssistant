@@ -125,4 +125,36 @@ public class CourseDetailsEndpointsTests
         var uploadResponse = await _client.PostAsync($"/course/file/upload?courseId={courseId}", formData);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Test]
+    public async Task DeleteFile_ShouldSucceed_WhenValidRequest()
+    {
+        await RegisterAndLogin("deletefileuser", "Password123!");
+
+        // Create course
+        var addResponse = await _client.PostAsJsonAsync("/course", new AddUserCourseCommand { Name = "Delete File Course" });
+        var addContent = await addResponse.Content.ReadFromJsonAsync<ApiResponse<Guid>>(_jsonOptions);
+        var courseId = addContent!.Data;
+
+        // Upload file
+        using var formData = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3 });
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pdf");
+        formData.Add(fileContent, "file", "todelete.pdf");
+
+        var uploadResponse = await _client.PostAsync($"/course/file/upload?courseId={courseId}", formData);
+        uploadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var uploadContent = await uploadResponse.Content.ReadFromJsonAsync<ApiResponse<Guid>>(_jsonOptions);
+        var fileId = uploadContent!.Data;
+
+        // Delete file
+        var deleteResponse = await _client.DeleteAsync($"/course/{courseId}/file/{fileId}");
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verify Details has no files
+        var detailsResponse = await _client.GetAsync($"/course/{courseId}");
+        var detailsContent = await detailsResponse.Content.ReadFromJsonAsync<ApiResponse<CourseDetailsDto>>(_jsonOptions);
+        detailsContent!.Data!.Files.Should().BeEmpty();
+    }
 }

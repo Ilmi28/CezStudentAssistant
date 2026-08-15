@@ -126,4 +126,14 @@ export const courseService = {
     );
     await handleResponse(res);
   },
+
+  async deleteCourseFile(courseId: string, fileId: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course/${courseId}/file/${fileId}`,
+      { method: "DELETE" },
+      false,
+      authService.refreshToken
+    );
+    await handleResponse(res);
+  },
 };

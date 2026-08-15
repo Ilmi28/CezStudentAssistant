@@ -67,6 +67,13 @@ public static class CourseEndpoints
             return Results.File(result.FileStream, result.ContentType, result.FileName);
         }).RequireAuthorization();
 
+        group.MapDelete("/{courseId:guid}/file/{fileId:guid}", async (Guid courseId, Guid fileId, IMediator mediator) =>
+        {
+            var command = new DeleteCourseFileCommand { CourseId = courseId, FileId = fileId };
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
         group.MapPost("/{courseId:guid}/generate-quiz", async (Guid courseId, GenerateQuizCommand command, IMediator mediator) =>
         {
             command.CourseId = courseId;

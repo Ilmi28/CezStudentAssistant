@@ -32,6 +32,8 @@ export default function CourseDetailsPage({
   const [isQuizzesExpanded, setIsQuizzesExpanded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleteFileModalOpen, setIsDeleteFileModalOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isGenerateQuizModalOpen, setIsGenerateQuizModalOpen] = useState(false);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
@@ -116,6 +118,22 @@ export default function CourseDetailsPage({
     }
   };
 
+  const handleConfirmDeleteFile = async () => {
+    if (!id || !fileToDelete) return;
+    try {
+      await courseService.deleteCourseFile(id, fileToDelete.id);
+      setSuccess(t("courseDetails.deleteFileSuccess"));
+      const details = await courseService.getCourseDetails(id);
+      setSelectedCourse(details);
+    } catch (deleteErr) {
+      console.warn("[CourseDetailsPage] File deletion failed:", deleteErr);
+      setError(t("auth.genericError"));
+    } finally {
+      setFileToDelete(null);
+      setIsDeleteFileModalOpen(false);
+    }
+  };
+
   if (loading || !selectedCourse) {
     return (
       <div className="flex justify-center py-12">
@@ -135,20 +153,32 @@ export default function CourseDetailsPage({
           : "animate-in fade-in duration-300"
       }`}
     >
-      {/* Header & Actions */}
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={handleGoBack}
-          title={t("courseDetails.backBtn")}
-          aria-label={t("courseDetails.backBtn")}
-          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer"
-        >
-          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-        </button>
+      {/* Header & Title */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <button
+            type="button"
+            onClick={handleGoBack}
+            title={t("courseDetails.backBtn")}
+            aria-label={t("courseDetails.backBtn")}
+            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
+          >
+            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
+          </button>
+          <div className="flex flex-col justify-center min-w-0">
+            {selectedCourse.isCez && (
+              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mb-1">
+                {t("courses.tagCez")}
+              </span>
+            )}
+            <h1 className="text-xl font-bold text-foreground truncate">
+              {selectedCourse.name}
+            </h1>
+          </div>
+        </div>
 
         {!selectedCourse.isCez && (
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => setIsEditModalOpen(true)}
@@ -170,22 +200,6 @@ export default function CourseDetailsPage({
             </button>
           </div>
         )}
-      </div>
-
-      {/* Course Header Card */}
-      <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            {selectedCourse.isCez && (
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-                {t("courses.tagCez")}
-              </span>
-            )}
-            <h1 className={`text-xl font-bold text-foreground ${selectedCourse.isCez ? "mt-2" : ""}`}>
-              {selectedCourse.name}
-            </h1>
-          </div>
-        </div>
       </div>
 
       {/* Files List Section */}
@@ -251,14 +265,31 @@ export default function CourseDetailsPage({
                         <div className="text-[11px] text-muted-foreground/50">{file.mimeType}</div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleFileDownload(file.id, file.displayName)}
-                      title={t("courseDetails.downloadFile")}
-                      aria-label={t("courseDetails.downloadFile")}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors shrink-0 ml-2 cursor-pointer"
-                    >
-                      <Download size={18} />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0 ml-2">
+                      <button
+                        type="button"
+                        onClick={() => handleFileDownload(file.id, file.displayName)}
+                        title={t("courseDetails.downloadFile")}
+                        aria-label={t("courseDetails.downloadFile")}
+                        className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
+                      >
+                        <Download size={18} />
+                      </button>
+                      {!selectedCourse.isCez && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFileToDelete({ id: file.id, name: file.displayName });
+                            setIsDeleteFileModalOpen(true);
+                          }}
+                          title={t("courseDetails.deleteFile")}
+                          aria-label={t("courseDetails.deleteFile")}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -341,6 +372,19 @@ export default function CourseDetailsPage({
         title={t("courses.deleteCourseModalTitle")}
         message={t("courses.deleteCourseConfirmMsg")}
         confirmBtnText={t("courses.deleteCourseBtn")}
+        isDestructive
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteFileModalOpen}
+        onClose={() => {
+          setIsDeleteFileModalOpen(false);
+          setFileToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteFile}
+        title={t("courseDetails.deleteFileModalTitle")}
+        message={t("courseDetails.deleteFileConfirmMsg")}
+        confirmBtnText={t("courseDetails.deleteFileBtn")}
         isDestructive
       />
 

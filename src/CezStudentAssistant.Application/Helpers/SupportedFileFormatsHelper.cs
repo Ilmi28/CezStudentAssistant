@@ -5,11 +5,8 @@ public static class SupportedFileFormatsHelper
     public static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".pdf", ".docx", ".odt", ".pptx", ".odp", ".epub", ".rtf", ".html", ".htm",
-
         ".txt", ".md", ".csv", ".tsv", ".json", ".xml", ".yaml", ".yml",
-
         ".cs", ".js", ".ts", ".jsx", ".tsx", ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".sql", ".sh", ".ps1", ".css",
-
         ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp",
         ".mp3", ".wav", ".ogg", ".m4a",
         ".mp4", ".webm", ".avi", ".mov"

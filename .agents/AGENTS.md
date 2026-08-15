@@ -70,6 +70,9 @@ This file defines the project coding standards, UI design tokens, component arch
 ### 7. Helper Naming & Organization Standards
 - **Helper Classes in Helpers Folder with Helper Suffix**: ALL shared utility algorithms, format validators, or static helper classes MUST reside in a `Helpers` directory (e.g. `src/CezStudentAssistant.Application/Helpers/`) and MUST be suffixed with `Helper` (e.g. `*Helper.cs`). NEVER place generic helper classes in root layer folders or misnamed directories without the `Helper` suffix.
 
+### 8. Database Migration Standards
+- **No Automated Database Migrations**: NEVER run `dotnet ef migrations add` or create database migrations automatically. Database schema migrations MUST strictly be managed and created manually by the user.
+
 ---
 
 ## 🧪 Testing Guidelines & Standards
