@@ -31,6 +31,7 @@ public class CezServiceTests
     private ICezApiClient _cezApiClient = null!;
     private IUnitOfWork _unitOfWork = null!;
     private IFileService _fileService = null!;
+    private IAIClient _aiClient = null!;
     private IJobScheduler _jobScheduler = null!;
     private IJobService _jobService = null!;
 
@@ -48,6 +49,7 @@ public class CezServiceTests
         _cezApiClient = Substitute.For<ICezApiClient>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _fileService = Substitute.For<IFileService>();
+        _aiClient = Substitute.For<IAIClient>();
         _jobScheduler = Substitute.For<IJobScheduler>();
         _userRepository = Substitute.For<IUserRepository>();
         _cezUserRepository = Substitute.For<ICezUserRepository>();
@@ -65,7 +67,7 @@ public class CezServiceTests
             .Returns(_existingJob);
 
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
-        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _jobScheduler, _jobService, configuration);
+        _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _aiClient, _jobScheduler, _jobService, configuration);
     }
 
     [TearDown]
@@ -493,7 +495,7 @@ public class CezServiceTests
             r.CezLastModified == timeModified), Arg.Any<CancellationToken>());
 
         await _fileService.Received(1).UploadAsync(
-            fileStream,
+            Arg.Any<Stream>(),
             Arg.Is<string>(s => s.StartsWith($"{course.Id}/123_")),
             "course-files",
             "application/pdf",
@@ -587,7 +589,7 @@ public class CezServiceTests
         existingResource.CezLastModified.Should().Be(newTimeModified);
 
         await _fileService.Received(1).UploadAsync(
-            fileStream,
+            Arg.Any<Stream>(),
             Arg.Is<string>(s => s.StartsWith($"{course.Id}/123_")),
             "course-files",
             "application/pdf",

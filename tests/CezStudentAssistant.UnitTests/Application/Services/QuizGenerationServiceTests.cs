@@ -64,7 +64,11 @@ public class QuizGenerationServiceTests
         _quizRepository.Find(Arg.Any<Expression<Func<Quiz, bool>>>())
             .Returns(new List<Quiz>().AsQueryable());
 
-        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            { "BlobContainerSettings:CourseFilesContainer", "course-files" },
+            { "Gemini:MaximumDailyTokens", "1000000" }
+        }).Build();
         _sut = new QuizGenerationService(_aiClient, _unitOfWork, _fileService, _jobService, configuration);
     }
 
@@ -195,6 +199,61 @@ public class QuizGenerationServiceTests
         Func<Task> act = () => _sut.GenerateQuiz(dto);
 
         await act.Should().ThrowAsync<NotFoundException>().WithMessage($"*{AIMessageConsts.CourseNotFound}*");
+        await _jobService.Received(1).UpdateJobAsync(existingJob, JobStatus.Failed, null, Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task GenerateQuiz_ShouldThrowBadRequestException_WhenDailyTokenLimitExceeded()
+    {
+        var userId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+        var existingJob = new Job
+        {
+            JobId = "job-123",
+            UserId = userId,
+            Status = JobStatus.Enqueued,
+            Type = JobType.QuizGeneration
+        };
+        _jobService.GetLatestJobAsync(userId, JobType.QuizGeneration, Arg.Any<CancellationToken>()).Returns(existingJob);
+
+        var course = new Course { Id = courseId, Name = "Test Course", Type = Domain.Enums.CourseType.Cez };
+        _courseRepository.GetByIdAsync(courseId, Arg.Any<CancellationToken>()).Returns(course);
+
+        var resource = new Resource
+        {
+            Id = Guid.NewGuid(),
+            Name = "resource-file.pdf",
+            DisplayName = "Resource File",
+            MimeType = "application/pdf",
+            CourseId = courseId
+        };
+        var mockResourceDbSet = new List<Resource> { resource }.BuildMockDbSet();
+        _resourceRepository.Find(Arg.Any<Expression<Func<Resource, bool>>>()).Returns(mockResourceDbSet);
+
+        var stream = new MemoryStream();
+        _fileService.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(stream);
+
+        // Daily usage already at 999,900 out of 1,000,000 limit
+        _tokenUsageRepository.GetDailyTokenUsageAsync(userId, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(999900);
+
+        _aiClient.EstimateTokenUsageAsync(Arg.Any<AIQuizRequest>()).Returns(500);
+
+        var dto = new GenerateQuizDto
+        {
+            UserId = userId,
+            CourseId = courseId,
+            QuestionCount = 5,
+            Language = QuizLanguage.PL,
+            AdditionalInstructions = null
+        };
+
+        Func<Task> act = () => _sut.GenerateQuiz(dto);
+
+        await act.Should().ThrowAsync<BadRequestException>()
+            .WithMessage(AIMessageConsts.DailyTokenLimitExceeded);
+
+        await _aiClient.DidNotReceive().GenerateQuizAsync(Arg.Any<AIQuizRequest>());
         await _jobService.Received(1).UpdateJobAsync(existingJob, JobStatus.Failed, null, Arg.Any<CancellationToken>());
     }
 }

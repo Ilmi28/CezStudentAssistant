@@ -114,16 +114,19 @@ public class FileContentProcessorTests
     }
 
     [Test]
-    public async Task ProcessFileAsync_ShouldExtractText_WhenMimeTypeIsEpub()
+    public async Task ProcessFileAsync_ShouldExtractText_WhenMimeTypeIsEpubWithStylesAndScripts()
     {
-        var htmlContent = "<html><body><h1>Wiedźmin</h1><p>Rozdział 1: Pani Jeziora</p></body></html>";
+        var chapter1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><style>body { color: red; }</style><script>alert('x');</script></head><body><h1>Wiedźmin</h1><p>Geralt z Rivii przybył do Wyzimy.</p></body></html>";
+        var chapter2 = "<html><body><h2>Ostatnie Życzenie</h2><p>Jaskier śpiewał pieśni o miłości.</p></body></html>";
 
         using var ms = new MemoryStream();
         using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
         {
-            var entry = archive.CreateEntry("OEBPS/Text/chapter1.xhtml");
-            using var writer = new StreamWriter(entry.Open());
-            writer.Write(htmlContent);
+            var entry1 = archive.CreateEntry("OEBPS/Text/ch01.xhtml");
+            using (var writer = new StreamWriter(entry1.Open())) writer.Write(chapter1);
+
+            var entry2 = archive.CreateEntry("OEBPS/Text/ch02.xhtml");
+            using (var writer = new StreamWriter(entry2.Open())) writer.Write(chapter2);
         }
 
         ms.Position = 0;
@@ -138,6 +141,55 @@ public class FileContentProcessorTests
         processed.Should().NotBeNull();
         processed!.IsTextFormat.Should().BeTrue();
         processed.Text.Should().Contain("Wiedźmin");
-        processed.Text.Should().Contain("Pani Jeziora");
+        processed.Text.Should().Contain("Geralt z Rivii");
+        processed.Text.Should().Contain("Ostatnie Życzenie");
+        processed.Text.Should().Contain("Jaskier");
+        processed.Text.Should().NotContain("color: red");
+        processed.Text.Should().NotContain("alert('x')");
+    }
+
+    [Test]
+    public async Task ProcessFileAsync_ShouldExtractText_WhenMimeTypeIsPptx()
+    {
+        var slide1 = "<p:sld xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Wykład 1: Wprowadzenie</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>";
+
+        using var ms = new MemoryStream();
+        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+        {
+            var entry = archive.CreateEntry("ppt/slides/slide1.xml");
+            using var writer = new StreamWriter(entry.Open());
+            writer.Write(slide1);
+        }
+
+        ms.Position = 0;
+        var aiFile = new AIFile
+        {
+            Stream = ms,
+            MimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        };
+
+        var processed = await _service.ProcessFileAsync(aiFile);
+
+        processed.Should().NotBeNull();
+        processed!.IsTextFormat.Should().BeTrue();
+        processed.Text.Should().Contain("Wykład 1: Wprowadzenie");
+    }
+
+    [Test]
+    public async Task ProcessFileAsync_ShouldExtractText_WhenMimeTypeIsRtf()
+    {
+        var rtf = "{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Arial;}} \\f0\\fs24 Treść dokumentu RTF z polskimi znakami.}";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rtf));
+        var aiFile = new AIFile
+        {
+            Stream = stream,
+            MimeType = "application/rtf"
+        };
+
+        var processed = await _service.ProcessFileAsync(aiFile);
+
+        processed.Should().NotBeNull();
+        processed!.IsTextFormat.Should().BeTrue();
+        processed.Text.Should().Contain("Treść dokumentu RTF");
     }
 }

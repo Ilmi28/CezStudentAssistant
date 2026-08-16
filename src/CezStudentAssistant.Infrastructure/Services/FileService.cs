@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using CezStudentAssistant.Application.Interfaces.Common;
 using CezStudentAssistant.Application.Interfaces.Services;
@@ -21,7 +21,10 @@ public class FileService(BlobServiceClient blobServiceClient) : IFileService, IS
         var blobClient = containerClient.GetBlobClient(fileName);
 
         var response = await blobClient.DownloadAsync(cancellationToken);
-        return response.Value.Content;
+        var memoryStream = new MemoryStream();
+        await response.Value.Content.CopyToAsync(memoryStream, cancellationToken);
+        memoryStream.Position = 0;
+        return memoryStream;
     }
 
     public async Task<bool> ExistsAsync(string fileName, string containerName, CancellationToken cancellationToken = default)

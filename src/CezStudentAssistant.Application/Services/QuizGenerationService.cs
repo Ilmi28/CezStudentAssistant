@@ -36,15 +36,35 @@ public class QuizGenerationService(
         var aiFiles = new List<AIFile>();
         try
         {
+            var maxTokensConfig = configuration["Gemini:MaximumDailyTokens"];
+            if (string.IsNullOrWhiteSpace(maxTokensConfig) || !int.TryParse(maxTokensConfig, out var dailyTokenLimit) || dailyTokenLimit <= 0)
+            {
+                throw new InvalidOperationException(UserMessageConsts.MaximumDailyTokensConfigMissing);
+            }
+
+            var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
+            var dailyTokensUsed = await tokenUsageRepo.GetDailyTokenUsageAsync(dto.UserId, DateTime.UtcNow, ct);
+
             aiFiles = await DownloadCourseFilesAsync(dto.CourseId, ct);
 
-            var aiResponse = await aiClient.GenerateQuizAsync(new AIQuizRequest
+            var aiRequest = new AIQuizRequest
             {
                 QuestionCount = dto.QuestionCount,
                 Language = dto.Language,
                 Files = aiFiles,
                 AdditionalInstructions = dto.AdditionalInstructions
-            });
+            };
+
+            var estimatedTokens = await aiClient.EstimateTokenUsageAsync(aiRequest);
+            var estimatedOutputTokens = Math.Max(1, dto.QuestionCount) * 200;
+            var totalEstimatedTokens = estimatedTokens + estimatedOutputTokens;
+
+            if (dailyTokensUsed + totalEstimatedTokens > dailyTokenLimit)
+            {
+                throw new BadRequestException(AIMessageConsts.DailyTokenLimitExceeded);
+            }
+
+            var aiResponse = await aiClient.GenerateQuizAsync(aiRequest);
 
             if (!aiResponse.Success || aiResponse.Data == null || !aiResponse.Data.Questions.Any())
             {

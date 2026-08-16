@@ -5,6 +5,7 @@ import type {
   CourseDetailsDto,
   UploadCourseFileResponseDto,
   GenerateQuizResponseDto,
+  EstimateQuizTokensResponseDto,
 } from "../types";
 
 export const courseService = {
@@ -42,6 +43,24 @@ export const courseService = {
       authService.refreshToken
     );
     return handleResponse<UploadCourseFileResponseDto>(res);
+  },
+
+  async estimateQuizTokens(
+    courseId: string,
+    questionCount: number,
+    additionalInstructions?: string
+  ): Promise<EstimateQuizTokensResponseDto> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course/${courseId}/estimate-quiz-tokens`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionCount, additionalInstructions }),
+      },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<EstimateQuizTokensResponseDto>(res);
   },
 
   async generateQuiz(

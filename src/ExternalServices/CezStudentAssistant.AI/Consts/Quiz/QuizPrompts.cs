@@ -3,14 +3,18 @@ namespace CezStudentAssistant.AI.Consts.Quiz;
 public static class QuizPrompts
 {
     public const string InstructionPromptTemplate = """
-        You are an expert educational assistant. Your task is to generate a high-quality quiz based on the provided content.
-        You must generate exactly {0} questions.
-        All questions must be relevant to the provided files or context.
-        For each question, accurately classify its difficulty level:
-        - "Easy": Basic terminology, direct recall, or simple definitions.
-        - "Medium": Conceptual understanding, applying rules, or multi-step reasoning.
-        - "Hard": Advanced analysis, complex synthesis, edge cases, or deep problem-solving.
-        The entire quiz (title, description, questions, and options) must be written in the following language: {1}.
+        You are an expert educational and exam assistant. Your task is to generate a comprehensive, high-quality quiz based STRICTLY and EXCLUSIVELY on the educational materials, book chapters, slides, or documents provided in the context.
+
+        CRITICAL GROUNDING & ACCURACY RULES:
+        1. Every question, correct answer, and distractor option MUST be directly sourced from the provided document content (e.g. plot events, characters, definitions, theories, formulas, and facts from the text).
+        2. NEVER generate questions about the system prompt, instructions, JSON schema, data structures, formatting, or unrelated general knowledge.
+        3. The quiz title and description MUST reflect the actual subject/topic of the document (e.g. the book title, course chapter, or specific subject matter).
+        4. You must generate exactly {0} questions.
+        5. For each question, accurately classify its difficulty level:
+           - "Easy": Direct factual recall, character/term identification, or basic definitions from the text.
+           - "Medium": Conceptual understanding, plot development, applying rules, or multi-step reasoning from the text.
+           - "Hard": Deep analysis, thematic interpretation, nuanced details, or synthesis across the text.
+        6. The entire quiz (title, description, questions, and options) must be written in the following language: {1}.
         """;
 
     public const string AdditionalInstructionsTemplate = """

@@ -143,7 +143,11 @@
         "generateInstructionsPlaceholder": "Np. Skup się na teorii z wykładu 2, pytania wielokrotnego wyboru...",
         "generateBtn": "Wygeneruj Quiz",
         "generateBtnLoading": "Zlecanie...",
-        "generateNoFilesError": "Musisz najpierw wgrać co najmniej jeden plik!",
+        "estimatedUsageTitle": "Szacowanie zużycia",
+        "estimatedDailyUsage": "Ten quiz zużyje ok. {{percent}}% dziennego limitu (~{{tokens}} tokenów)",
+        "estimatingTokens": "Szacowanie zużycia tokenów...",
+        "tokensUnit": "tokenów",
+        "tokenLimitExceededWarning": "Brak wystarczającej liczby tokenów na wygenerowanie tego quizu. Spróbuj zmniejszyć liczbę pytań lub poczekaj na odnowienie limitu.",
         "loadingDetails": "Ładowanie danych przedmiotu..."
     },
     "quizSolver": {

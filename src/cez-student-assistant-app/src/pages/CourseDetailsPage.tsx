@@ -206,9 +206,7 @@ export default function CourseDetailsPage({
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
         <div
           onClick={() => setIsFilesExpanded(!isFilesExpanded)}
-          className={`flex items-center justify-between cursor-pointer select-none group ${
-            isFilesExpanded ? "pb-3.5 border-b border-border mb-3.5" : ""
-          }`}
+          className="flex items-center justify-between cursor-pointer select-none group"
         >
           <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
             {t("courseDetails.filesTitle")} ({selectedCourse.files.length})
@@ -244,56 +242,58 @@ export default function CourseDetailsPage({
           }`}
         >
           <div className="overflow-hidden">
-            {selectedCourse.files.length === 0 ? (
-              <div className="py-8 text-center">
-                <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
-                <p className="text-xs text-muted-foreground">{t("courseDetails.noFiles")}</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {selectedCourse.files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border border-border hover:border-primary/30 transition-all"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-primary flex-shrink-0">
-                        <FileText size={15} />
+            <div className="pt-3.5 border-t border-border mt-3.5">
+              {selectedCourse.files.length === 0 ? (
+                <div className="py-8 text-center">
+                  <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
+                  <p className="text-xs text-muted-foreground">{t("courseDetails.noFiles")}</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {selectedCourse.files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border border-border hover:border-primary/30 transition-all"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-primary flex-shrink-0">
+                          <FileText size={15} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-medium text-foreground truncate">{file.displayName}</div>
+                          <div className="text-[11px] text-muted-foreground/50">{file.mimeType}</div>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-medium text-foreground truncate">{file.displayName}</div>
-                        <div className="text-[11px] text-muted-foreground/50">{file.mimeType}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <button
-                        type="button"
-                        onClick={() => handleFileDownload(file.id, file.displayName)}
-                        title={t("courseDetails.downloadFile")}
-                        aria-label={t("courseDetails.downloadFile")}
-                        className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
-                      >
-                        <Download size={18} />
-                      </button>
-                      {!selectedCourse.isCez && (
+                      <div className="flex items-center gap-1 shrink-0 ml-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            setFileToDelete({ id: file.id, name: file.displayName });
-                            setIsDeleteFileModalOpen(true);
-                          }}
-                          title={t("courseDetails.deleteFile")}
-                          aria-label={t("courseDetails.deleteFile")}
-                          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer"
+                          onClick={() => handleFileDownload(file.id, file.displayName)}
+                          title={t("courseDetails.downloadFile")}
+                          aria-label={t("courseDetails.downloadFile")}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
                         >
-                          <Trash2 size={18} />
+                          <Download size={18} />
                         </button>
-                      )}
+                        {!selectedCourse.isCez && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFileToDelete({ id: file.id, name: file.displayName });
+                              setIsDeleteFileModalOpen(true);
+                            }}
+                            title={t("courseDetails.deleteFile")}
+                            aria-label={t("courseDetails.deleteFile")}
+                            className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -302,9 +302,7 @@ export default function CourseDetailsPage({
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
         <div
           onClick={() => setIsQuizzesExpanded(!isQuizzesExpanded)}
-          className={`flex items-center justify-between cursor-pointer select-none group ${
-            isQuizzesExpanded ? "pb-3.5 border-b border-border mb-3.5" : ""
-          }`}
+          className="flex items-center justify-between cursor-pointer select-none group"
         >
           <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
             {t("quizzes.title")} ({courseQuizzes.length})
@@ -340,19 +338,21 @@ export default function CourseDetailsPage({
           }`}
         >
           <div className="overflow-hidden">
-            {courseQuizzes.length === 0 ? (
-              <div className="py-8 text-center">
-                <Brain size={28} className="mx-auto text-muted-foreground/35 mb-2" />
-                <p className="text-xs text-muted-foreground">{t("quizzes.noQuizzes")}</p>
-                <p className="text-[11px] text-muted-foreground/60 mt-1">{t("quizzes.noQuizzesSubtitle")}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {courseQuizzes.map((quiz, idx) => (
-                  <QuizCard key={quiz.id} quiz={quiz} index={idx + 1} showCourseName={false} />
-                ))}
-              </div>
-            )}
+            <div className="pt-3.5 border-t border-border mt-3.5">
+              {courseQuizzes.length === 0 ? (
+                <div className="py-8 text-center">
+                  <Brain size={28} className="mx-auto text-muted-foreground/35 mb-2" />
+                  <p className="text-xs text-muted-foreground">{t("quizzes.noQuizzes")}</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1">{t("quizzes.noQuizzesSubtitle")}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {courseQuizzes.map((quiz, idx) => (
+                    <QuizCard key={quiz.id} quiz={quiz} index={idx + 1} showCourseName={false} />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -399,6 +399,7 @@ export default function CourseDetailsPage({
         onClose={() => setIsGenerateQuizModalOpen(false)}
         onSubmit={handleGenerateQuizSubmit}
         hasFiles={selectedCourse.files.length > 0}
+        courseId={id || ""}
       />
     </div>
   );

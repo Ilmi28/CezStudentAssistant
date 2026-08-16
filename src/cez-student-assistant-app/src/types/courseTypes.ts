@@ -37,5 +37,19 @@ export interface GenerateQuizResponseDto {
   jobId?: string;
 }
 
+export interface EstimateQuizTokensRequestDto {
+  questionCount: number;
+  additionalInstructions?: string;
+}
+
+export interface EstimateQuizTokensResponseDto {
+  estimatedTokens: number;
+  dailyTokenLimit: number;
+  dailyTokensUsed: number;
+  estimatedDailyUsagePercentage: number;
+  remainingDailyTokens: number;
+  canGenerate: boolean;
+}
+
 export { CourseType } from '../enums/courseEnums';
 

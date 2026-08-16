@@ -28,7 +28,7 @@ public class GeminiAIClientTests
     {
         _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            { "Gemini:DefaultModel", "gemini-2.5-flash" },
+            { "Gemini:DefaultModel", "gemini-2.0-flash" },
             { "Gemini:MaxAttempts", "6" },
             { "Gemini:RetryDelaysMs:0", "1000" }
         }).Build();

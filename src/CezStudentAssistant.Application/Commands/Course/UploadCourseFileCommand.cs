@@ -2,8 +2,10 @@ using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Helpers;
 using CezStudentAssistant.Application.Interfaces.CQRS;
+using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
+using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
@@ -24,6 +26,7 @@ public class UploadCourseFileCommand : ICommand<Guid>, IUserRequest
 public class UploadCourseFileCommandHandler(
     IUnitOfWork unitOfWork,
     IFileService fileService,
+    IAIClient aiClient,
     IConfiguration configuration) : BaseCommandHandler<UploadCourseFileCommand, Guid>
 {
     private readonly string _containerName = configuration["BlobContainerSettings:CourseFilesContainer"]
@@ -59,10 +62,22 @@ public class UploadCourseFileCommandHandler(
 
         var resourceRepository = unitOfWork.Repository<ICezResourceRepository>();
 
+        using var memoryStream = new MemoryStream();
+        if (command.FileStream.CanSeek) command.FileStream.Position = 0;
+        await command.FileStream.CopyToAsync(memoryStream, ct);
+        memoryStream.Position = 0;
+
         var contentName = $"{Guid.NewGuid()}_{command.FileName}";
         var filePath = $"{course.Id}/{contentName}";
 
-        await fileService.UploadAsync(command.FileStream, filePath, _containerName, command.ContentType, ct);
+        await fileService.UploadAsync(memoryStream, filePath, _containerName, command.ContentType, ct);
+
+        memoryStream.Position = 0;
+        var estimatedTokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
+        {
+            QuestionCount = 0,
+            Files = [new AIFile { Stream = memoryStream, MimeType = command.ContentType }]
+        });
 
         var resource = new Resource
         {
@@ -70,6 +85,7 @@ public class UploadCourseFileCommandHandler(
             Name = contentName,
             DisplayName = command.FileName,
             MimeType = command.ContentType,
+            EstimatedTokens = estimatedTokens,
             CezLastModified = DateTime.UtcNow
         };
 

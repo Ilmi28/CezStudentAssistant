@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Commands.Quiz;
 using CezStudentAssistant.Application.Dtos.Quiz;
+using CezStudentAssistant.Application.Queries.Quiz;
 using CezStudentAssistant.Application.Requests.AI;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Application.Responses.AI.Quiz;
@@ -208,7 +209,7 @@ public class AIQuizEndpointsTests
             var quiz = await db.Quizzes.Include(q => q.Questions).ThenInclude(q => q.Options)
                 .FirstOrDefaultAsync(q => q.CourseId == courseId);
             quiz.Should().NotBeNull();
-            quiz!.Name.Should().Be("AI Math Quiz");
+            quiz!.Name.Should().Be("Quiz #1 - AI Math Quiz");
             quiz.Questions.Should().HaveCount(1);
             quiz.Questions.First().Content.Should().Be("What is 2+2?");
         }
@@ -288,5 +289,59 @@ public class AIQuizEndpointsTests
         content.Data.Questions.Should().HaveCount(1);
         content.Data.Questions[0].Content.Should().Be("V=IR?");
         content.Data.Questions[0].Options.Should().HaveCount(1);
+    }
+
+    [Test]
+    public async Task EstimateQuizTokens_ShouldReturnUnauthorized_WhenNotLoggedIn()
+    {
+        var unauthorizedClient = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            HandleCookies = false
+        });
+
+        var query = new EstimateQuizTokensQuery
+        {
+            CourseId = Guid.NewGuid(),
+            QuestionCount = 5
+        };
+
+        var response = await unauthorizedClient.PostAsJsonAsync($"/course/{query.CourseId}/estimate-quiz-tokens", query);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Test]
+    public async Task EstimateQuizTokens_ShouldReturnEstimate_WhenRequestIsValid()
+    {
+        var username = "estimateuser1";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        var courseId = Guid.NewGuid();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var user = await db.Users.FirstAsync(u => u.Id == userId);
+            var course = new Course { Id = courseId, Name = "Estimation Course", Type = CourseType.Cez };
+            db.Courses.Add(course);
+            user.Courses.Add(course);
+            await db.SaveChangesAsync();
+        }
+
+        var query = new EstimateQuizTokensQuery
+        {
+            CourseId = courseId,
+            QuestionCount = 5
+        };
+
+        var response = await _client.PostAsJsonAsync($"/course/{courseId}/estimate-quiz-tokens", query);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<CezStudentAssistant.Application.Dtos.AI.EstimateQuizTokensDto>>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+        content.Data.Should().NotBeNull();
+        content.Data!.DailyTokenLimit.Should().Be(1000000);
+        content.Data.CanGenerate.Should().BeTrue();
+        content.Data.EstimatedTokens.Should().BeGreaterThan(0);
     }
 }

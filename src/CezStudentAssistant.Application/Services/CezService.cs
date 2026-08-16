@@ -19,6 +19,7 @@ public class CezService(
     ICezApiClient cezApiClient,
     IUnitOfWork unitOfWork,
     IFileService fileService,
+    IAIClient aiClient,
     IJobScheduler jobScheduler,
     IJobService jobService,
     IConfiguration configuration) : ICezService
@@ -187,11 +188,32 @@ public class CezService(
             var existingResource = await resourceRepo.GetSingleAsync(r => r.Name == contentName, cancellationToken);
             if (existingResource == null || existingResource.CezLastModified != content.TimeModified)
             {
+                var fileContent = await cezApiClient.DownloadCezFile(new CezFileRequest
+                {
+                    Token = courseRequest.Token,
+                    FileUrl = content.FileUrl
+                });
+
+                using var memoryStream = new MemoryStream();
+                if (fileContent.CanSeek) fileContent.Position = 0;
+                await fileContent.CopyToAsync(memoryStream, cancellationToken);
+                memoryStream.Position = 0;
+
+                await fileService.UploadAsync(memoryStream, $"{course.Id}/{contentName}", _containerName, content.MimeType, cancellationToken);
+
+                memoryStream.Position = 0;
+                var estimatedTokens = await aiClient.EstimateTokenUsageAsync(new CezStudentAssistant.Application.Requests.AI.AIQuizRequest
+                {
+                    QuestionCount = 0,
+                    Files = [new CezStudentAssistant.Application.Requests.AI.AIFile { Stream = memoryStream, MimeType = content.MimeType }]
+                });
+
                 if (existingResource != null)
                 {
                     existingResource.DisplayName = content.FileName;
                     existingResource.CezLastModified = content.TimeModified;
                     existingResource.MimeType = content.MimeType;
+                    existingResource.EstimatedTokens = estimatedTokens;
                 }
                 else
                 {
@@ -201,22 +223,16 @@ public class CezService(
                         DisplayName = content.FileName,
                         CezLastModified = content.TimeModified,
                         MimeType = content.MimeType,
+                        EstimatedTokens = estimatedTokens,
                         CourseId = course.Id
                     };
                     await resourceRepo.AddAsync(newResource, cancellationToken);
                 }
-                var fileContent = await cezApiClient.DownloadCezFile(new CezFileRequest
-                {
-                    Token = courseRequest.Token,
-                    FileUrl = content.FileUrl
-                });
-                await fileService.UploadAsync(fileContent, $"{course.Id}/{contentName}", _containerName, content.MimeType, cancellationToken);
             }
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
-
     private async Task<Guid> SyncCezUser(CezUserInfo cezUserInfo, CancellationToken ct = default)
     {
         var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();

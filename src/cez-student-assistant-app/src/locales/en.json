@@ -143,7 +143,11 @@
         "generateInstructionsPlaceholder": "E.g., Focus on theory from lecture 2, multiple-choice questions...",
         "generateBtn": "Generate Quiz",
         "generateBtnLoading": "Enqueuing...",
-        "generateNoFilesError": "You must upload at least one file first!",
+        "estimatedUsageTitle": "Estimated Usage",
+        "estimatedDailyUsage": "This quiz will use ~{{percent}}% of daily limit (~{{tokens}} tokens)",
+        "estimatingTokens": "Estimating token usage...",
+        "tokensUnit": "tokens",
+        "tokenLimitExceededWarning": "Not enough daily tokens to generate this quiz. Try reducing the question count or wait for daily reset.",
         "loadingDetails": "Loading course details..."
     },
     "quizSolver": {

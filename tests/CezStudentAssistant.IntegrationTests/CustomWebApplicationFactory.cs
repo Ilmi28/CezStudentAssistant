@@ -109,6 +109,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 });
             });
 
+        AIClientMock.EstimateTokenUsageAsync(Arg.Any<CezStudentAssistant.Application.Requests.AI.AIQuizRequest>())
+            .Returns(Task.FromResult(500));
+
         builder.ConfigureServices(services =>
         {
             // Mock External CEZ API and AI Client

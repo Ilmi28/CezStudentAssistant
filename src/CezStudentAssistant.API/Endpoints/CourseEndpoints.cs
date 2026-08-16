@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Commands.Course;
 using CezStudentAssistant.Application.Commands.Quiz;
 using CezStudentAssistant.Application.Queries.Course;
+using CezStudentAssistant.Application.Queries.Quiz;
 using MediatR;
 
 namespace CezStudentAssistant.API.Endpoints;
@@ -71,6 +72,13 @@ public static class CourseEndpoints
         {
             var command = new DeleteCourseFileCommand { CourseId = courseId, FileId = fileId };
             var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPost("/{courseId:guid}/estimate-quiz-tokens", async (Guid courseId, EstimateQuizTokensQuery query, IMediator mediator) =>
+        {
+            query.CourseId = courseId;
+            var result = await mediator.Send(query);
             return Results.Ok(result);
         }).RequireAuthorization();
 

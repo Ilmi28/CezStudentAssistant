@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Commands.Course;
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Entities;
@@ -28,6 +29,7 @@ public class UploadCourseFileCommandHandlerTests
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _resourceRepository = null!;
     private IFileService _fileService = null!;
+    private IAIClient _aiClient = null!;
     private UploadCourseFileCommandHandler _sut = null!;
 
     [SetUp]
@@ -37,12 +39,14 @@ public class UploadCourseFileCommandHandlerTests
         _courseRepository = Substitute.For<ICourseRepository>();
         _resourceRepository = Substitute.For<ICezResourceRepository>();
         _fileService = Substitute.For<IFileService>();
+        _aiClient = Substitute.For<IAIClient>();
 
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
+        _aiClient.EstimateTokenUsageAsync(Arg.Any<CezStudentAssistant.Application.Requests.AI.AIQuizRequest>()).Returns(1500);
 
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
-        _sut = new UploadCourseFileCommandHandler(_unitOfWork, _fileService, configuration);
+        _sut = new UploadCourseFileCommandHandler(_unitOfWork, _fileService, _aiClient, configuration);
     }
 
     [TearDown]
@@ -85,13 +89,13 @@ public class UploadCourseFileCommandHandlerTests
         result.Data.Should().NotBeEmpty();
 
         await _fileService.Received(1).UploadAsync(
-            memoryStream,
+            Arg.Any<Stream>(),
             Arg.Is<string>(path => path.StartsWith($"{courseId}/")),
             "course-files",
             "application/pdf",
             Arg.Any<CancellationToken>()
         );
-        await _resourceRepository.Received(1).AddAsync(Arg.Is<Resource>(r => r.DisplayName == "lecture.pdf" && r.CourseId == courseId), Arg.Any<CancellationToken>());
+        await _resourceRepository.Received(1).AddAsync(Arg.Is<Resource>(r => r.DisplayName == "lecture.pdf" && r.CourseId == courseId && r.EstimatedTokens == 1500), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
