@@ -7,7 +7,7 @@ public static class QuizSchemas
     public const string PropertyQuestions = "questions";
     public const string PropertyContent = "content";
     public const string PropertyQuestionType = "questionType";
-    public const string PropertyPoints = "points";
+    public const string PropertyDifficulty = "difficulty";
     public const string PropertyOptions = "options";
     public const string PropertyIsCorrect = "isCorrect";
 
@@ -17,7 +17,7 @@ public static class QuizSchemas
 
     public const string QuestionContentDescription = "The actual question text.";
     public const string QuestionTypeDescriptionTemplate = "The format type of the question. Allowed values: {0}.";
-    public const string QuestionPointsDescription = "The score value awarded for answering the question correctly.";
+    public const string QuestionDifficultyDescriptionTemplate = "The difficulty level of the question. Allowed values: {0}.";
     public const string QuestionOptionsDescription = "List of answer choices for the question.";
 
     public const string OptionContentDescription = "The text of the option choice.";

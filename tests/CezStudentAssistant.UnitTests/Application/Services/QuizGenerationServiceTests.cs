@@ -37,6 +37,7 @@ public class QuizGenerationServiceTests
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _resourceRepository = null!;
     private IQuizRepository _quizRepository = null!;
+    private IQuestionRepository _questionRepository = null!;
     private ITokenUsageRepository _tokenUsageRepository = null!;
     private QuizGenerationService _sut = null!;
 
@@ -51,11 +52,13 @@ public class QuizGenerationServiceTests
         _courseRepository = Substitute.For<ICourseRepository>();
         _resourceRepository = Substitute.For<ICezResourceRepository>();
         _quizRepository = Substitute.For<IQuizRepository>();
+        _questionRepository = Substitute.For<IQuestionRepository>();
         _tokenUsageRepository = Substitute.For<ITokenUsageRepository>();
 
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
         _unitOfWork.Repository<IQuizRepository>().Returns(_quizRepository);
+        _unitOfWork.Repository<IQuestionRepository>().Returns(_questionRepository);
         _unitOfWork.Repository<ITokenUsageRepository>().Returns(_tokenUsageRepository);
 
         _quizRepository.Find(Arg.Any<Expression<Func<Quiz, bool>>>())
@@ -112,7 +115,7 @@ public class QuizGenerationServiceTests
                 {
                     Content = "Question 1?",
                     QuestionType = QuestionType.SingleChoice,
-                    Points = 1,
+                    Difficulty = QuestionDifficulty.Hard,
                     Options = new List<AIQuestionOption>
                     {
                         new AIQuestionOption { Content = "Option 1", IsCorrect = true },
@@ -136,7 +139,9 @@ public class QuizGenerationServiceTests
         await _sut.GenerateQuiz(dto);
 
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-        await _quizRepository.Received(1).AddAsync(Arg.Is<Quiz>(q => q.Name == "Generated Quiz" && q.CourseId == courseId), Arg.Any<CancellationToken>());
+        await _quizRepository.Received(1).AddAsync(Arg.Is<Quiz>(q => q.Name == "Quiz #1 - Generated Quiz" && q.CourseId == courseId), Arg.Any<CancellationToken>());
+        await _questionRepository.Received(1).AddAsync(Arg.Is<Question>(q => q.Difficulty == QuestionDifficulty.Hard && q.Points == 3m), Arg.Any<CancellationToken>());
+
         await _tokenUsageRepository.Received(1).AddAsync(Arg.Is<TokenUsage>(tu => tu.UserId == userId && tu.UsageType == UsageTokenType.QuizGeneration && tu.UsageCount == 150), Arg.Any<CancellationToken>());
         
         await _jobService.Received(1).UpdateJobAsync(existingJob, JobStatus.Processing, null, Arg.Any<CancellationToken>());

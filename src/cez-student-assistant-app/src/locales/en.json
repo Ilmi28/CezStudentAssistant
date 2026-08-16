@@ -152,6 +152,11 @@
         "loadingQuiz": "Loading quiz questions...",
         "questionProgress": "Question {{current}} of {{total}}",
         "points": "POINTS: {{points}}",
+        "difficulty": {
+            "easy": "Easy",
+            "medium": "Medium",
+            "hard": "Hard"
+        },
         "checkBtn": "Check Answer",
         "nextBtn": "Next Question",
         "finishBtn": "Finish test and view score",

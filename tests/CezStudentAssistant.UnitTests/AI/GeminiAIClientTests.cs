@@ -77,7 +77,7 @@ public class GeminiAIClientTests
                 {
                     Content = "1 + 1 = ?",
                     QuestionType = "SingleChoice",
-                    Points = 5,
+                    Difficulty = "Easy",
                     Options = new List<ExternalAIQuestionOption>
                     {
                         new ExternalAIQuestionOption { Content = "2", IsCorrect = true },
@@ -95,7 +95,7 @@ public class GeminiAIClientTests
         Assert.That(quiz.Questions, Has.Count.EqualTo(1));
         Assert.That(quiz.Questions[0].Content, Is.EqualTo("1 + 1 = ?"));
         Assert.That(quiz.Questions[0].QuestionType, Is.EqualTo(QuestionType.SingleChoice));
-        Assert.That(quiz.Questions[0].Points, Is.EqualTo(5));
+        Assert.That(quiz.Questions[0].Difficulty, Is.EqualTo(QuestionDifficulty.Easy));
         Assert.That(quiz.Questions[0].Options, Has.Count.EqualTo(2));
         Assert.That(quiz.Questions[0].Options.First().Content, Is.EqualTo("2"));
         Assert.That(quiz.Questions[0].Options.First().IsCorrect, Is.True);

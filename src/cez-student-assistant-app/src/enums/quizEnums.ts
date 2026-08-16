@@ -13,3 +13,10 @@ export enum QuestionType {
   SingleChoice = 1,
   MultipleChoice = 2,
 }
+
+export enum QuestionDifficulty {
+  Easy = 1,
+  Medium = 2,
+  Hard = 3,
+}
+

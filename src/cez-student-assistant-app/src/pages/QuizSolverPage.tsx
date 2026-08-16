@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, AlertCircle, Check, ArrowRight, Trophy, RefreshCw } from "lucide-react";
-import { quizService, type QuizDetailsDto, type QuestionDto } from "../services";
+import { quizService, QuestionDifficulty, type QuizDetailsDto, type QuestionDto } from "../services";
 
 interface QuizSolverPageProps {
   setError: (msg: string) => void;
@@ -55,6 +55,30 @@ export default function QuizSolverPage({
       navigate("/quizzes");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getDifficultyBadge = (difficulty?: QuestionDifficulty) => {
+    switch (difficulty) {
+      case QuestionDifficulty.Easy:
+        return (
+          <span className="text-[10px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded uppercase">
+            {t("quizSolver.difficulty.easy")}
+          </span>
+        );
+      case QuestionDifficulty.Hard:
+        return (
+          <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold px-2 py-0.5 rounded uppercase">
+            {t("quizSolver.difficulty.hard")}
+          </span>
+        );
+      case QuestionDifficulty.Medium:
+      default:
+        return (
+          <span className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold px-2 py-0.5 rounded uppercase">
+            {t("quizSolver.difficulty.medium")}
+          </span>
+        );
     }
   };
 
@@ -174,10 +198,13 @@ export default function QuizSolverPage({
             const isCorrect = answers[idx]?.isCorrect;
             return (
               <div key={q.id} className="flex items-start justify-between text-[13px] py-1 border-b border-border last:border-b-0">
-                <span className="text-muted-foreground font-medium truncate max-w-[420px]">{idx + 1}. {q.content}</span>
-                <span className={`font-semibold shrink-0 ml-4 uppercase text-[10px] ${isCorrect ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
-                  {isCorrect ? t("quizSolver.finishedCorrectFeedback") : t("quizSolver.finishedIncorrectFeedback")}
-                </span>
+                <span className="text-muted-foreground font-medium truncate max-w-[360px]">{idx + 1}. {q.content}</span>
+                <div className="flex items-center gap-2 shrink-0 ml-4">
+                  {getDifficultyBadge(q.difficulty)}
+                  <span className={`font-semibold uppercase text-[10px] ${isCorrect ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
+                    {isCorrect ? t("quizSolver.finishedCorrectFeedback") : t("quizSolver.finishedIncorrectFeedback")}
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -234,9 +261,12 @@ export default function QuizSolverPage({
           <span className="text-xs text-muted-foreground">
             {t("quizSolver.questionProgress", { current: qIndex + 1, total: qCount })}
           </span>
-          <span className="text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded uppercase">
-            {t("quizSolver.points", { points: question.points })}
-          </span>
+          <div className="flex items-center gap-2">
+            {getDifficultyBadge(question.difficulty)}
+            <span className="text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded uppercase">
+              {t("quizSolver.points", { points: question.points })}
+            </span>
+          </div>
         </div>
 
         {/* Progress bar */}

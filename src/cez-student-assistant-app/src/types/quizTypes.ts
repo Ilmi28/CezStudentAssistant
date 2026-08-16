@@ -1,4 +1,4 @@
-import { QuizStatusEnum } from '../enums/quizEnums';
+import { QuizStatusEnum, QuestionDifficulty } from '../enums/quizEnums';
 
 export interface QuizDto {
   id: string;
@@ -19,6 +19,7 @@ export interface QuestionDto {
   id: string;
   content: string;
   type: number;
+  difficulty?: QuestionDifficulty;
   points: number;
   options: QuestionOptionDto[];
 }
@@ -43,6 +44,6 @@ export interface SubmitAnswerResponseDto {
   score?: number;
 }
 
-export { QuizStatusEnum, QuizAttemptStatus, QuestionType } from '../enums/quizEnums';
+export { QuizStatusEnum, QuizAttemptStatus, QuestionType, QuestionDifficulty } from '../enums/quizEnums';
 
 

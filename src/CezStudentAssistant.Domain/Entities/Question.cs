@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Domain.Enums;
+using CezStudentAssistant.Domain.Enums;
 
 namespace CezStudentAssistant.Domain.Entities;
 
@@ -6,6 +6,7 @@ public class Question : BaseEntity
 {
     public required string Content { get; set; }
     public QuestionType Type { get; set; }
+    public QuestionDifficulty Difficulty { get; set; } = QuestionDifficulty.Medium;
     public Guid QuizId { get; set; }
     public decimal Points { get; set; }
 

@@ -51,6 +51,7 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
                 Id = q.Id,
                 Content = q.Content,
                 Type = q.Type,
+                Difficulty = q.Difficulty,
                 Points = q.Points,
                 Options = q.Options.Select(o => new QuestionOptionDto
                 {

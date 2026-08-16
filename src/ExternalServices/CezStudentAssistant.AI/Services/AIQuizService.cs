@@ -49,11 +49,12 @@ public class AIQuizService(IMapper mapper, ILogger<AIQuizService> logger) : IAIQ
         };
 
         var allowedQuestionTypes = Enum.GetNames<QuestionType>().ToList();
+        var allowedDifficulties = Enum.GetNames<QuestionDifficulty>().ToList();
 
         var questionSchema = new Schema
         {
             Type = Google.GenAI.Types.Type.Object,
-            Required = new List<string> { QuizSchemas.PropertyContent, QuizSchemas.PropertyQuestionType, QuizSchemas.PropertyPoints, QuizSchemas.PropertyOptions },
+            Required = new List<string> { QuizSchemas.PropertyContent, QuizSchemas.PropertyQuestionType, QuizSchemas.PropertyDifficulty, QuizSchemas.PropertyOptions },
             Properties = new Dictionary<string, Schema>
             {
                 { QuizSchemas.PropertyContent, new Schema { Type = Google.GenAI.Types.Type.String, Description = QuizSchemas.QuestionContentDescription } },
@@ -62,7 +63,11 @@ public class AIQuizService(IMapper mapper, ILogger<AIQuizService> logger) : IAIQ
                     Description = string.Format(QuizSchemas.QuestionTypeDescriptionTemplate, string.Join(", ", allowedQuestionTypes)),
                     Enum = allowedQuestionTypes
                 } },
-                { QuizSchemas.PropertyPoints, new Schema { Type = Google.GenAI.Types.Type.Number, Description = QuizSchemas.QuestionPointsDescription } },
+                { QuizSchemas.PropertyDifficulty, new Schema { 
+                    Type = Google.GenAI.Types.Type.String, 
+                    Description = string.Format(QuizSchemas.QuestionDifficultyDescriptionTemplate, string.Join(", ", allowedDifficulties)),
+                    Enum = allowedDifficulties
+                } },
                 { QuizSchemas.PropertyOptions, new Schema { 
                     Type = Google.GenAI.Types.Type.Array, 
                     Items = optionSchema, 

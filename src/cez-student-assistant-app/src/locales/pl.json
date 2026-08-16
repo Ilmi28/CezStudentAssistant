@@ -152,6 +152,11 @@
         "loadingQuiz": "Ładowanie pytań quizu...",
         "questionProgress": "Pytanie {{current}} z {{total}}",
         "points": "PUNKTY: {{points}}",
+        "difficulty": {
+            "easy": "Łatwe",
+            "medium": "Średnie",
+            "hard": "Trudne"
+        },
         "checkBtn": "Sprawdź odpowiedź",
         "nextBtn": "Następne pytanie",
         "finishBtn": "Zakończ quiz i zobacz wynik",

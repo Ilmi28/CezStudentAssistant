@@ -97,7 +97,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                             {
                                 Content = "What is 2+2?",
                                 QuestionType = CezStudentAssistant.Domain.Enums.QuestionType.SingleChoice,
-                                Points = 1,
+                                Difficulty = CezStudentAssistant.Domain.Enums.QuestionDifficulty.Easy,
                                 Options = new List<CezStudentAssistant.Application.Responses.AI.Quiz.AIQuestionOption>
                                 {
                                     new CezStudentAssistant.Application.Responses.AI.Quiz.AIQuestionOption { Content = "4", IsCorrect = true },

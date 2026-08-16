@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.AI;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Helpers;
 using CezStudentAssistant.Application.Interfaces.Common;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
@@ -106,10 +107,8 @@ public class QuizGenerationService(
         if (quiz == null)
         {
             var existingQuizzes = quizRepo.Find(q => q.CourseId == dto.CourseId).ToList();
-            var defaultTitle = $"Quiz #{existingQuizzes.Count + 1}";
-            var finalTitle = !string.IsNullOrWhiteSpace(aiQuiz.Title) && !aiQuiz.Title.StartsWith("Quiz z", StringComparison.OrdinalIgnoreCase)
-                ? aiQuiz.Title
-                : defaultTitle;
+            var quizNumberTitle = $"Quiz #{existingQuizzes.Count + 1}";
+            var finalTitle = BuildQuizTitle(quizNumberTitle, aiQuiz.Title);
 
             quiz = new Quiz
             {
@@ -127,9 +126,13 @@ public class QuizGenerationService(
         }
         else
         {
-            var finalTitle = !string.IsNullOrWhiteSpace(aiQuiz.Title) && !aiQuiz.Title.StartsWith("Quiz z", StringComparison.OrdinalIgnoreCase)
-                ? aiQuiz.Title
-                : (!string.IsNullOrWhiteSpace(quiz.DisplayName) ? quiz.DisplayName : quiz.Name);
+            var quizNumberTitle = !string.IsNullOrWhiteSpace(quiz.DisplayName) && quiz.DisplayName.StartsWith("Quiz #", StringComparison.OrdinalIgnoreCase)
+                ? quiz.DisplayName
+                : (!string.IsNullOrWhiteSpace(quiz.Name) && quiz.Name.StartsWith("Quiz #", StringComparison.OrdinalIgnoreCase)
+                    ? quiz.Name
+                    : $"Quiz #{quizRepo.Find(q => q.CourseId == dto.CourseId).Count()}");
+
+            var finalTitle = BuildQuizTitle(quizNumberTitle, aiQuiz.Title);
 
             quiz.Name = finalTitle;
             quiz.DisplayName = finalTitle;
@@ -140,6 +143,36 @@ public class QuizGenerationService(
             }
         }
     }
+
+    private static string BuildQuizTitle(string quizNumberTitle, string? aiTitle)
+    {
+        if (string.IsNullOrWhiteSpace(aiTitle))
+            return quizNumberTitle;
+
+        var topic = aiTitle.Trim();
+
+        if (topic.EndsWith(" - Quiz", StringComparison.OrdinalIgnoreCase))
+        {
+            topic = topic[..^7].Trim();
+        }
+
+        if (topic.StartsWith("Quiz z ", StringComparison.OrdinalIgnoreCase))
+        {
+            topic = topic[7..].Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(topic) ||
+            topic.Equals("Quiz", StringComparison.OrdinalIgnoreCase) ||
+            topic.Equals(quizNumberTitle, StringComparison.OrdinalIgnoreCase) ||
+            topic.StartsWith("Quiz #", StringComparison.OrdinalIgnoreCase))
+        {
+            return quizNumberTitle;
+        }
+
+        return $"{quizNumberTitle} - {topic}";
+    }
+
+
 
     private static List<Question> MapQuestions(Quiz quiz, List<AIQuestion> aiQuestions)
     {
@@ -152,7 +185,8 @@ public class QuizGenerationService(
                 Quiz = quiz,
                 Content = q.Content,
                 Type = (QuestionType)q.QuestionType,
-                Points = q.Points
+                Difficulty = q.Difficulty,
+                Points = QuizPointHelper.CalculatePoints(q.Difficulty)
             };
             question.Options = q.Options.Select(o => new QuestionOption
             {
