@@ -29,6 +29,7 @@ export interface UploadCourseFileResponseDto {
 
 export interface GenerateQuizRequestDto {
   questionCount: number;
+  timeLimitMinutes?: number | null;
   additionalInstructions?: string;
 }
 

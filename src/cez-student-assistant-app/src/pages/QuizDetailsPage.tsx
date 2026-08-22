@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
   Play,
-  RefreshCw,
   Trophy,
   Target,
   HelpCircle,
@@ -15,6 +14,7 @@ import {
 import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizDetailsDto, type QuestionDto } from "../services";
 import Card from "../components/Card";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
+import LoadingScreen from "../components/LoadingScreen";
 
 interface QuizDetailsPageProps {
   setError: (msg: string) => void;
@@ -42,7 +42,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
       setQuiz(data);
     } catch (err) {
       console.warn("[QuizDetailsPage] Failed to load quiz details:", err);
-      setError(t("quizDetails.loadingDetails"));
+      setError(t("common.genericError"));
       navigate("/quizzes");
     } finally {
       setLoading(false);
@@ -66,7 +66,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
       });
     } catch (err) {
       console.warn("[QuizDetailsPage] Failed to start quiz:", err);
-      setError(t("quizDetails.startError"));
+      setError(t("common.genericError"));
     } finally {
       setStarting(false);
     }
@@ -77,16 +77,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   };
 
   if (loading || !quiz) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="flex items-center gap-3 bg-card px-6 py-4 rounded-lg border border-border shadow-sm">
-          <RefreshCw size={18} className="animate-spin text-primary" />
-          <span className="text-[13px] font-medium text-muted-foreground">
-            {t("quizDetails.loading")}
-          </span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={t("quizDetails.loadingDetails")} />;
   }
 
   const getDifficultyPoints = (diff?: QuestionDifficulty) => {
@@ -203,17 +194,17 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
             </div>
           </div>
 
-          {/* Estimated Time */}
+          {/* Time Limit */}
           <div className="flex items-center gap-3.5 pt-4 md:pt-0 md:pl-6">
             <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
               <Clock size={20} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold block">
-                {t("quizDetails.stats.estimatedTime")}
+                {t("quizDetails.stats.timeLimit")}
               </span>
               <span className="text-xl font-bold text-foreground">
-                ~{Math.max(1, Math.round(quiz.questions.length * 1.5))} min
+                {quiz.timeLimitMinutes ? `${quiz.timeLimitMinutes} min` : t("quizDetails.stats.noLimit")}
               </span>
             </div>
           </div>

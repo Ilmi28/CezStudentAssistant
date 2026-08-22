@@ -10,7 +10,7 @@ import type { EstimateQuizTokensResponseDto } from "../types";
 interface GenerateQuizModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (questionCount: number, additionalInstructions?: string) => Promise<void>;
+  onSubmit: (questionCount: number, timeLimitMinutes?: number, additionalInstructions?: string) => Promise<void>;
   hasFiles: boolean;
   courseId: string;
 }
@@ -24,6 +24,7 @@ export default function GenerateQuizModal({
 }: GenerateQuizModalProps) {
   const { t } = useTranslation();
   const [questionCount, setQuestionCount] = useState<number>(5);
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState<number | "">("");
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -97,8 +98,10 @@ export default function GenerateQuizModal({
     setModalError(null);
     setLoading(true);
     try {
-      await onSubmit(count, additionalInstructions.trim() || undefined);
+      const limit = typeof timeLimitMinutes === "number" && timeLimitMinutes > 0 ? timeLimitMinutes : undefined;
+      await onSubmit(count, limit, additionalInstructions.trim() || undefined);
       setAdditionalInstructions("");
+      setTimeLimitMinutes("");
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -114,6 +117,7 @@ export default function GenerateQuizModal({
   const handleClose = () => {
     setModalError(null);
     setAdditionalInstructions("");
+    setTimeLimitMinutes("");
     setQuestionCount(5);
     setBaseEstimation(null);
     onClose();
@@ -177,6 +181,25 @@ export default function GenerateQuizModal({
               <Plus size={16} />
             </button>
           </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-foreground mb-1.5">
+            {t("courseDetails.generateTimeLimit")}
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={300}
+            value={timeLimitMinutes}
+            placeholder={t("courseDetails.generateTimeLimitPlaceholder")}
+            onChange={(e) => {
+              const val = e.target.value === "" ? "" : parseInt(e.target.value, 10);
+              setTimeLimitMinutes(val === "" || isNaN(val) ? "" : Math.max(1, val));
+              if (modalError) setModalError(null);
+            }}
+            className="w-full h-10 px-3.5 rounded-xl bg-card border border-border text-foreground text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
         </div>
 
         <div>

@@ -47,7 +47,8 @@ public class StartQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandle
             Course = quiz.Course,
             UserId = command.UserId,
             Status = QuizAttemptStatus.InProgress,
-            StartedAt = DateTime.UtcNow
+            StartedAt = DateTime.UtcNow,
+            ExpiresAt = quiz.TimeLimitMinutes.HasValue ? DateTime.UtcNow.AddMinutes(quiz.TimeLimitMinutes.Value) : null
         };
 
         await quizAttemptRepo.AddAsync(attempt, ct);

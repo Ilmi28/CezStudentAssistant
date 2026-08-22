@@ -12,5 +12,9 @@ public class GenerateQuizCommandValidator : AbstractValidator<GenerateQuizComman
 
         RuleFor(x => x.QuestionCount)
             .GreaterThan(0);
+
+        RuleFor(x => x.TimeLimitMinutes)
+            .GreaterThan(0)
+            .When(x => x.TimeLimitMinutes.HasValue);
     }
 }

@@ -16,6 +16,7 @@ public sealed class GenerateQuizCommand : ICommand, IUserRequest
     public Guid UserId { get; set; }
     public Guid CourseId { get; set; }
     public int QuestionCount { get; set; }
+    public int? TimeLimitMinutes { get; set; }
     public string? AdditionalInstructions { get; set; }
 }
 
@@ -45,7 +46,8 @@ public class GenerateQuizCommandHandler(
             Name = quizTitle,
             DisplayName = quizTitle,
             CourseId = command.CourseId,
-            Status = QuizStatusEnum.Generating
+            Status = QuizStatusEnum.Generating,
+            TimeLimitMinutes = command.TimeLimitMinutes
         };
 
         await quizRepo.AddAsync(quiz, ct);
@@ -59,6 +61,7 @@ public class GenerateQuizCommandHandler(
             UserId = command.UserId,
             CourseId = command.CourseId,
             QuestionCount = command.QuestionCount,
+            TimeLimitMinutes = command.TimeLimitMinutes,
             Language = QuizLanguage.PL,
             AdditionalInstructions = command.AdditionalInstructions
         };

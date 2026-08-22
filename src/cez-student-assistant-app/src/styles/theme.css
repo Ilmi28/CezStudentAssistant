@@ -336,4 +336,21 @@
   transform-origin: top;
 }
 
+@keyframes loadingBeam {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.animate-loading-beam {
+  animation: loadingBeam 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+
 

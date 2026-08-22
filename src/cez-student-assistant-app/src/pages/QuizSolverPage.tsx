@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, Check, ChevronLeft, ChevronRight, RefreshCw, X } from "lucide-react";
+import { CheckCircle, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { quizService, QuestionDifficulty, QuestionType, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import ConfirmModal from "../components/ConfirmModal";
+import LoadingScreen from "../components/LoadingScreen";
 
 interface QuizSolverPageProps {
   setError: (msg: string) => void;
@@ -61,19 +62,17 @@ export default function QuizSolverPage({
   }, [attemptId, id]);
 
   const loadAttempt = async () => {
-    const targetAttemptId = attemptId || (location.state as { initialAttempt?: QuizAttemptDetailsDto })?.initialAttempt?.attemptId;
-    const targetQuizId = id;
-
     setLoading(true);
     try {
       let details: QuizAttemptDetailsDto;
 
-      if ((location.state as { initialAttempt?: QuizAttemptDetailsDto })?.initialAttempt) {
-        details = (location.state as { initialAttempt: QuizAttemptDetailsDto }).initialAttempt;
-      } else if (targetAttemptId) {
-        details = await quizService.getQuizAttempt(targetAttemptId);
-      } else if (targetQuizId) {
-        details = await quizService.startQuiz(targetQuizId);
+      const stateAttempt = (location.state as { initialAttempt?: QuizAttemptDetailsDto })?.initialAttempt;
+      if (stateAttempt && stateAttempt.attemptId === attemptId) {
+        details = stateAttempt;
+      } else if (attemptId) {
+        details = await quizService.getQuizAttempt(attemptId);
+      } else if (id) {
+        details = await quizService.startQuiz(id);
       } else {
         navigate("/quizzes");
         return;
@@ -82,14 +81,14 @@ export default function QuizSolverPage({
       setAttemptDetails(details);
 
       const initialAnswers: Record<string, string[]> = {};
-      (details.answers || []).forEach(ans => {
-        initialAnswers[ans.questionId] = ans.selectedOptionIds;
-      });
+      if (details.answers && details.answers.length > 0) {
+        details.answers.forEach(a => {
+          initialAnswers[a.questionId] = a.selectedOptionIds;
+        });
+      }
       setSelectedAnswers(initialAnswers);
 
-      const isCompleted = !details.isPending;
-
-      if (isCompleted) {
+      if (details.status === 2) {
         const totalScore = details.questions.reduce((sum, q) => {
           const userSelected = initialAnswers[q.id] || [];
           return sum + calculateQuestionPoints(q, userSelected);
@@ -107,7 +106,7 @@ export default function QuizSolverPage({
       }
     } catch (err) {
       console.warn("[QuizSolverPage] Failed to load quiz attempt:", err);
-      setError(t("quizSolver.loadingQuiz"));
+      setError(t("common.genericError"));
       navigate("/quizzes");
     } finally {
       setLoading(false);
@@ -196,7 +195,7 @@ export default function QuizSolverPage({
       setFinished(true);
     } catch (err) {
       console.warn("[QuizSolverPage] Failed to complete quiz attempt:", err);
-      setError(t("quizSolver.loadingQuiz"));
+      setError(t("common.genericError"));
     }
   };
 
@@ -209,14 +208,7 @@ export default function QuizSolverPage({
   };
 
   if (loading || !attemptDetails) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="flex items-center gap-3 bg-card px-6 py-4 rounded-lg border border-border shadow-sm">
-          <RefreshCw size={18} className="animate-spin text-primary" />
-          <span className="text-[13px] font-medium text-muted-foreground">{t("quizSolver.loadingQuiz")}</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={t("quizSolver.loadingQuiz")} />;
   }
 
   const qCount = attemptDetails.questions.length;

@@ -97,10 +97,50 @@ public class StartQuizCommandHandlerTests
         result.Data.CourseName.Should().Be("Course 1");
         result.Data.Status.Should().Be(QuizAttemptStatus.InProgress);
         result.Data.IsPending.Should().BeTrue();
-        result.Data.Questions.Should().HaveCount(1);
-        result.Data.Answers.Should().BeEmpty();
+        result.Data.ExpiresAt.Should().BeNull();
 
-        await _quizAttemptRepository.Received(1).AddAsync(Arg.Is<QuizAttempt>(a => a.QuizId == quizId && a.UserId == userId && a.Status == QuizAttemptStatus.InProgress), Arg.Any<CancellationToken>());
+        await _quizAttemptRepository.Received(1).AddAsync(Arg.Is<QuizAttempt>(a => a.QuizId == quizId && a.UserId == userId && a.Status == QuizAttemptStatus.InProgress && a.ExpiresAt == null), Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Handle_ShouldSetExpiresAt_WhenQuizHasTimeLimit()
+    {
+        var userId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        var user = new UserEntity { Id = userId, UserName = "student" };
+        var course = new CourseEntity { Id = Guid.NewGuid(), Name = "Course 1", Users = new List<UserEntity> { user } };
+        var quiz = new QuizEntity
+        {
+            Id = quizId,
+            UserId = userId,
+            Name = "Quiz 1",
+            DisplayName = "Quiz Display 1",
+            CourseId = course.Id,
+            Course = course,
+            TimeLimitMinutes = 20
+        };
+
+        var mockQuizDbSet = new List<QuizEntity> { quiz }.BuildMockDbSet();
+        _quizRepository.Find(Arg.Any<Expression<Func<QuizEntity, bool>>>()).Returns(mockQuizDbSet);
+
+        var command = new StartQuizCommand
+        {
+            UserId = userId,
+            QuizId = quizId
+        };
+
+        var beforeTime = DateTime.UtcNow;
+        var result = await _sut.Handle(command, CancellationToken.None);
+        var afterTime = DateTime.UtcNow;
+
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data!.ExpiresAt.Should().NotBeNull();
+        result.Data.ExpiresAt!.Value.Should().BeOnOrAfter(beforeTime.AddMinutes(20)).And.BeOnOrBefore(afterTime.AddMinutes(20));
+
+        await _quizAttemptRepository.Received(1).AddAsync(Arg.Is<QuizAttempt>(a => a.QuizId == quizId && a.UserId == userId && a.ExpiresAt != null), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

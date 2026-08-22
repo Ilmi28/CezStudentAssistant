@@ -1,7 +1,8 @@
 {
     "common": {
         "loading": "Loading data...",
-        "errorConnection": "Failed to verify connection with the API.",
+        "genericError": "Something went wrong. Please try again later.",
+        "errorConnection": "Something went wrong. Please try again later.",
         "refreshSuccess": "Data refreshed successfully.",
         "syncSuccess": "Synchronization completed successfully!",
         "statusOnline": "CEZ system online",
@@ -141,6 +142,8 @@
         },
         "generateInstructions": "Additional instructions (optional)",
         "generateInstructionsPlaceholder": "E.g., Focus on theory from lecture 2, multiple-choice questions...",
+        "generateTimeLimit": "Time limit (in minutes, optional)",
+        "generateTimeLimitPlaceholder": "e.g. 15 (leave empty for no limit)",
         "generateBtn": "Generate Quiz",
         "generateBtnLoading": "Enqueuing...",
         "estimatedUsageTitle": "Estimated Usage",
@@ -153,10 +156,12 @@
     "quizDetails": {
         "backBtn": "Back",
         "tag": "Quiz",
+        "loading": "Loading quiz details...",
         "loadingDetails": "Loading quiz details...",
         "stats": {
             "questions": "Questions",
-            "estimatedTime": "Est. Time",
+            "timeLimit": "Time Limit",
+            "noLimit": "No limit",
             "totalPoints": "Max Points",
             "attempts": "Attempts",
             "bestScore": "Best Score",

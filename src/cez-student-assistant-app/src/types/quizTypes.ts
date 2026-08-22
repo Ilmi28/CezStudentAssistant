@@ -7,6 +7,7 @@ export interface QuizDto {
   courseId: string;
   courseName: string;
   status?: QuizStatusEnum;
+  timeLimitMinutes?: number | null;
 }
 
 export interface QuestionOptionDto {
@@ -47,6 +48,7 @@ export interface QuizDetailsDto {
   displayName: string;
   courseId: string;
   courseName: string;
+  timeLimitMinutes?: number | null;
   questions: QuestionDto[];
   attempts: QuizAttemptDto[];
 }

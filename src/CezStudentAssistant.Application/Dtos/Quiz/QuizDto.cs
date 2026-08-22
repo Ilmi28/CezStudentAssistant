@@ -11,4 +11,5 @@ public class QuizDto
     public Guid CourseId { get; set; }
     public required string CourseName { get; set; }
     public Domain.Enums.QuizStatusEnum Status { get; set; } = Domain.Enums.QuizStatusEnum.Ready;
+    public int? TimeLimitMinutes { get; set; }
 }

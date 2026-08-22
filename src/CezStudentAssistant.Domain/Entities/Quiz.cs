@@ -9,6 +9,7 @@ public class Quiz : BaseEntity
     public Guid UserId { get; set; }
     public Guid CourseId { get; set; }
     public QuizStatusEnum Status { get; set; }
+    public int? TimeLimitMinutes { get; set; }
 
     public User User { get; set; } = null!;
     public Course Course { get; set; } = null!;

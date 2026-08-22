@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, FileText, RefreshCw, ChevronDown, Download, Pencil, Trash2, Plus, Brain } from "lucide-react";
+import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Brain } from "lucide-react";
 import { courseService, quizService, type CourseDetailsDto, type QuizDto } from "../services";
 import EditCourseModal from "../components/EditCourseModal";
 import ConfirmModal from "../components/ConfirmModal";
 import UploadFileModal from "../components/UploadFileModal";
 import GenerateQuizModal from "../components/GenerateQuizModal";
 import QuizCard from "../components/QuizCard";
+import LoadingScreen from "../components/LoadingScreen";
 
 import { useQuiz } from "../hooks";
 
@@ -23,7 +24,7 @@ export default function CourseDetailsPage({
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { quizzes, refreshQuizzes } = useQuiz();
+  const { refreshQuizzes } = useQuiz();
 
   const [selectedCourse, setSelectedCourse] = useState<CourseDetailsDto | null>(null);
   const [courseQuizzes, setCourseQuizzes] = useState<QuizDto[]>([]);
@@ -42,12 +43,6 @@ export default function CourseDetailsPage({
     loadCourseDetailsAndQuizzes();
   }, [id]);
 
-  useEffect(() => {
-    if (id) {
-      setCourseQuizzes(quizzes.filter((q) => q.courseId === id));
-    }
-  }, [quizzes, id]);
-
   const loadCourseDetailsAndQuizzes = async () => {
     if (!id) return;
     setLoading(true);
@@ -63,7 +58,7 @@ export default function CourseDetailsPage({
       setCourseQuizzes(allQuizzes.filter((q) => q.courseId === id));
     } catch (err) {
       console.warn("[CourseDetailsPage] Failed to load details:", err);
-      setError(t("courseDetails.loadingDetails"));
+      setError(t("common.genericError"));
       navigate("/courses");
     } finally {
       setLoading(false);
@@ -101,9 +96,13 @@ export default function CourseDetailsPage({
     setSelectedCourse(details);
   };
 
-  const handleGenerateQuizSubmit = async (questionCount: number, additionalInstructions?: string) => {
+  const handleGenerateQuizSubmit = async (
+    questionCount: number,
+    timeLimitMinutes?: number,
+    additionalInstructions?: string
+  ) => {
     if (!id) return;
-    await courseService.generateQuiz(id, questionCount, additionalInstructions);
+    await courseService.generateQuiz(id, questionCount, timeLimitMinutes, additionalInstructions);
     setSuccess(t("courseDetails.generateBtn") + " ✓");
     await refreshQuizzes();
   };
@@ -114,7 +113,7 @@ export default function CourseDetailsPage({
       await courseService.downloadCourseFile(id, fileId, fileName);
     } catch (downloadErr) {
       console.warn("[CourseDetailsPage] File download failed:", downloadErr);
-      setError(t("auth.genericError"));
+      setError(t("common.genericError"));
     }
   };
 
@@ -127,7 +126,7 @@ export default function CourseDetailsPage({
       setSelectedCourse(details);
     } catch (deleteErr) {
       console.warn("[CourseDetailsPage] File deletion failed:", deleteErr);
-      setError(t("auth.genericError"));
+      setError(t("common.genericError"));
     } finally {
       setFileToDelete(null);
       setIsDeleteFileModalOpen(false);
@@ -135,14 +134,7 @@ export default function CourseDetailsPage({
   };
 
   if (loading || !selectedCourse) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="flex items-center gap-3 bg-card px-6 py-4 rounded-xl border border-border shadow-sm">
-          <RefreshCw size={18} className="animate-spin text-primary" />
-          <span className="text-xs font-medium text-muted-foreground">{t("courseDetails.loadingDetails")}</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={t("courseDetails.loadingDetails")} />;
   }
 
   return (

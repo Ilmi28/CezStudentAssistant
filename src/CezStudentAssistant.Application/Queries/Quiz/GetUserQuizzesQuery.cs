@@ -37,7 +37,8 @@ public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
                 DisplayName = q.DisplayName,
                 CourseId = q.CourseId,
                 CourseName = q.Course.Name,
-                Status = q.Status
+                Status = q.Status,
+                TimeLimitMinutes = q.TimeLimitMinutes
             })
             .ToListAsync(ct);
     }

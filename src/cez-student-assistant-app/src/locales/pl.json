@@ -1,7 +1,8 @@
 {
     "common": {
         "loading": "Ładowanie danych...",
-        "errorConnection": "Nie udało się zweryfikować połączenia z API.",
+        "genericError": "Coś poszło nie tak, spróbuj ponownie później.",
+        "errorConnection": "Coś poszło nie tak, spróbuj ponownie później.",
         "refreshSuccess": "Dane zaktualizowane pomyślnie.",
         "syncSuccess": "Synchronizacja zakończona pomyślnie!",
         "statusOnline": "CEZ system online",
@@ -139,8 +140,10 @@
             "10": "10 pytań (szczegółowy)",
             "15": "15 pytań (egzamin próbny)"
         },
-        "generateInstructions": "Additional instructions (optional)",
+        "generateInstructions": "Dodatkowe instrukcje (opcjonalnie)",
         "generateInstructionsPlaceholder": "Np. Skup się na teorii z wykładu 2, pytania wielokrotnego wyboru...",
+        "generateTimeLimit": "Limit czasowy (w minutach, opcjonalnie)",
+        "generateTimeLimitPlaceholder": "np. 15 (puste = brak limitu)",
         "generateBtn": "Wygeneruj Quiz",
         "generateBtnLoading": "Zlecanie...",
         "estimatedUsageTitle": "Szacowanie zużycia",
@@ -153,10 +156,12 @@
     "quizDetails": {
         "backBtn": "Powrót",
         "tag": "Quiz",
+        "loading": "Ładowanie szczegółów quizu...",
         "loadingDetails": "Ładowanie szczegółów quizu...",
         "stats": {
             "questions": "Liczba pytań",
-            "estimatedTime": "Szacowany czas",
+            "timeLimit": "Limit czasowy",
+            "noLimit": "Brak limitu",
             "totalPoints": "Maks. punktów",
             "attempts": "Podejścia",
             "bestScore": "Najlepszy wynik",

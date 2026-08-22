@@ -59,6 +59,7 @@ public class GenerateQuizCommandHandlerTests
             UserId = userId,
             CourseId = courseId,
             QuestionCount = 5,
+            TimeLimitMinutes = 15,
             AdditionalInstructions = "test"
         };
         
@@ -74,7 +75,7 @@ public class GenerateQuizCommandHandlerTests
         result.Should().BeOfType<SuccessResponse>();
         result.Success.Should().BeTrue();
 
-        await _quizRepo.Received(1).AddAsync(Arg.Is<CezStudentAssistant.Domain.Entities.Quiz>(q => q.CourseId == courseId && q.Status == QuizStatusEnum.Generating), Arg.Any<CancellationToken>());
+        await _quizRepo.Received(1).AddAsync(Arg.Is<CezStudentAssistant.Domain.Entities.Quiz>(q => q.CourseId == courseId && q.Status == QuizStatusEnum.Generating && q.TimeLimitMinutes == 15), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         _jobScheduler.Received(1).Enqueue<IQuizGenerationService>(Arg.Any<Expression<Action<IQuizGenerationService>>>());
         await _jobService.Received(1).CreateJobAsync(userId, JobType.QuizGeneration, Arg.Any<CancellationToken>());

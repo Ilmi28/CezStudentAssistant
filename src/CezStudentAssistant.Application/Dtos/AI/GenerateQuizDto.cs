@@ -9,6 +9,7 @@ public class GenerateQuizDto
     public Guid UserId { get; set; }
     public Guid CourseId { get; set; }
     public int QuestionCount { get; set; }
+    public int? TimeLimitMinutes { get; set; }
     public QuizLanguage Language { get; set; } = QuizLanguage.PL;
     public string? AdditionalInstructions { get; set; }
 }

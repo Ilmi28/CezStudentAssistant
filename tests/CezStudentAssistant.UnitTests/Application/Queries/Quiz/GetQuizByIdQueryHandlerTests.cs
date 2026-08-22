@@ -54,7 +54,7 @@ public class GetQuizByIdQueryHandlerTests
         var user = new UserEntity { Id = userId, UserName = "test" };
         var course = new CourseEntity { Id = Guid.NewGuid(), Name = "Course A", Users = new List<UserEntity> { user } };
         var quizId = Guid.NewGuid();
-        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "Math Quiz", DisplayName = "Math Quiz Display", CourseId = course.Id, Course = course };
+        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "Math Quiz", DisplayName = "Math Quiz Display", CourseId = course.Id, Course = course, TimeLimitMinutes = 15 };
         
         var question = new Question
         {
@@ -110,6 +110,7 @@ public class GetQuizByIdQueryHandlerTests
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
         result.Data!.Id.Should().Be(quizId);
+        result.Data.TimeLimitMinutes.Should().Be(15);
         result.Data.Questions.Should().HaveCount(1);
         result.Data.Attempts.Should().HaveCount(1);
         result.Data.Attempts[0].Id.Should().Be(attemptId);

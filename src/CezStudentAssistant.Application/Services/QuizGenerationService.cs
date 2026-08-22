@@ -136,7 +136,8 @@ public class QuizGenerationService(
                 Name = finalTitle,
                 DisplayName = finalTitle,
                 CourseId = dto.CourseId,
-                Status = QuizStatusEnum.Ready
+                Status = QuizStatusEnum.Ready,
+                TimeLimitMinutes = dto.TimeLimitMinutes
             };
             await quizRepo.AddAsync(quiz, ct);
             foreach (var question in MapQuestions(quiz, aiQuiz.Questions))

@@ -66,6 +66,7 @@ export const courseService = {
   async generateQuiz(
     courseId: string,
     questionCount: number,
+    timeLimitMinutes?: number | null,
     additionalInstructions?: string
   ): Promise<GenerateQuizResponseDto> {
     const res = await customFetch(
@@ -73,7 +74,7 @@ export const courseService = {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionCount, additionalInstructions }),
+        body: JSON.stringify({ questionCount, timeLimitMinutes, additionalInstructions }),
       },
       false,
       authService.refreshToken
