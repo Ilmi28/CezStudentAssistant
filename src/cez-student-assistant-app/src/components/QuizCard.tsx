@@ -2,14 +2,64 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 import type { QuizDto } from "../types";
-import { QuizStatusEnum } from "../enums/quizEnums";
+import { QuizStatusEnum, QuizAttemptStatus } from "../enums/quizEnums";
 import Card from "./Card";
+import { useCountdown, useQuiz } from "../hooks";
 
 interface QuizCardProps {
   quiz: QuizDto;
   index?: number;
   className?: string;
   showCourseName?: boolean;
+}
+
+function CardAttemptCountdownBadge({
+  expiresAt,
+  percentage,
+  onExpire,
+}: {
+  expiresAt: string;
+  percentage: number | null;
+  onExpire?: () => void;
+}) {
+  const { t } = useTranslation();
+  const { formatted, isExpired, isTimeLow } = useCountdown(expiresAt, onExpire);
+
+  if (isExpired) {
+    return (
+      <div className="flex flex-col items-end justify-center text-right">
+        <span
+          className={`text-base font-bold tabular-nums leading-tight ${
+            percentage !== null && percentage >= 50
+              ? "text-emerald-500 dark:text-emerald-400"
+              : "text-amber-500 dark:text-amber-400"
+          }`}
+        >
+          {percentage !== null ? `${percentage}%` : "0%"}
+        </span>
+        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+          {t("quizDetails.status.completed")}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-end justify-center text-right">
+      <span
+        className={`text-base font-bold tabular-nums leading-tight ${
+          isTimeLow
+            ? "text-rose-500 font-bold animate-pulse"
+            : "text-amber-500 dark:text-amber-400"
+        }`}
+      >
+        {formatted}
+      </span>
+      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+        {t("quizDetails.status.inProgress", "W toku")}
+      </span>
+    </div>
+  );
 }
 
 export default function QuizCard({
@@ -20,11 +70,20 @@ export default function QuizCard({
 }: QuizCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { refreshQuizzes } = useQuiz();
   const isGenerating = quiz.status === QuizStatusEnum.Generating;
 
   const rawTitle = quiz.displayName || quiz.name;
   const isGenericTitle = !rawTitle || rawTitle.startsWith("Quiz z") || rawTitle === quiz.courseName;
   const displayTitle = index !== undefined && isGenericTitle ? `Quiz #${index}` : (rawTitle || (index !== undefined ? `Quiz #${index}` : "Quiz"));
+
+  const isCompleted = quiz.lastAttemptStatus === QuizAttemptStatus.Completed;
+  const isInProgress = quiz.lastAttemptStatus === QuizAttemptStatus.InProgress;
+
+  const percentage =
+    quiz.maxPoints && quiz.maxPoints > 0 && quiz.lastAttemptPoints !== null && quiz.lastAttemptPoints !== undefined
+      ? Math.round((quiz.lastAttemptPoints / quiz.maxPoints) * 100)
+      : null;
 
   return (
     <Card
@@ -47,15 +106,57 @@ export default function QuizCard({
         )}
       </div>
 
-      {isGenerating && (
-        <div
-          title={t("quizzes.btnGenerating")}
-          aria-label={t("quizzes.btnGenerating")}
-          className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
-        >
-          <RefreshCw size={15} className="animate-spin" />
-        </div>
-      )}
+      <div className="flex flex-col items-end justify-center gap-0.5 shrink-0 text-right">
+        {isGenerating ? (
+          <div
+            title={t("quizzes.btnGenerating")}
+            aria-label={t("quizzes.btnGenerating")}
+            className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
+          >
+            <RefreshCw size={15} className="animate-spin" />
+          </div>
+        ) : (
+          <>
+            {/* If attempt is in progress */}
+            {isInProgress && (
+              quiz.lastAttemptExpiresAt ? (
+                <CardAttemptCountdownBadge
+                  expiresAt={quiz.lastAttemptExpiresAt}
+                  percentage={percentage}
+                  onExpire={() => refreshQuizzes().catch(() => {})}
+                />
+              ) : (
+                <>
+                  <span className="text-base font-bold text-amber-500 dark:text-amber-400 leading-tight">
+                    {t("quizDetails.status.inProgress", "W toku")}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                    {t("quizDetails.stats.noLimit", "Brak limitu")}
+                  </span>
+                </>
+              )
+            )}
+
+            {/* If last attempt is completed */}
+            {isCompleted && (
+              <>
+                <span
+                  className={`text-base font-bold tabular-nums leading-tight ${
+                    percentage !== null && percentage >= 50
+                      ? "text-emerald-500 dark:text-emerald-400"
+                      : "text-amber-500 dark:text-amber-400"
+                  }`}
+                >
+                  {percentage !== null ? `${percentage}%` : (quiz.lastAttemptPoints !== null && quiz.lastAttemptPoints !== undefined ? `${quiz.lastAttemptPoints} pkt` : "0%")}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                  {t("quizDetails.status.completed")}
+                </span>
+              </>
+            )}
+          </>
+        )}
+      </div>
     </Card>
   );
 }

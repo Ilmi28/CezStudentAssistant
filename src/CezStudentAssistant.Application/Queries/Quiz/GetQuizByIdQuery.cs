@@ -56,6 +56,7 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
             CourseId = quiz.CourseId,
             CourseName = quiz.Course.Name,
             TimeLimitMinutes = quiz.TimeLimitMinutes,
+            MaxPoints = quiz.Questions.Sum(qn => qn.Difficulty == QuestionDifficulty.Easy ? 1m : qn.Difficulty == QuestionDifficulty.Hard ? 3m : 2m),
             Questions = quiz.Questions.Select(q => new QuestionDto
             {
                 Id = q.Id,

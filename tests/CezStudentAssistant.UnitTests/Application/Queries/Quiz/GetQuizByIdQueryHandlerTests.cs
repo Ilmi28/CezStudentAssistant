@@ -111,6 +111,7 @@ public class GetQuizByIdQueryHandlerTests
         result.Data.Should().NotBeNull();
         result.Data!.Id.Should().Be(quizId);
         result.Data.TimeLimitMinutes.Should().Be(15);
+        result.Data.MaxPoints.Should().Be(1m);
         result.Data.Questions.Should().HaveCount(1);
         result.Data.Attempts.Should().HaveCount(1);
         result.Data.Attempts[0].Id.Should().Be(attemptId);

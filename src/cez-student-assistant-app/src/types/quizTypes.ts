@@ -8,6 +8,10 @@ export interface QuizDto {
   courseName: string;
   status?: QuizStatusEnum;
   timeLimitMinutes?: number | null;
+  maxPoints?: number | null;
+  lastAttemptStatus?: QuizAttemptStatus | null;
+  lastAttemptExpiresAt?: string | null;
+  lastAttemptPoints?: number | null;
 }
 
 export interface QuestionOptionDto {
@@ -49,6 +53,7 @@ export interface QuizDetailsDto {
   courseId: string;
   courseName: string;
   timeLimitMinutes?: number | null;
+  maxPoints?: number | null;
   questions: QuestionDto[];
   attempts: QuizAttemptDto[];
 }

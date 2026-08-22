@@ -31,6 +31,7 @@ This file defines the project coding standards, UI design tokens, component arch
 12. **Clean Provider Composition**: Root provider wrappers MUST compose domain providers using clean functional composition (e.g. `reduceRight`) or flat composition — NEVER construct deeply nested inline provider JSX hierarchies.
 13. **Modal Dialog Architecture & Styling Standards**: ALL modal dialogs MUST be extracted into standalone reusable components in `src/components/`, utilize design system tokens (`bg-card`, `border-border`, `bg-black/65` darkened backdrop overlay without backdrop blur, `shadow-2xl`), render inline form validation alerts via `<Alert>`, and consume shared `<PrimaryButton>` and `<SecondaryButton>` controls.
 14. **Modularized Domain Enum Architecture**: ALL frontend domain enums MUST be organized into dedicated, module-grouped files located in `src/enums/` (categorized by domain feature area) and exported through a central `index.ts` barrel file. NEVER define inline enums inside UI components, pages, context containers, or monolithic type files.
+15. **Input Fields & Form Labeling Standards**: Form inputs MUST NOT contain placeholder text. Form field labels and descriptions MUST be concise, simple, and as short as possible (e.g. `Nazwa`, `Limit czasu (min)`). NEVER add verbose parenthetical instructions, hints, or redundant placeholder examples to inputs.
 
 ---
 

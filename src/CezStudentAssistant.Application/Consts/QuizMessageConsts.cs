@@ -33,4 +33,8 @@ public static class QuizMessageConsts
 
     public const string CompleteQuizAttemptSuccess = "Quiz attempt completed successfully.";
     public const string CompleteQuizAttemptError = "An error occurred while completing the quiz attempt.";
+
+    public const string UpdateQuizSuccess = "Quiz updated successfully.";
+    public const string UpdateQuizError = "An error occurred while updating the quiz.";
+    public const string QuizAccessDenied = "You are not authorized to modify this quiz.";
 }

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { quizService, QuestionDifficulty, QuestionType, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
+import { CheckCircle, Check, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
+import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import ConfirmModal from "../components/ConfirmModal";
 import LoadingScreen from "../components/LoadingScreen";
+import { useCountdown, useQuiz } from "../hooks";
 
 interface QuizSolverPageProps {
   setError: (msg: string) => void;
@@ -18,6 +19,7 @@ export default function QuizSolverPage({
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { refreshQuizzes } = useQuiz();
 
   const [attemptDetails, setAttemptDetails] = useState<QuizAttemptDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,19 @@ export default function QuizSolverPage({
   const [finished, setFinished] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+
+  const {
+    formatted: timeLeftFormatted,
+    isExpired,
+    isTimeLow,
+  } = useCountdown(
+    attemptDetails?.expiresAt && !finished ? attemptDetails.expiresAt : null,
+    () => {
+      if (!finished && attemptDetails) {
+        handleConfirmSubmit();
+      }
+    }
+  );
 
   const getDifficultyPoints = (diff?: QuestionDifficulty) => {
     switch (diff) {
@@ -88,7 +103,7 @@ export default function QuizSolverPage({
       }
       setSelectedAnswers(initialAnswers);
 
-      if (details.status === 2) {
+      if (details.status === QuizAttemptStatus.Completed) {
         const totalScore = details.questions.reduce((sum, q) => {
           const userSelected = initialAnswers[q.id] || [];
           return sum + calculateQuestionPoints(q, userSelected);
@@ -183,6 +198,7 @@ export default function QuizSolverPage({
 
     try {
       await quizService.completeQuizAttempt(attemptDetails.attemptId);
+      refreshQuizzes().catch(() => {});
       const updatedDetails = await quizService.getQuizAttempt(attemptDetails.attemptId);
       setAttemptDetails(updatedDetails);
 
@@ -385,220 +401,244 @@ export default function QuizSolverPage({
   const currentQuestionSelected = selectedAnswers[question.id] || [];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
-      {/* Top Header */}
-      <div className="flex items-center gap-3.5 min-w-0">
-        <button
-          type="button"
-          onClick={handleCancel}
-          title={t("quizDetails.backBtn")}
-          aria-label={t("quizDetails.backBtn")}
-          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-        >
-          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-        </button>
-        <div className="flex flex-col justify-center min-w-0">
-          <h1 className="text-xl font-bold text-foreground truncate">
-            {attemptDetails.displayName}
-          </h1>
-        </div>
-      </div>
-
+    <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row gap-4 items-start">
-        {/* Main Content Area: Question Card or Review Screen */}
-        {isReviewMode ? (
-          <div className="flex-1 w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
-            <h3 className="text-base font-bold text-foreground">
-              {t("quizSolver.reviewTitle")}
-            </h3>
-
-            {/* Questions list with options and selected answer */}
-            <div className="space-y-4">
-              {attemptDetails.questions.map((q, idx) => {
-                const selectedOptionIds = selectedAnswers[q.id] || [];
-                const isMultiple = q.type === QuestionType.MultipleChoice;
-
-                return (
-                  <div
-                    key={q.id}
-                    className="p-4 rounded-xl bg-background/50 border border-border space-y-3"
-                  >
-                    <div className="space-y-1.5">
-                      <div>
-                        {getTypeBadge(q.type)}
-                      </div>
-                      <h4 className="text-[13px] font-semibold text-foreground leading-snug">
-                        {idx + 1}. {q.content}
-                      </h4>
-                    </div>
-
-                    <div className="space-y-1.5 pt-1">
-                      {q.options.map((opt) => {
-                        const isSelected = selectedOptionIds.includes(opt.id);
-                        return (
-                          <div
-                            key={opt.id}
-                            className={`p-2.5 rounded-lg text-xs border flex items-center gap-2.5 transition-colors ${
-                              isSelected
-                                ? "bg-primary/10 border-primary/40 text-foreground font-medium"
-                                : "border-border/60 text-muted-foreground bg-card/40"
-                            }`}
-                          >
-                            <div className={`w-3.5 h-3.5 ${isMultiple ? "rounded-xs" : "rounded-full"} border flex items-center justify-center shrink-0 ${
-                              isSelected ? "bg-primary border-primary text-white" : "border-border"
-                            }`}>
-                              {isSelected && <Check size={9} strokeWidth={3} />}
-                            </div>
-                            <span className="leading-relaxed">{opt.content}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Bottom Actions for Review Screen */}
-            <div className="pt-5 border-t border-border flex items-center justify-between gap-3">
-              <SecondaryButton
-                size="sm"
-                onClick={() => {
-                  setCurrentQuestionIndex(qCount - 1);
-                  setIsReviewMode(false);
-                }}
-                icon={<ChevronLeft size={15} />}
+        {/* Main Content Column */}
+        <div className="flex-1 w-full space-y-5">
+          {/* Top Header: Back btn + Title on left, Compact Timer aligned with right of question card */}
+          <div className="flex items-center justify-between gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <button
+                type="button"
+                onClick={handleCancel}
+                title={t("quizDetails.backBtn")}
+                aria-label={t("quizDetails.backBtn")}
+                className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
               >
-                {t("quizSolver.reviewBackToQuestions")}
-              </SecondaryButton>
-
-              <PrimaryButton
-                size="sm"
-                onClick={() => setShowSubmitModal(true)}
-                disabled={!isAllAnswered}
-                icon={<CheckCircle size={15} />}
-                className="px-6 font-semibold"
-              >
-                {t("quizSolver.submitAttemptBtn")}
-              </PrimaryButton>
-            </div>
-          </div>
-        ) : (
-          /* Main Question Card */
-          <div className="flex-1 w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-            <div className="bg-muted/60 px-6 py-3 border-b border-border flex justify-between items-center">
-              <span className="text-xs font-medium text-muted-foreground">
-                {t("quizSolver.questionProgress", { current: currentQuestionIndex + 1, total: qCount })}
-              </span>
-              <div className="flex items-center gap-2">
-                {getTypeBadge(question.type)}
-                {getDifficultyBadge(question.difficulty)}
+                <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
+              </button>
+              <div className="flex flex-col justify-center min-w-0">
+                <h1 className="text-xl font-bold text-foreground truncate">
+                  {attemptDetails.displayName}
+                </h1>
               </div>
             </div>
 
-            <div className="h-1 bg-muted">
+            {attemptDetails.expiresAt && !finished && (
               <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${((currentQuestionIndex + 1) / qCount) * 100}%` }}
-              />
-            </div>
+                className={`px-3 py-2 rounded-xl border inline-flex items-center gap-2 shadow-xs transition-all shrink-0 ${
+                  isExpired
+                    ? "bg-rose-500/15 border-rose-500/30 text-rose-500 font-bold"
+                    : isTimeLow
+                      ? "bg-rose-500/15 border-rose-500/30 text-rose-500 font-bold animate-pulse"
+                      : "bg-card border-border text-foreground font-semibold"
+                }`}
+              >
+                <Clock size={15} strokeWidth={2.25} className={isExpired || isTimeLow ? "text-rose-500" : "text-primary"} />
+                <span className="text-xs font-bold tabular-nums">
+                  {isExpired ? "00:00" : timeLeftFormatted}
+                </span>
+              </div>
+            )}
+          </div>
 
-            <div className="p-6 md:p-8 space-y-6">
-              <h3 className="text-base font-bold text-foreground leading-relaxed">
-                {question.content}
+          {/* Main Content Area: Question Card or Review Screen */}
+          {isReviewMode ? (
+            <div className="w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
+              <h3 className="text-base font-bold text-foreground">
+                {t("quizSolver.reviewTitle")}
               </h3>
 
-              {/* Options */}
-              <div className="space-y-2.5">
-                {question.options.map((opt) => {
-                  const isSelected = currentQuestionSelected.includes(opt.id);
-
-                  let optionStyle = "border-border hover:bg-muted/40 hover:border-primary/30 text-foreground";
-                  if (isSelected) {
-                    optionStyle = "bg-primary/10 border-primary text-foreground font-medium";
-                  }
+              {/* Questions list with options and selected answer */}
+              <div className="space-y-4">
+                {attemptDetails.questions.map((q, idx) => {
+                  const selectedOptionIds = selectedAnswers[q.id] || [];
+                  const isMultiple = q.type === QuestionType.MultipleChoice;
 
                   return (
-                    <button
-                      key={opt.id}
-                      onClick={() => handleToggleOption(question.id, opt.id, isMultiple)}
-                      className={`w-full p-4 rounded-xl text-left text-[13px] border transition-all flex items-start gap-3.5 cursor-pointer ${optionStyle}`}
+                    <div
+                      key={q.id}
+                      className="p-4 rounded-xl bg-background/50 border border-border space-y-3"
                     >
-                      <div className="mt-0.5 flex-shrink-0">
-                        <div className={`w-4.5 h-4.5 ${isMultiple ? "rounded-md" : "rounded-full"} border flex items-center justify-center transition-colors ${
-                          isSelected 
-                            ? "bg-primary border-primary text-white" 
-                            : "border-border bg-card"
-                        }`}>
-                          {isSelected && <Check size={11} strokeWidth={3} />}
+                      <div className="space-y-1.5">
+                        <div>
+                          {getTypeBadge(q.type)}
                         </div>
+                        <h4 className="text-[13px] font-semibold text-foreground leading-snug">
+                          {idx + 1}. {q.content}
+                        </h4>
                       </div>
-                      <span className="flex-1 leading-relaxed">{opt.content}</span>
-                    </button>
+
+                      <div className="space-y-1.5 pt-1">
+                        {q.options.map((opt) => {
+                          const isSelected = selectedOptionIds.includes(opt.id);
+                          return (
+                            <div
+                              key={opt.id}
+                              className={`p-2.5 rounded-lg text-xs border flex items-center gap-2.5 transition-colors ${
+                                isSelected
+                                  ? "bg-primary/10 border-primary/40 text-foreground font-medium"
+                                  : "border-border/60 text-muted-foreground bg-card/40"
+                              }`}
+                            >
+                              <div className={`w-3.5 h-3.5 ${isMultiple ? "rounded-xs" : "rounded-full"} border flex items-center justify-center shrink-0 ${
+                                isSelected ? "bg-primary border-primary text-white" : "border-border"
+                              }`}>
+                                {isSelected && <Check size={9} strokeWidth={3} />}
+                              </div>
+                              <span className="leading-relaxed">{opt.content}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
 
-              {/* Bottom Navigation */}
+              {/* Bottom Actions for Review Screen */}
               <div className="pt-5 border-t border-border flex items-center justify-between gap-3">
                 <SecondaryButton
                   size="sm"
-                  onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
-                  disabled={currentQuestionIndex === 0}
+                  onClick={() => {
+                    setCurrentQuestionIndex(qCount - 1);
+                    setIsReviewMode(false);
+                  }}
                   icon={<ChevronLeft size={15} />}
                 >
-                  {t("quizSolver.prevBtn")}
+                  {t("quizSolver.reviewBackToQuestions")}
                 </SecondaryButton>
 
-                {currentQuestionIndex < qCount - 1 ? (
-                  <SecondaryButton
-                    size="sm"
-                    onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                    icon={<ChevronRight size={15} />}
-                  >
-                    {t("quizSolver.nextBtn")}
-                  </SecondaryButton>
-                ) : (
-                  <PrimaryButton
-                    size="sm"
-                    onClick={() => setIsReviewMode(true)}
-                    icon={<ChevronRight size={15} />}
-                    className="px-5 font-semibold"
-                  >
-                    {t("quizSolver.goToReviewBtn")}
-                  </PrimaryButton>
-                )}
+                <PrimaryButton
+                  size="sm"
+                  onClick={() => setShowSubmitModal(true)}
+                  disabled={!isAllAnswered}
+                  icon={<CheckCircle size={15} />}
+                  className="px-6 font-semibold"
+                >
+                  {t("quizSolver.submitAttemptBtn")}
+                </PrimaryButton>
               </div>
             </div>
+          ) : (
+            /* Main Question Card */
+            <div className="w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+              <div className="bg-muted/60 px-6 py-3 border-b border-border flex justify-between items-center">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t("quizSolver.questionProgress", { current: currentQuestionIndex + 1, total: qCount })}
+                </span>
+                <div className="flex items-center gap-2">
+                  {getTypeBadge(question.type)}
+                  {getDifficultyBadge(question.difficulty)}
+                </div>
+              </div>
+
+              <div className="h-1 bg-muted">
+                <div
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{ width: `${((currentQuestionIndex + 1) / qCount) * 100}%` }}
+                />
+              </div>
+
+              <div className="p-6 md:p-8 space-y-6">
+                <h3 className="text-base font-bold text-foreground leading-relaxed">
+                  {question.content}
+                </h3>
+
+                {/* Options */}
+                <div className="space-y-2.5">
+                  {question.options.map((opt) => {
+                    const isSelected = currentQuestionSelected.includes(opt.id);
+
+                    let optionStyle = "border-border hover:bg-muted/40 hover:border-primary/30 text-foreground";
+                    if (isSelected) {
+                      optionStyle = "bg-primary/10 border-primary text-foreground font-medium";
+                    }
+
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleToggleOption(question.id, opt.id, isMultiple)}
+                        className={`w-full p-4 rounded-xl text-left text-[13px] border transition-all flex items-start gap-3.5 cursor-pointer ${optionStyle}`}
+                      >
+                        <div className="mt-0.5 flex-shrink-0">
+                          <div className={`w-4.5 h-4.5 ${isMultiple ? "rounded-md" : "rounded-full"} border flex items-center justify-center transition-colors ${
+                            isSelected 
+                              ? "bg-primary border-primary text-white" 
+                              : "border-border bg-card"
+                          }`}>
+                            {isSelected && <Check size={11} strokeWidth={3} />}
+                          </div>
+                        </div>
+                        <span className="flex-1 leading-relaxed">{opt.content}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Bottom Navigation */}
+                <div className="pt-5 border-t border-border flex items-center justify-between gap-3">
+                  <SecondaryButton
+                    size="sm"
+                    onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+                    disabled={currentQuestionIndex === 0}
+                    icon={<ChevronLeft size={15} />}
+                  >
+                    {t("quizSolver.prevBtn")}
+                  </SecondaryButton>
+
+                  {currentQuestionIndex < qCount - 1 ? (
+                    <SecondaryButton
+                      size="sm"
+                      onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+                      icon={<ChevronRight size={15} />}
+                    >
+                      {t("quizSolver.nextBtn")}
+                    </SecondaryButton>
+                  ) : (
+                    <PrimaryButton
+                      size="sm"
+                      onClick={() => setIsReviewMode(true)}
+                      icon={<ChevronRight size={15} />}
+                      className="px-5 font-semibold"
+                    >
+                      {t("quizSolver.goToReviewBtn")}
+                    </PrimaryButton>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Sidebar: Question Selector Tiles (aligned with top of question card) */}
+        <div className="shrink-0 sticky top-6 self-start pt-0 md:pt-[60px]">
+          <div className="grid grid-cols-5 gap-2">
+            {attemptDetails.questions.map((q, idx) => {
+              const isCurrent = !isReviewMode && idx === currentQuestionIndex;
+              const isAnswered = (selectedAnswers[q.id]?.length || 0) > 0;
+
+              let pillStyle = "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-foreground";
+              if (isCurrent) {
+                pillStyle = "bg-primary text-white border-primary shadow-xs ring-2 ring-primary/30 font-bold";
+              } else if (isAnswered) {
+                pillStyle = "bg-primary/15 text-primary border-primary/40 font-semibold hover:bg-primary/25";
+              }
+
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => {
+                    setCurrentQuestionIndex(idx);
+                    setIsReviewMode(false);
+                  }}
+                  className={`w-9 h-9 rounded-lg border text-xs flex items-center justify-center transition-all cursor-pointer select-none ${pillStyle}`}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
           </div>
-        )}
-
-        {/* Question Selector Tiles on the right - 5 per row without card wrapper (sticky on scroll) */}
-        <div className="grid grid-cols-5 gap-2 shrink-0 sticky top-6 self-start">
-          {attemptDetails.questions.map((q, idx) => {
-            const isCurrent = !isReviewMode && idx === currentQuestionIndex;
-            const isAnswered = (selectedAnswers[q.id]?.length || 0) > 0;
-
-            let pillStyle = "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-foreground";
-            if (isCurrent) {
-              pillStyle = "bg-primary text-white border-primary shadow-xs ring-2 ring-primary/30 font-bold";
-            } else if (isAnswered) {
-              pillStyle = "bg-primary/15 text-primary border-primary/40 font-semibold hover:bg-primary/25";
-            }
-
-            return (
-              <button
-                key={q.id}
-                onClick={() => {
-                  setCurrentQuestionIndex(idx);
-                  setIsReviewMode(false);
-                }}
-                className={`w-9 h-9 rounded-lg border text-xs flex items-center justify-center transition-all cursor-pointer select-none ${pillStyle}`}
-              >
-                {idx + 1}
-              </button>
-            );
-          })}
         </div>
       </div>
 

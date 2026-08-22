@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Brain } from "lucide-react";
 import type { QuizDto } from "../services";
 import Card from "../components/Card";
 import QuizCard from "../components/QuizCard";
+import { useQuiz } from "../hooks";
 
 interface QuizzesPageProps {
   quizzes: QuizDto[];
@@ -10,6 +12,11 @@ interface QuizzesPageProps {
 
 export default function QuizzesPage({ quizzes }: QuizzesPageProps) {
   const { t } = useTranslation();
+  const { refreshQuizzes } = useQuiz();
+
+  useEffect(() => {
+    refreshQuizzes();
+  }, []);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">

@@ -13,6 +13,7 @@ public class QuizDetailsDto
     public Guid CourseId { get; set; }
     public required string CourseName { get; set; }
     public int? TimeLimitMinutes { get; set; }
+    public decimal? MaxPoints { get; set; }
     public List<QuestionDto> Questions { get; set; } = new();
     public List<QuizAttemptDto> Attempts { get; set; } = new();
 }

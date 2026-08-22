@@ -38,7 +38,11 @@ public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
                 CourseId = q.CourseId,
                 CourseName = q.Course.Name,
                 Status = q.Status,
-                TimeLimitMinutes = q.TimeLimitMinutes
+                TimeLimitMinutes = q.TimeLimitMinutes,
+                MaxPoints = q.Questions.Sum(qn => qn.Difficulty == CezStudentAssistant.Domain.Enums.QuestionDifficulty.Easy ? 1m : qn.Difficulty == CezStudentAssistant.Domain.Enums.QuestionDifficulty.Hard ? 3m : 2m),
+                LastAttemptStatus = q.Attempts.Where(a => a.UserId == query.UserId).OrderByDescending(a => a.StartedAt).Select(a => (CezStudentAssistant.Domain.Enums.QuizAttemptStatus?)a.Status).FirstOrDefault(),
+                LastAttemptExpiresAt = q.Attempts.Where(a => a.UserId == query.UserId).OrderByDescending(a => a.StartedAt).Select(a => a.ExpiresAt).FirstOrDefault(),
+                LastAttemptPoints = q.Attempts.Where(a => a.UserId == query.UserId).OrderByDescending(a => a.StartedAt).Select(a => a.Points).FirstOrDefault()
             })
             .ToListAsync(ct);
     }

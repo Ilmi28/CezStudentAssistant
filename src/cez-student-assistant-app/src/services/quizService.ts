@@ -75,5 +75,23 @@ export const quizService = {
     );
     return handleResponse<void>(res);
   },
+
+  async updateQuiz(
+    quizId: string,
+    displayName: string,
+    timeLimitMinutes?: number | null
+  ): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/quiz/${quizId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ displayName, timeLimitMinutes }),
+      },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<void>(res);
+  },
 };
 

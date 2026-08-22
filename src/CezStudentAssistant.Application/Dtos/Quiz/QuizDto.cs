@@ -1,4 +1,5 @@
 using System;
+using CezStudentAssistant.Domain.Enums;
 
 namespace CezStudentAssistant.Application.Dtos.Quiz;
 
@@ -10,6 +11,10 @@ public class QuizDto
     public required string DisplayName { get; set; }
     public Guid CourseId { get; set; }
     public required string CourseName { get; set; }
-    public Domain.Enums.QuizStatusEnum Status { get; set; } = Domain.Enums.QuizStatusEnum.Ready;
+    public QuizStatusEnum Status { get; set; } = QuizStatusEnum.Ready;
     public int? TimeLimitMinutes { get; set; }
+    public decimal? MaxPoints { get; set; }
+    public QuizAttemptStatus? LastAttemptStatus { get; set; }
+    public DateTime? LastAttemptExpiresAt { get; set; }
+    public decimal? LastAttemptPoints { get; set; }
 }

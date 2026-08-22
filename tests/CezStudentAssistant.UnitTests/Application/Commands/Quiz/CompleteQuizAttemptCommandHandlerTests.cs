@@ -169,15 +169,23 @@ public class CompleteQuizAttemptCommandHandlerTests
     }
 
     [Test]
-    public async Task Handle_ShouldThrowBadRequestException_WhenAttemptIsExpired()
+    public async Task Handle_ShouldCompleteAttempt_WhenAttemptIsExpired()
     {
         var userId = Guid.NewGuid();
         var attemptId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        var user = new UserEntity { Id = userId, UserName = "student" };
+        var course = new CourseEntity { Id = Guid.NewGuid(), Name = "DB", Users = new List<UserEntity> { user } };
+        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "DB Quiz", DisplayName = "DB Quiz", Course = course };
 
         var attempt = new QuizAttempt
         {
             Id = attemptId,
             UserId = userId,
+            QuizId = quizId,
+            Quiz = quiz,
+            Course = course,
+            User = user,
             Status = QuizAttemptStatus.InProgress,
             StartedAt = DateTime.UtcNow.AddMinutes(-60),
             ExpiresAt = DateTime.UtcNow.AddMinutes(-10)
@@ -192,9 +200,11 @@ public class CompleteQuizAttemptCommandHandlerTests
             QuizAttemptId = attemptId
         };
 
-        Func<Task> act = async () => await _sut.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<BadRequestException>()
-            .WithMessage(QuizMessageConsts.QuizAttemptExpired);
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        attempt.Status.Should().Be(QuizAttemptStatus.Completed);
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

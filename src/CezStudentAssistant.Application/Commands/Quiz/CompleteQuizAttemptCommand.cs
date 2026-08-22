@@ -43,9 +43,6 @@ public class CompleteQuizAttemptCommandHandler(IUnitOfWork unitOfWork) : BaseCom
         if (quizAttempt.Status != QuizAttemptStatus.InProgress)
             throw new BadRequestException(QuizMessageConsts.QuizAttemptNotInProgress);
 
-        if (quizAttempt.ExpiresAt.HasValue && quizAttempt.ExpiresAt.Value < DateTime.UtcNow)
-            throw new BadRequestException(QuizMessageConsts.QuizAttemptExpired);
-
         quizAttempt.Points = QuizPointsCalculationHelper.CalculatePoints(quizAttempt);
         quizAttempt.Status = QuizAttemptStatus.Completed;
 

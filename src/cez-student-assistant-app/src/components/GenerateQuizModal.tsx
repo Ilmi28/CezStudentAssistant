@@ -192,13 +192,12 @@ export default function GenerateQuizModal({
             min={1}
             max={300}
             value={timeLimitMinutes}
-            placeholder={t("courseDetails.generateTimeLimitPlaceholder")}
             onChange={(e) => {
               const val = e.target.value === "" ? "" : parseInt(e.target.value, 10);
               setTimeLimitMinutes(val === "" || isNaN(val) ? "" : Math.max(1, val));
               if (modalError) setModalError(null);
             }}
-            className="w-full h-10 px-3.5 rounded-xl bg-card border border-border text-foreground text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-full h-10 px-3.5 rounded-xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
 
@@ -210,7 +209,7 @@ export default function GenerateQuizModal({
             value={additionalInstructions}
             onChange={(e) => setAdditionalInstructions(e.target.value)}
             rows={3}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors resize-none"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors resize-none"
           />
         </div>
 

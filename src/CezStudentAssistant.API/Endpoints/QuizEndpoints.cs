@@ -54,5 +54,12 @@ public static class QuizEndpoints
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
+
+        group.MapPut("/{id:guid}", async (Guid id, UpdateQuizCommand command, IMediator mediator) =>
+        {
+            command.QuizId = id;
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
     }
 }
