@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Play, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import type { QuizDto } from "../types";
 import { QuizStatusEnum } from "../enums/quizEnums";
 import Card from "./Card";
@@ -47,29 +47,14 @@ export default function QuizCard({
         )}
       </div>
 
-      {isGenerating ? (
-        <button
-          type="button"
-          disabled
+      {isGenerating && (
+        <div
           title={t("quizzes.btnGenerating")}
           aria-label={t("quizzes.btnGenerating")}
-          className="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 cursor-not-allowed border border-primary/30"
+          className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
         >
-          <RefreshCw size={18} className="animate-spin" />
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/quiz/${quiz.id}`);
-          }}
-          title={t("home.startQuiz")}
-          aria-label={t("home.startQuiz")}
-          className="w-9 h-9 rounded-full bg-primary hover:bg-primary/90 active:scale-95 text-white flex items-center justify-center shrink-0 shadow-sm hover:shadow-md transition-all cursor-pointer"
-        >
-          <Play size={20} strokeWidth={2.25} className="ml-0.5" />
-        </button>
+          <RefreshCw size={15} className="animate-spin" />
+        </div>
       )}
     </Card>
   );

@@ -43,6 +43,7 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
         var attempts = await quizAttemptRepo.Find(a => a.QuizId == query.QuizId && a.UserId == query.UserId)
             .Include(a => a.Answers)
                 .ThenInclude(ans => ans.SelectedOptions)
+            .OrderBy(a => a.StartedAt)
             .ToListAsync(ct);
 
         return new QuizDetailsDto

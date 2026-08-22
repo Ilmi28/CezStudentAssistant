@@ -98,8 +98,8 @@ public class SubmitQuizAnswerCommandHandlerTests
         _questionRepository.GetByIdAsync(questionId, Arg.Any<CancellationToken>(), false, Arg.Any<Expression<Func<Question, object>>[]>())
             .Returns(question);
 
-        _questionAnswerRepository.ExistsAsync(Arg.Any<Expression<Func<QuestionAnswer, bool>>>(), Arg.Any<CancellationToken>())
-            .Returns(false);
+        _questionAnswerRepository.GetSingleAsync(Arg.Any<Expression<Func<QuestionAnswer, bool>>>(), Arg.Any<CancellationToken>(), false, Arg.Any<Expression<Func<QuestionAnswer, object>>[]>())
+            .Returns((QuestionAnswer?)null);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -307,21 +307,27 @@ public class SubmitQuizAnswerCommandHandlerTests
     }
 
     [Test]
-    public async Task Handle_ShouldThrowBadRequestException_WhenQuestionAlreadyAnswered()
+    public async Task Handle_ShouldUpdateAnswerAndOptions_WhenAnswerAlreadyExists()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var quizId = Guid.NewGuid();
+        var quizAttemptId = Guid.NewGuid();
+        var questionId = Guid.NewGuid();
+        var oldOptionId = Guid.NewGuid();
+        var newOptionId = Guid.NewGuid();
+
         var command = new SubmitQuizAnswerCommand
         {
             UserId = userId,
-            QuizAttemptId = Guid.NewGuid(),
-            QuestionId = Guid.NewGuid()
+            QuizAttemptId = quizAttemptId,
+            QuestionId = questionId,
+            QuestionOptionIds = new List<Guid> { newOptionId }
         };
 
         var quizAttempt = new QuizAttempt
         {
-            Id = command.QuizAttemptId,
+            Id = quizAttemptId,
             UserId = userId,
             QuizId = quizId,
             Status = QuizAttemptStatus.InProgress
@@ -329,9 +335,29 @@ public class SubmitQuizAnswerCommandHandlerTests
 
         var question = new Question
         {
-            Id = command.QuestionId,
+            Id = questionId,
             QuizId = quizId,
-            Content = "Test"
+            Content = "Test",
+            Type = QuestionType.SingleChoice,
+            Options = new List<QuestionOption>
+            {
+                new QuestionOption { Id = oldOptionId, Content = "Old" },
+                new QuestionOption { Id = newOptionId, Content = "New" }
+            }
+        };
+
+        var oldSelectedOption = new SelectedQuizOption
+        {
+            Id = Guid.NewGuid(),
+            QuestionOptionId = oldOptionId
+        };
+
+        var existingAnswer = new QuestionAnswer
+        {
+            Id = Guid.NewGuid(),
+            QuizAttemptId = quizAttemptId,
+            QuestionId = questionId,
+            SelectedOptions = new List<SelectedQuizOption> { oldSelectedOption }
         };
 
         _quizAttemptRepository.GetByIdAsync(command.QuizAttemptId, Arg.Any<CancellationToken>())
@@ -340,15 +366,21 @@ public class SubmitQuizAnswerCommandHandlerTests
         _questionRepository.GetByIdAsync(command.QuestionId, Arg.Any<CancellationToken>(), false, Arg.Any<Expression<Func<Question, object>>[]>())
             .Returns(question);
 
-        _questionAnswerRepository.ExistsAsync(Arg.Any<Expression<Func<QuestionAnswer, bool>>>(), Arg.Any<CancellationToken>())
-            .Returns(true); // already answered
+        _questionAnswerRepository.GetSingleAsync(Arg.Any<Expression<Func<QuestionAnswer, bool>>>(), Arg.Any<CancellationToken>(), false, Arg.Any<Expression<Func<QuestionAnswer, object>>[]>())
+            .Returns(existingAnswer);
 
         // Act
-        Func<Task> act = () => _sut.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>()
-            .WithMessage($"*{QuizMessageConsts.QuestionAlreadyAnswered}*");
+        result.Should().BeOfType<SuccessResponse>();
+        result.Success.Should().BeTrue();
+        result.Message.Should().Be(QuizMessageConsts.AnswerSubmittedSuccess);
+
+        await _selectedQuizOptionRepository.Received(1).DeleteAsync(oldSelectedOption, Arg.Any<CancellationToken>());
+        await _selectedQuizOptionRepository.Received(1).AddRangeAsync(Arg.Is<IEnumerable<SelectedQuizOption>>(opts =>
+            opts.Count() == 1 && opts.First().QuestionOptionId == newOptionId), Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Test]

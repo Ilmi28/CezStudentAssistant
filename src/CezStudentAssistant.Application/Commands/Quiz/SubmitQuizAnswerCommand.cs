@@ -36,24 +36,49 @@ public class SubmitQuizAnswerCommandHandler(IUnitOfWork unitOfWork) : BaseComman
         var question = await questionRepo.GetByIdAsync(command.QuestionId, ct, false, x => x.Options)
             ?? throw new NotFoundException(QuizMessageConsts.QuestionNotFound);
 
-        await ValidateQuestionAndOptionsAsync(command, quizAttempt, question, questionAnswerRepo, ct);
+        await ValidateQuestionAndOptionsAsync(command, quizAttempt, question);
 
         var distinctOptionIds = command.QuestionOptionIds.Distinct().ToList();
 
-        var questionAnswer = new QuestionAnswer
-        {
-            QuizAttemptId = command.QuizAttemptId,
-            QuestionId = command.QuestionId
-        };
-        await questionAnswerRepo.AddAsync(questionAnswer, ct);
+        var existingAnswer = await questionAnswerRepo.GetSingleAsync(
+            x => x.QuizAttemptId == command.QuizAttemptId && x.QuestionId == command.QuestionId,
+            ct,
+            false,
+            x => x.SelectedOptions);
 
-        var selectedQuizOptions = distinctOptionIds.Select(optionId => new SelectedQuizOption
+        if (existingAnswer != null)
         {
-            QuestionOptionId = optionId,
-            QuestionAnswerId = questionAnswer.Id
-        }).ToList();
+            foreach (var selectedOpt in existingAnswer.SelectedOptions.ToList())
+            {
+                await selectedQuizOptionRepo.DeleteAsync(selectedOpt, ct);
+            }
 
-        await selectedQuizOptionRepo.AddRangeAsync(selectedQuizOptions, ct);
+            var selectedQuizOptions = distinctOptionIds.Select(optionId => new SelectedQuizOption
+            {
+                QuestionOptionId = optionId,
+                QuestionAnswerId = existingAnswer.Id
+            }).ToList();
+
+            await selectedQuizOptionRepo.AddRangeAsync(selectedQuizOptions, ct);
+        }
+        else
+        {
+            var questionAnswer = new QuestionAnswer
+            {
+                QuizAttemptId = command.QuizAttemptId,
+                QuestionId = command.QuestionId
+            };
+            await questionAnswerRepo.AddAsync(questionAnswer, ct);
+
+            var selectedQuizOptions = distinctOptionIds.Select(optionId => new SelectedQuizOption
+            {
+                QuestionOptionId = optionId,
+                QuestionAnswerId = questionAnswer.Id
+            }).ToList();
+
+            await selectedQuizOptionRepo.AddRangeAsync(selectedQuizOptions, ct);
+        }
+
         await unitOfWork.SaveChangesAsync(ct);
     }
 
@@ -69,19 +94,13 @@ public class SubmitQuizAnswerCommandHandler(IUnitOfWork unitOfWork) : BaseComman
             throw new BadRequestException(QuizMessageConsts.QuizAttemptExpired);
     }
 
-    private async Task ValidateQuestionAndOptionsAsync(
+    private Task ValidateQuestionAndOptionsAsync(
         SubmitQuizAnswerCommand command,
         QuizAttempt quizAttempt,
-        Question question,
-        IQuestionAnswerRepository questionAnswerRepo,
-        CancellationToken ct)
+        Question question)
     {
         if (question.QuizId != quizAttempt.QuizId)
             throw new BadRequestException(QuizMessageConsts.QuestionNotBelongToQuiz);
-
-        var alreadyAnswered = await questionAnswerRepo.ExistsAsync(x => x.QuizAttemptId == command.QuizAttemptId && x.QuestionId == command.QuestionId, ct);
-        if (alreadyAnswered)
-            throw new BadRequestException(QuizMessageConsts.QuestionAlreadyAnswered);
 
         var distinctOptionIds = command.QuestionOptionIds.Distinct().ToList();
         if (question.Type == QuestionType.SingleChoice && distinctOptionIds.Count > 1)
@@ -93,5 +112,7 @@ public class SubmitQuizAnswerCommandHandler(IUnitOfWork unitOfWork) : BaseComman
             if (!questionOptions.Any(x => x.Id == optionId))
                 throw new BadRequestException(QuizMessageConsts.QuestionOptionNotFound);
         }
+
+        return Task.CompletedTask;
     }
 }

@@ -338,7 +338,7 @@ public class SubmitQuizAnswerEndpointsTests
     }
 
     [Test]
-    public async Task SubmitAnswer_ShouldReturnBadRequest_WhenQuestionAlreadyAnswered()
+    public async Task SubmitAnswer_ShouldUpdateAnswer_WhenQuestionAlreadyAnswered()
     {
         // Arrange
         var username = "quizuser_answered";
@@ -348,7 +348,8 @@ public class SubmitQuizAnswerEndpointsTests
         var courseId = Guid.NewGuid();
         var quizId = Guid.NewGuid();
         var questionId = Guid.NewGuid();
-        var optionId = Guid.NewGuid();
+        var oldOptionId = Guid.NewGuid();
+        var newOptionId = Guid.NewGuid();
         var quizAttemptId = Guid.NewGuid();
 
         using (var scope = _factory.Services.CreateScope())
@@ -361,8 +362,10 @@ public class SubmitQuizAnswerEndpointsTests
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz Answered", DisplayName = "Quiz Answered", Course = course };
             var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Answered", Type = QuestionType.SingleChoice, Points = 5m };
-            var option = new QuestionOption { Id = optionId, Question = question, Content = "Opt 1", IsCorrect = true };
-            question.Options.Add(option);
+            var oldOption = new QuestionOption { Id = oldOptionId, Question = question, Content = "Old Opt", IsCorrect = false };
+            var newOption = new QuestionOption { Id = newOptionId, Question = question, Content = "New Opt", IsCorrect = true };
+            question.Options.Add(oldOption);
+            question.Options.Add(newOption);
 
             var attempt = new QuizAttempt
             {
@@ -377,13 +380,17 @@ public class SubmitQuizAnswerEndpointsTests
             var existingAnswer = new QuestionAnswer
             {
                 QuizAttempt = attempt,
-                Question = question
+                Question = question,
+                SelectedOptions = new List<SelectedQuizOption>
+                {
+                    new SelectedQuizOption { QuestionOption = oldOption }
+                }
             };
 
             db.Courses.Add(course);
             db.Quizzes.Add(quiz);
             db.Questions.Add(question);
-            db.QuestionOptions.Add(option);
+            db.QuestionOptions.AddRange(oldOption, newOption);
             db.QuizAttempts.Add(attempt);
             db.QuestionAnswers.Add(existingAnswer);
             await db.SaveChangesAsync();
@@ -393,14 +400,26 @@ public class SubmitQuizAnswerEndpointsTests
         {
             QuizAttemptId = quizAttemptId,
             QuestionId = questionId,
-            QuestionOptionIds = new List<Guid> { optionId }
+            QuestionOptionIds = new List<Guid> { newOptionId }
         };
 
         // Act
         var response = await _client.PostAsJsonAsync("/quiz/answer", command);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var answer = await db.QuestionAnswers
+                .Include(qa => qa.SelectedOptions)
+                .FirstOrDefaultAsync(qa => qa.QuizAttemptId == quizAttemptId && qa.QuestionId == questionId);
+
+            answer.Should().NotBeNull();
+            answer.SelectedOptions.Should().HaveCount(1);
+            answer.SelectedOptions.First().QuestionOptionId.Should().Be(newOptionId);
+        }
     }
 
     [Test]

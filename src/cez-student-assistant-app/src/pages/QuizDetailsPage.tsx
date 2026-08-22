@@ -9,7 +9,6 @@ import {
   Target,
   HelpCircle,
   Clock,
-  ArrowRight,
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
@@ -90,7 +89,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
 
   const totalPointsMax = quiz.questions.reduce((sum, q) => sum + Number(q.points), 0);
   const completedAttempts = quiz.attempts.filter(a => a.status === QuizAttemptStatus.Completed);
-  const inProgressAttempt = quiz.attempts.find(a => a.status === QuizAttemptStatus.InProgress);
 
   const bestScore = completedAttempts.length > 0
     ? Math.max(...completedAttempts.map(a => Number(a.points ?? 0)))
@@ -129,24 +127,14 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
-          {inProgressAttempt ? (
-            <PrimaryButton
-              onClick={() => handleContinueAttempt(inProgressAttempt.id)}
-              icon={<Play size={16} strokeWidth={2.25} />}
-              className="py-2.5 px-4 text-xs font-semibold"
-            >
-              {t("quizDetails.continueAttempt")}
-            </PrimaryButton>
-          ) : (
-            <PrimaryButton
-              loading={starting}
-              onClick={handleStartNewAttempt}
-              icon={<Play size={16} strokeWidth={2.25} />}
-              className="py-2.5 px-4 text-xs font-semibold"
-            >
-              {t("quizDetails.startNewAttempt")}
-            </PrimaryButton>
-          )}
+          <PrimaryButton
+            loading={starting}
+            onClick={handleStartNewAttempt}
+            icon={<Play size={16} strokeWidth={2.25} />}
+            className="py-2.5 px-4 text-xs font-semibold"
+          >
+            {t("quizDetails.startNewAttempt")}
+          </PrimaryButton>
         </div>
       </div>
 
@@ -221,16 +209,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
           <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
             {t("quizDetails.attemptsHistory")} ({quiz.attempts.length})
           </h3>
-          {inProgressAttempt && (
-            <button
-              type="button"
-              onClick={handleStartNewAttempt}
-              disabled={starting}
-              className="text-xs text-primary hover:underline font-semibold cursor-pointer"
-            >
-              + {t("quizDetails.startNewAttempt")}
-            </button>
-          )}
         </div>
 
         {quiz.attempts.length === 0 ? (
@@ -251,11 +229,15 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            {quiz.attempts
-              .slice()
+            {[...quiz.attempts]
+              .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())
+              .map((attempt, index) => ({
+                ...attempt,
+                attemptNumber: index + 1
+              }))
               .reverse()
-              .map((attempt, index) => {
-                const attemptNumber = quiz.attempts.length - index;
+              .map((attempt) => {
+                const attemptNumber = attempt.attemptNumber;
                 const earnedPoints = Number(attempt.points ?? 0);
                 const isCompleted = attempt.status === QuizAttemptStatus.Completed;
                 const isInProgress = attempt.status === QuizAttemptStatus.InProgress;
@@ -312,7 +294,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                       {isInProgress && (
                         <SecondaryButton
                           onClick={() => handleContinueAttempt(attempt.id)}
-                          icon={<ArrowRight size={13} />}
                           size="sm"
                           className="py-1.5 px-3 text-xs"
                         >
