@@ -41,7 +41,6 @@ public class QuestionDto
     public required string Content { get; set; }
     public QuestionType Type { get; set; }
     public QuestionDifficulty Difficulty { get; set; }
-    public decimal Points { get; set; }
     public List<QuestionOptionDto> Options { get; set; } = new();
 }
 

@@ -205,8 +205,7 @@ public class QuizGenerationService(
                 Quiz = quiz,
                 Content = q.Content,
                 Type = (QuestionType)q.QuestionType,
-                Difficulty = q.Difficulty,
-                Points = QuizPointHelper.CalculatePoints(q.Difficulty)
+                Difficulty = q.Difficulty
             };
             question.Options = q.Options.Select(o => new QuestionOption
             {

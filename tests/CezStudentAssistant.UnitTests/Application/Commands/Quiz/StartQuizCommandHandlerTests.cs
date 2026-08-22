@@ -70,7 +70,6 @@ public class StartQuizCommandHandlerTests
             Id = Guid.NewGuid(),
             Content = "What is 2+2?",
             Type = QuestionType.SingleChoice,
-            Points = 1,
             QuizId = quizId,
             Quiz = quiz
         };

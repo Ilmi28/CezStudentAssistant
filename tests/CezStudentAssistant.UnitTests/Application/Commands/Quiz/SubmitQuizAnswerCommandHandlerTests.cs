@@ -84,8 +84,7 @@ public class SubmitQuizAnswerCommandHandlerTests
             Id = questionId,
             QuizId = quizId,
             Content = "Multiple choice question?",
-            Type = QuestionType.MultipleChoice,
-            Points = 10m
+            Type = QuestionType.MultipleChoice
         };
 
         var option1 = new QuestionOption { Id = optionId1, QuestionId = questionId, Content = "Opt 1", IsCorrect = true };

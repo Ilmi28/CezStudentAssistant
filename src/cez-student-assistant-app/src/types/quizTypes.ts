@@ -20,7 +20,6 @@ export interface QuestionDto {
   content: string;
   type: number;
   difficulty?: QuestionDifficulty;
-  points: number;
   options: QuestionOptionDto[];
 }
 

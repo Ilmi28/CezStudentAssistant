@@ -110,7 +110,7 @@ public class SubmitQuizAnswerEndpointsTests
             user.Courses.Add(course);
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", DisplayName = "Quiz 1", Course = course };
-            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q1", Type = QuestionType.SingleChoice, Points = 5m };
+            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q1", Type = QuestionType.SingleChoice };
             var option = new QuestionOption { Id = optionId, Question = question, Content = "Opt 1", IsCorrect = true };
             question.Options.Add(option);
 
@@ -361,7 +361,7 @@ public class SubmitQuizAnswerEndpointsTests
             user.Courses.Add(course);
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz Answered", DisplayName = "Quiz Answered", Course = course };
-            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Answered", Type = QuestionType.SingleChoice, Points = 5m };
+            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Answered", Type = QuestionType.SingleChoice };
             var oldOption = new QuestionOption { Id = oldOptionId, Question = question, Content = "Old Opt", IsCorrect = false };
             var newOption = new QuestionOption { Id = newOptionId, Question = question, Content = "New Opt", IsCorrect = true };
             question.Options.Add(oldOption);
@@ -446,7 +446,7 @@ public class SubmitQuizAnswerEndpointsTests
             user.Courses.Add(course);
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz Single", DisplayName = "Quiz Single", Course = course };
-            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Single", Type = QuestionType.SingleChoice, Points = 5m };
+            var question = new Question { Id = questionId, Quiz = quiz, Content = "Q Single", Type = QuestionType.SingleChoice };
             var option1 = new QuestionOption { Id = optionId1, Question = question, Content = "Opt 1", IsCorrect = true };
             var option2 = new QuestionOption { Id = optionId2, Question = question, Content = "Opt 2", IsCorrect = false };
             question.Options.Add(option1);

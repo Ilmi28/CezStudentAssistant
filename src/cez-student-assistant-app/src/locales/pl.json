@@ -176,7 +176,8 @@
         },
         "score": "Wynik",
         "startedAt": "Rozpoczęto",
-        "actionContinue": "Kontynuuj"
+        "actionContinue": "Kontynuuj",
+        "viewReport": "Raport"
     },
     "quizSolver": {
         "solvingQuiz": "Rozwiązujesz quiz: {{course}}",
@@ -212,6 +213,13 @@
         "submitModalTitle": "Zatwierdzenie quizu",
         "submitModalMessage": "Czy na pewno chcesz zatwierdzić swoje odpowiedzi i zakończyć quiz? Po zatwierdzeniu podejście zostanie ocenione.",
         "submitModalConfirm": "Zatwierdź i oceń",
+        "reportTitle": "Raport podejścia",
+        "reportScore": "Wynik podejścia",
+        "yourCorrectChoice": "Twoja odpowiedź",
+        "yourIncorrectChoice": "Twoja odpowiedź",
+        "correctAnswerHint": "Poprawna odpowiedź",
+        "correctCountLabel": "Poprawne odpowiedzi: {{correct}} z {{total}}",
+        "backToQuizBtn": "Powrót do quizu",
         "correctOption": "Poprawna",
         "incorrectOption": "Błędna",
         "feedbackCorrect": "Dobra odpowiedź!",
@@ -224,8 +232,8 @@
         "finishedSummary": "Podsumowanie pytań",
         "finishedCorrectFeedback": "Poprawnie",
         "finishedIncorrectFeedback": "Błąd",
-        "finishedRetryBtn": "Spróbuj ponownie",
-        "finishedBackBtn": "Powrót do quizów",
+        "finishedRetryBtn": "Rozwiąż ponownie",
+        "finishedBackBtn": "Powrót do quizu",
         "cancelConfirm": "Czy na pewno chcesz przerwać rozwiązywanie quizu? Dotychczasowy postęp został zachowany."
     },
     "cezModal": {

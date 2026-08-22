@@ -97,7 +97,7 @@ public class StartQuizEndpointsTests
             user.Courses.Add(course);
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", DisplayName = "Quiz Display 1", Course = course };
-            var question = new Question { Content = "What is 2+2?", Type = QuestionType.SingleChoice, Points = 1, Quiz = quiz };
+            var question = new Question { Content = "What is 2+2?", Type = QuestionType.SingleChoice, Quiz = quiz };
             var option = new QuestionOption { Content = "4", IsCorrect = true, Question = question };
             question.Options.Add(option);
             quiz.Questions.Add(question);
@@ -162,7 +162,7 @@ public class StartQuizEndpointsTests
             user.Courses.Add(course);
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "DS Quiz", DisplayName = "Trees Quiz", Course = course };
-            var question = new Question { Content = "Is binary tree hierarchical?", Type = QuestionType.SingleChoice, Points = 2, Quiz = quiz };
+            var question = new Question { Content = "Is binary tree hierarchical?", Type = QuestionType.SingleChoice, Quiz = quiz };
             var option = new QuestionOption { Content = "Yes", IsCorrect = true, Question = question };
             question.Options.Add(option);
             quiz.Questions.Add(question);

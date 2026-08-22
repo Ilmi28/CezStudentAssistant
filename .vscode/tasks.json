@@ -1,189 +1,190 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "build",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/src/CezStudentAssistant.API/CezStudentAssistant.API.csproj",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "problemMatcher": "$msCompile",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "Local API (dotnet run)",
-      "type": "shell",
-      "command": "dotnet run --project src/CezStudentAssistant.API --launch-profile \"Local API\"",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": "$msCompile",
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Local API (dotnet watch)",
-      "type": "shell",
-      "command": "dotnet watch --project src/CezStudentAssistant.API run --launch-profile \"Local API\"",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": "$msCompile",
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Frontend: dev",
-      "type": "npm",
-      "script": "dev",
-      "path": "src/cez-student-assistant-app",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": {
-          "regexp": "^$"
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/CezStudentAssistant.API/CezStudentAssistant.API.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": ".*VITE.*ready.*",
-          "endsPattern": ".*Local:.*"
+        {
+            "label": "Local API (dotnet run)",
+            "type": "shell",
+            "command": "dotnet run --project src/CezStudentAssistant.API --launch-profile \"Local API\"",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Local API (dotnet watch)",
+            "type": "shell",
+            "command": "dotnet watch --project src/CezStudentAssistant.API run --launch-profile \"Local API\"",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Frontend: dev",
+            "type": "npm",
+            "script": "dev",
+            "path": "src/cez-student-assistant-app",
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "typescript",
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*VITE.*ready.*",
+                    "endsPattern": ".*Local:.*"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Docker Compose",
+            "type": "shell",
+            "command": "podman compose up --build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Docker Compose API",
+            "type": "shell",
+            "command": "podman compose up --build api",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Docker Compose UI",
+            "type": "shell",
+            "command": "podman compose up --build frontend",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Docker Compose UP",
+            "type": "shell",
+            "command": "podman compose up --remove-orphans",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Docker Compose Down",
+            "type": "shell",
+            "command": "podman compose down",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Migration Add",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/add-migration.bat",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            }
+        },
+        {
+            "label": "Migration Remove",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/remove-migration.bat",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            }
+        },
+        {
+            "label": "Update DB",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/update-db.bat",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Rollback",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/rollback.bat",
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            }
         }
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Docker Compose",
-      "type": "shell",
-      "command": "podman compose up --build",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Docker Compose API",
-      "type": "shell",
-      "command": "podman compose up --build api",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Docker Compose UI",
-      "type": "shell",
-      "command": "podman compose up --build frontend",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Docker Compose UP",
-      "type": "shell",
-      "command": "podman compose up --remove-orphans",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Docker Compose Down",
-      "type": "shell",
-      "command": "podman compose down",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "label": "Migration Add",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/add-migration.bat",
-      "options": {
-        "cwd": "${workspaceFolder}/scripts"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true
-      }
-    },
-    {
-      "label": "Migration Remove",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/remove-migration.bat",
-      "options": {
-        "cwd": "${workspaceFolder}/scripts"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true
-      }
-    },
-    {
-      "label": "Update DB",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/update-db.bat",
-      "options": {
-        "cwd": "${workspaceFolder}/scripts"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true
-      }
-    },
-    {
-      "label": "Rollback",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/rollback.bat",
-      "options": {
-        "cwd": "${workspaceFolder}/scripts"
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true
-      }
-    }
-  ]
+    ]
 }

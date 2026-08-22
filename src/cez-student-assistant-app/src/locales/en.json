@@ -176,7 +176,8 @@
         },
         "score": "Score",
         "startedAt": "Started",
-        "actionContinue": "Continue"
+        "actionContinue": "Continue",
+        "viewReport": "Report"
     },
     "quizSolver": {
         "solvingQuiz": "Solving test: {{course}}",
@@ -212,6 +213,13 @@
         "submitModalTitle": "Submit Quiz",
         "submitModalMessage": "Are you sure you want to submit your answers and complete the quiz? Your attempt will be graded immediately.",
         "submitModalConfirm": "Submit and Grade",
+        "reportTitle": "Attempt Report",
+        "reportScore": "Attempt Score",
+        "yourCorrectChoice": "Your answer",
+        "yourIncorrectChoice": "Your answer",
+        "correctAnswerHint": "Correct answer",
+        "correctCountLabel": "Correct answers: {{correct}} of {{total}}",
+        "backToQuizBtn": "Back to quiz",
         "correctOption": "Correct",
         "incorrectOption": "Incorrect",
         "feedbackCorrect": "Good answer!",
@@ -224,8 +232,8 @@
         "finishedSummary": "Questions Summary",
         "finishedCorrectFeedback": "Correct",
         "finishedIncorrectFeedback": "Incorrect",
-        "finishedRetryBtn": "Try Again",
-        "finishedBackBtn": "Back to Quizzes",
+        "finishedRetryBtn": "Solve Again",
+        "finishedBackBtn": "Back to quiz",
         "cancelConfirm": "Are you sure you want to exit the quiz? Your progress has been saved."
     },
     "cezModal": {

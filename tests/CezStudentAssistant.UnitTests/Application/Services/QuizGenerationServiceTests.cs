@@ -144,7 +144,7 @@ public class QuizGenerationServiceTests
 
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         await _quizRepository.Received(1).AddAsync(Arg.Is<Quiz>(q => q.Name == "Quiz #1 - Generated Quiz" && q.CourseId == courseId), Arg.Any<CancellationToken>());
-        await _questionRepository.Received(1).AddAsync(Arg.Is<Question>(q => q.Difficulty == QuestionDifficulty.Hard && q.Points == 3m), Arg.Any<CancellationToken>());
+        await _questionRepository.Received(1).AddAsync(Arg.Is<Question>(q => q.Difficulty == QuestionDifficulty.Hard), Arg.Any<CancellationToken>());
 
         await _tokenUsageRepository.Received(1).AddAsync(Arg.Is<TokenUsage>(tu => tu.UserId == userId && tu.UsageType == UsageTokenType.QuizGeneration && tu.UsageCount == 150), Arg.Any<CancellationToken>());
         

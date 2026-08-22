@@ -65,7 +65,6 @@ public class GetQuizAttemptByIdQueryHandlerTests
             Id = Guid.NewGuid(),
             Content = "What is a process?",
             Type = QuestionType.SingleChoice,
-            Points = 2.0m,
             QuizId = quizId,
             Quiz = quiz
         };

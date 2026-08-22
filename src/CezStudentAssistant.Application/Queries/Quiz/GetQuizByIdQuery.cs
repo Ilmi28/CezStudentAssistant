@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.Quiz;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Helpers;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Responses;
@@ -60,7 +61,6 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
                 Content = q.Content,
                 Type = q.Type,
                 Difficulty = q.Difficulty,
-                Points = q.Points,
                 Options = q.Options.Select(o => new QuestionOptionDto
                 {
                     Id = o.Id,

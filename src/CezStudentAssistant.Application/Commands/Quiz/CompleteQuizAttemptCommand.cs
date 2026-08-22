@@ -1,5 +1,6 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Helpers;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Enums;
@@ -45,23 +46,7 @@ public class CompleteQuizAttemptCommandHandler(IUnitOfWork unitOfWork) : BaseCom
         if (quizAttempt.ExpiresAt.HasValue && quizAttempt.ExpiresAt.Value < DateTime.UtcNow)
             throw new BadRequestException(QuizMessageConsts.QuizAttemptExpired);
 
-        decimal totalPoints = 0m;
-        foreach (var answer in quizAttempt.Answers)
-        {
-            var question = quizAttempt.Quiz.Questions.FirstOrDefault(q => q.Id == answer.QuestionId);
-            if (question != null)
-            {
-                var selectedOptionIds = answer.SelectedOptions.Select(so => so.QuestionOptionId).ToHashSet();
-                var correctOptionIds = question.Options.Where(o => o.IsCorrect).Select(o => o.Id).ToHashSet();
-                var isCorrect = selectedOptionIds.Count == correctOptionIds.Count && selectedOptionIds.All(correctOptionIds.Contains);
-                if (isCorrect)
-                {
-                    totalPoints += question.Points;
-                }
-            }
-        }
-
-        quizAttempt.Points = totalPoints;
+        quizAttempt.Points = QuizPointsCalculationHelper.CalculatePoints(quizAttempt);
         quizAttempt.Status = QuizAttemptStatus.Completed;
 
         await unitOfWork.SaveChangesAsync(ct);

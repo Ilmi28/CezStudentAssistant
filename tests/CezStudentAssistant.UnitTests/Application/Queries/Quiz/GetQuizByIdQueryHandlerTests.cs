@@ -62,7 +62,6 @@ public class GetQuizByIdQueryHandlerTests
             Content = "2+2?",
             Type = QuestionType.SingleChoice,
             Difficulty = QuestionDifficulty.Easy,
-            Points = 2.5m,
             QuizId = quizId,
             Quiz = quiz
         };

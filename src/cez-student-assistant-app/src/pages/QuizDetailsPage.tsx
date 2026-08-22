@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
-import { quizService, QuizAttemptStatus, type QuizDetailsDto } from "../services";
+import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizDetailsDto, type QuestionDto } from "../services";
 import Card from "../components/Card";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 
@@ -31,15 +31,15 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   useEffect(() => {
-    loadQuizDetails();
+    if (!id) return;
+    loadQuizDetails(id);
   }, [id]);
 
-  const loadQuizDetails = async () => {
-    if (!id) return;
+  const loadQuizDetails = async (quizId: string) => {
     setLoading(true);
     try {
-      const details = await quizService.getQuizDetails(id);
-      setQuiz(details);
+      const data = await quizService.getQuizDetails(quizId);
+      setQuiz(data);
     } catch (err) {
       console.warn("[QuizDetailsPage] Failed to load quiz details:", err);
       setError(t("quizDetails.loadingDetails"));
@@ -49,17 +49,24 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     }
   };
 
+  const handleGoBack = () => {
+    setIsNavigatingBack(true);
+    setTimeout(() => {
+      navigate("/quizzes");
+    }, 200);
+  };
+
   const handleStartNewAttempt = async () => {
-    if (!id || starting) return;
+    if (!quiz) return;
     setStarting(true);
     try {
-      const attemptDetails = await quizService.startQuiz(id);
-      navigate(`/quiz/attempt/${attemptDetails.attemptId}`, {
-        state: { initialAttempt: attemptDetails }
+      const attempt = await quizService.startQuiz(quiz.id);
+      navigate(`/quiz/attempt/${attempt.attemptId}`, {
+        state: { initialAttempt: attempt }
       });
     } catch (err) {
-      console.warn("[QuizDetailsPage] Failed to start quiz attempt:", err);
-      setError(t("quizDetails.starting"));
+      console.warn("[QuizDetailsPage] Failed to start quiz:", err);
+      setError(t("quizDetails.startError"));
     } finally {
       setStarting(false);
     }
@@ -69,30 +76,70 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     navigate(`/quiz/attempt/${attemptId}`);
   };
 
-  const handleGoBack = () => {
-    setIsNavigatingBack(true);
-    setTimeout(() => {
-      navigate(-1);
-    }, 180);
-  };
-
   if (loading || !quiz) {
     return (
-      <div className="flex justify-center py-16">
-        <div className="flex items-center gap-3 bg-card px-6 py-4 rounded-xl border border-border shadow-sm">
+      <div className="flex justify-center py-12">
+        <div className="flex items-center gap-3 bg-card px-6 py-4 rounded-lg border border-border shadow-sm">
           <RefreshCw size={18} className="animate-spin text-primary" />
-          <span className="text-xs font-medium text-muted-foreground">{t("quizDetails.loadingDetails")}</span>
+          <span className="text-[13px] font-medium text-muted-foreground">
+            {t("quizDetails.loading")}
+          </span>
         </div>
       </div>
     );
   }
 
-  const totalPointsMax = quiz.questions.reduce((sum, q) => sum + Number(q.points), 0);
+  const getDifficultyPoints = (diff?: QuestionDifficulty) => {
+    switch (diff) {
+      case QuestionDifficulty.Easy: return 1;
+      case QuestionDifficulty.Hard: return 3;
+      case QuestionDifficulty.Medium:
+      default: return 2;
+    }
+  };
+
+  const calculateQuestionPoints = (q: QuestionDto, selectedIds: string[] = []) => {
+    const maxPoints = getDifficultyPoints(q.difficulty);
+    const correctOptionIds = q.options.filter(o => o.isCorrect).map(o => o.id);
+    if (correctOptionIds.length === 0) return 0;
+
+    if (q.type === QuestionType.SingleChoice) {
+      const isSingleCorrect = selectedIds.length === 1 && correctOptionIds.includes(selectedIds[0]);
+      return isSingleCorrect ? maxPoints : 0;
+    }
+
+    const correctSelectedCount = selectedIds.filter(id => correctOptionIds.includes(id)).length;
+    const incorrectSelectedCount = selectedIds.filter(id => !correctOptionIds.includes(id)).length;
+
+    const netCorrect = correctSelectedCount - incorrectSelectedCount;
+    if (netCorrect <= 0) return 0;
+
+    const fraction = netCorrect / correctOptionIds.length;
+    return parseFloat((maxPoints * fraction).toFixed(2));
+  };
+
+  const getAttemptEarnedPoints = (attempt: typeof quiz.attempts[0]) => {
+    if (attempt.answers && attempt.answers.length > 0) {
+      return attempt.answers.reduce((sum, ans) => {
+        const q = quiz.questions.find(quest => quest.id === ans.questionId);
+        if (!q) return sum;
+        return sum + calculateQuestionPoints(q, ans.selectedOptionIds);
+      }, 0);
+    }
+    return Number(attempt.points ?? 0);
+  };
+
+  const totalPointsMax = quiz.questions.reduce((sum, q) => sum + getDifficultyPoints(q.difficulty), 0);
   const completedAttempts = quiz.attempts.filter(a => a.status === QuizAttemptStatus.Completed);
 
   const bestScore = completedAttempts.length > 0
-    ? Math.max(...completedAttempts.map(a => Number(a.points ?? 0)))
+    ? Math.max(...completedAttempts.map(a => getAttemptEarnedPoints(a)))
     : null;
+
+  const formatScore = (val: number) => {
+    if (Number.isInteger(val)) return val.toString();
+    return parseFloat(val.toFixed(2)).toString();
+  };
 
   return (
     <div
@@ -181,7 +228,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                 {t("quizDetails.stats.totalPoints")}
               </span>
               <span className="text-xl font-bold text-foreground">
-                {totalPointsMax} {t("quizDetails.stats.pts")}
+                {formatScore(totalPointsMax)} {t("quizDetails.stats.pts")}
               </span>
             </div>
           </div>
@@ -196,7 +243,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                 {t("quizDetails.stats.bestScore")}
               </span>
               <span className="text-xl font-bold text-foreground">
-                {bestScore !== null ? `${bestScore.toFixed(1)} / ${totalPointsMax}` : "-"}
+                {bestScore !== null ? `${formatScore(bestScore)} / ${formatScore(totalPointsMax)}` : "-"}
               </span>
             </div>
           </div>
@@ -238,14 +285,15 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               .reverse()
               .map((attempt) => {
                 const attemptNumber = attempt.attemptNumber;
-                const earnedPoints = Number(attempt.points ?? 0);
+                const earnedPoints = getAttemptEarnedPoints(attempt);
                 const isCompleted = attempt.status === QuizAttemptStatus.Completed;
                 const isInProgress = attempt.status === QuizAttemptStatus.InProgress;
 
                 return (
                   <div
                     key={attempt.id}
-                    className="p-4 rounded-xl bg-background/50 border border-border flex items-center justify-between gap-4 transition-colors hover:border-primary/30"
+                    onClick={() => handleContinueAttempt(attempt.id)}
+                    className="p-4 rounded-xl bg-background/50 border border-border flex items-center justify-between gap-4 transition-colors hover:border-primary/40 hover:bg-muted/30 cursor-pointer"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0">
@@ -283,7 +331,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                       {isCompleted && (
                         <div className="text-right">
                           <div className="text-sm font-bold text-primary">
-                            {earnedPoints.toFixed(1)} / {totalPointsMax} pkt
+                            {formatScore(earnedPoints)} / {formatScore(totalPointsMax)} pkt
                           </div>
                           <div className="text-[10px] text-muted-foreground">
                             {totalPointsMax > 0 ? `${((earnedPoints / totalPointsMax) * 100).toFixed(0)}%` : "0%"}
@@ -293,7 +341,10 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
 
                       {isInProgress && (
                         <SecondaryButton
-                          onClick={() => handleContinueAttempt(attempt.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContinueAttempt(attempt.id);
+                          }}
                           size="sm"
                           className="py-1.5 px-3 text-xs"
                         >

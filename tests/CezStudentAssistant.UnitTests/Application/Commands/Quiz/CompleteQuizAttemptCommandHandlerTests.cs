@@ -60,7 +60,7 @@ public class CompleteQuizAttemptCommandHandlerTests
         {
             Id = questionId,
             Content = "Is SQL relational?",
-            Points = 2.5m,
+            Difficulty = QuestionDifficulty.Medium,
             Quiz = quiz,
             QuizId = quizId
         };
@@ -117,7 +117,7 @@ public class CompleteQuizAttemptCommandHandlerTests
         result.Message.Should().Be(QuizMessageConsts.CompleteQuizAttemptSuccess);
 
         attempt.Status.Should().Be(QuizAttemptStatus.Completed);
-        attempt.Points.Should().Be(2.5m);
+        attempt.Points.Should().Be(2m);
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

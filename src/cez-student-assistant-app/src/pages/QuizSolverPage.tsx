@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, Check, ChevronLeft, ChevronRight, Trophy, RefreshCw } from "lucide-react";
+import { CheckCircle, Check, ChevronLeft, ChevronRight, RefreshCw, X } from "lucide-react";
 import { quizService, QuestionDifficulty, QuestionType, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import ConfirmModal from "../components/ConfirmModal";
@@ -25,12 +25,36 @@ export default function QuizSolverPage({
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string[]>>({});
   const [finished, setFinished] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const [answersSummary, setAnswersSummary] = useState<{
-    questionId: string;
-    isCorrect: boolean;
-    chosenOptionIds: string[];
-  }[]>([]);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+
+  const getDifficultyPoints = (diff?: QuestionDifficulty) => {
+    switch (diff) {
+      case QuestionDifficulty.Easy: return 1;
+      case QuestionDifficulty.Hard: return 3;
+      case QuestionDifficulty.Medium:
+      default: return 2;
+    }
+  };
+
+  const calculateQuestionPoints = (q: QuestionDto, selectedIds: string[] = []) => {
+    const maxPoints = getDifficultyPoints(q.difficulty);
+    const correctOptionIds = q.options.filter(o => o.isCorrect).map(o => o.id);
+    if (correctOptionIds.length === 0) return 0;
+
+    if (q.type === QuestionType.SingleChoice) {
+      const isSingleCorrect = selectedIds.length === 1 && correctOptionIds.includes(selectedIds[0]);
+      return isSingleCorrect ? maxPoints : 0;
+    }
+
+    const correctSelectedCount = selectedIds.filter(id => correctOptionIds.includes(id)).length;
+    const incorrectSelectedCount = selectedIds.filter(id => !correctOptionIds.includes(id)).length;
+
+    const netCorrect = correctSelectedCount - incorrectSelectedCount;
+    if (netCorrect <= 0) return 0;
+
+    const fraction = netCorrect / correctOptionIds.length;
+    return parseFloat((maxPoints * fraction).toFixed(2));
+  };
 
   useEffect(() => {
     loadAttempt();
@@ -66,25 +90,12 @@ export default function QuizSolverPage({
       const isCompleted = !details.isPending;
 
       if (isCompleted) {
-        const summary = details.questions.map(q => {
+        const totalScore = details.questions.reduce((sum, q) => {
           const userSelected = initialAnswers[q.id] || [];
-          const correctOptions = q.options.filter(o => o.isCorrect).map(o => o.id);
-          const isCorrect = userSelected.length === correctOptions.length &&
-            userSelected.every(optId => correctOptions.includes(optId));
-          return {
-            questionId: q.id,
-            isCorrect,
-            chosenOptionIds: userSelected
-          };
-        });
-
-        const totalScore = details.points ?? summary.reduce((sum, item) => {
-          const q = details.questions.find(quest => quest.id === item.questionId);
-          return item.isCorrect && q ? sum + Number(q.points) : sum;
+          return sum + calculateQuestionPoints(q, userSelected);
         }, 0);
 
-        setAnswersSummary(summary);
-        setFinalScore(Number(totalScore));
+        setFinalScore(parseFloat(totalScore.toFixed(2)));
         setFinished(true);
       } else {
         const firstUnansweredIndex = details.questions.findIndex(
@@ -176,47 +187,16 @@ export default function QuizSolverPage({
       const updatedDetails = await quizService.getQuizAttempt(attemptDetails.attemptId);
       setAttemptDetails(updatedDetails);
 
-      const summary = updatedDetails.questions.map(q => {
+      const totalScore = updatedDetails.questions.reduce((sum, q) => {
         const userSelected = selectedAnswers[q.id] || [];
-        const correctOptions = q.options.filter(o => o.isCorrect).map(o => o.id);
-        const isCorrect = userSelected.length === correctOptions.length &&
-          userSelected.every(optId => correctOptions.includes(optId));
-        return {
-          questionId: q.id,
-          isCorrect,
-          chosenOptionIds: userSelected
-        };
-      });
-
-      const totalScore = updatedDetails.points ?? summary.reduce((sum, item) => {
-        const q = updatedDetails.questions.find(quest => quest.id === item.questionId);
-        return item.isCorrect && q ? sum + Number(q.points) : sum;
+        return sum + calculateQuestionPoints(q, userSelected);
       }, 0);
 
-      setAnswersSummary(summary);
-      setFinalScore(Number(totalScore));
+      setFinalScore(parseFloat(totalScore.toFixed(2)));
       setFinished(true);
     } catch (err) {
       console.warn("[QuizSolverPage] Failed to complete quiz attempt:", err);
       setError(t("quizSolver.loadingQuiz"));
-    }
-  };
-
-  const handleRetry = async () => {
-    if (!attemptDetails) return;
-    try {
-      const newAttempt = await quizService.startQuiz(attemptDetails.quizId);
-      setAttemptDetails(newAttempt);
-      setSelectedAnswers({});
-      setCurrentQuestionIndex(0);
-      setIsReviewMode(false);
-      setAnswersSummary([]);
-      setFinalScore(0);
-      setFinished(false);
-      navigate(`/quiz/attempt/${newAttempt.attemptId}`, { replace: true });
-    } catch (err) {
-      console.warn("[QuizSolverPage] Failed to retry quiz:", err);
-      navigate(`/quiz/${attemptDetails.quizId}`);
     }
   };
 
@@ -246,58 +226,163 @@ export default function QuizSolverPage({
   const isAllAnswered = answeredCount === qCount && qCount > 0;
 
   if (finished) {
-    const totalPointsMax = attemptDetails.questions.reduce((sum, q) => sum + Number(q.points), 0);
+    const totalPointsMax = attemptDetails.questions.reduce((sum, q) => sum + getDifficultyPoints(q.difficulty), 0);
+    const formatScore = (val: number) => {
+      if (Number.isInteger(val)) return val.toString();
+      return parseFloat(val.toFixed(2)).toString();
+    };
+
     return (
-      <div className="max-w-2xl mx-auto bg-card rounded-xl border border-border p-8 text-center shadow-sm space-y-6 animate-in fade-in duration-300">
-        <div className="inline-flex w-16 h-16 rounded-full bg-primary/10 items-center justify-center text-primary mb-2 border-2 border-primary/25">
-          <Trophy size={32} />
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold text-foreground">{t("quizSolver.finishedTitle")}</h2>
-          <p className="text-sm text-muted-foreground">{t("quizSolver.finishedDesc")}</p>
-        </div>
-
-        <div className="max-w-xs mx-auto bg-muted rounded-xl p-5 border border-border space-y-1">
-          <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t("quizSolver.finishedScoreLabel")}</div>
-          <div className="text-4xl font-bold text-primary">
-            {finalScore.toFixed(1)} pkt
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {t("quizSolver.finishedMaxLabel", { max: totalPointsMax })}
-          </div>
-        </div>
-
-        <div className="text-left space-y-3 pt-4 border-t border-border">
-          <h4 className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider mb-2">{t("quizSolver.finishedSummary")}</h4>
-          {attemptDetails.questions.map((q, idx) => {
-            const isCorrect = answersSummary[idx]?.isCorrect;
-            return (
-              <div key={q.id} className="flex items-start justify-between text-[13px] py-2 border-b border-border last:border-b-0">
-                <span className="text-muted-foreground font-medium truncate max-w-[360px]">{idx + 1}. {q.content}</span>
-                <div className="flex items-center gap-2 shrink-0 ml-4">
-                  {getDifficultyBadge(q.difficulty)}
-                  <span className={`font-semibold uppercase text-[10px] ${isCorrect ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
-                    {isCorrect ? t("quizSolver.finishedCorrectFeedback") : t("quizSolver.finishedIncorrectFeedback")}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="pt-6 flex gap-4">
-          <SecondaryButton
-            onClick={handleRetry}
-            className="flex-1"
-          >
-            {t("quizSolver.finishedRetryBtn")}
-          </SecondaryButton>
-          <PrimaryButton
+      <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+        {/* Top Header */}
+        <div className="flex items-center gap-3.5 min-w-0">
+          <button
+            type="button"
             onClick={handleCancel}
-            className="flex-1"
+            title={t("quizDetails.backBtn")}
+            aria-label={t("quizDetails.backBtn")}
+            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
           >
-            {t("quizSolver.finishedBackBtn")}
-          </PrimaryButton>
+            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
+          </button>
+          <div className="flex flex-col justify-center min-w-0">
+            <h1 className="text-xl font-bold text-foreground truncate">
+              {attemptDetails.displayName}
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          {/* Main Report Card */}
+          <div className="flex-1 w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
+            <div className="flex items-center gap-3 pb-4 border-b border-border">
+              <span className="text-base font-bold text-primary">
+                {formatScore(finalScore)} / {formatScore(totalPointsMax)} pkt
+              </span>
+              <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-md">
+                {totalPointsMax > 0 ? `${((finalScore / totalPointsMax) * 100).toFixed(0)}%` : "0%"}
+              </span>
+            </div>
+
+            {/* Questions list with feedback and selected options */}
+            <div className="space-y-5">
+              {attemptDetails.questions.map((q, idx) => {
+                const userSelected = selectedAnswers[q.id] || [];
+                const earnedPoints = calculateQuestionPoints(q, userSelected);
+                const maxPoints = getDifficultyPoints(q.difficulty);
+                const isFull = earnedPoints === maxPoints;
+                const isPartial = earnedPoints > 0 && earnedPoints < maxPoints;
+                const isMultiple = q.type === QuestionType.MultipleChoice;
+
+                return (
+                  <div
+                    key={q.id}
+                    id={`report-question-${idx}`}
+                    className={`p-4 rounded-xl bg-background/50 border transition-colors space-y-3 ${
+                      isFull
+                        ? "border-border hover:border-emerald-500/30"
+                        : isPartial
+                          ? "border-border hover:border-amber-500/30"
+                          : "border-border hover:border-rose-500/30"
+                    }`}
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {getTypeBadge(q.type)}
+                          {getDifficultyBadge(q.difficulty)}
+                        </div>
+                        <span
+                          className={`text-[11px] font-bold px-2.5 py-0.5 rounded-md border ${
+                            isFull
+                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                              : isPartial
+                                ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                                : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                          }`}
+                        >
+                          {formatScore(earnedPoints)} / {formatScore(maxPoints)} pkt
+                        </span>
+                      </div>
+
+                      <h4 className="text-[13px] font-semibold text-foreground leading-snug">
+                        {idx + 1}. {q.content}
+                      </h4>
+                    </div>
+
+                    <div className="space-y-1.5 pt-1">
+                      {q.options.map((opt) => {
+                        const isSelected = userSelected.includes(opt.id);
+                        const isCorrectOption = opt.isCorrect;
+
+                        let optionStyle = "border-border/60 text-muted-foreground bg-card/40 opacity-70";
+                        let indicatorStyle = "border-border bg-card";
+
+                        if (isSelected && isCorrectOption) {
+                          optionStyle = "bg-emerald-500/10 border-emerald-500/40 text-foreground font-medium";
+                          indicatorStyle = "bg-emerald-600 border-emerald-600 text-white";
+                        } else if (isSelected && !isCorrectOption) {
+                          optionStyle = "bg-rose-500/10 border-rose-500/40 text-foreground font-medium";
+                          indicatorStyle = "bg-rose-600 border-rose-600 text-white";
+                        } else if (!isSelected && isCorrectOption) {
+                          optionStyle = "border-emerald-500/30 bg-emerald-500/5 text-foreground";
+                          indicatorStyle = "border-emerald-500/60 text-emerald-600";
+                        }
+
+                        return (
+                          <div
+                            key={opt.id}
+                            className={`p-2.5 rounded-lg text-xs border flex items-center gap-2.5 transition-colors ${optionStyle}`}
+                          >
+                            <div className={`w-3.5 h-3.5 ${isMultiple ? "rounded-xs" : "rounded-full"} border flex items-center justify-center shrink-0 ${indicatorStyle}`}>
+                              {isSelected && isCorrectOption && <Check size={9} strokeWidth={3} />}
+                              {isSelected && !isCorrectOption && <X size={9} strokeWidth={3} />}
+                              {!isSelected && isCorrectOption && <Check size={9} strokeWidth={3} />}
+                            </div>
+                            <span className="leading-relaxed">{opt.content}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right sticky question tiles - green for correct, amber for partial, red for incorrect */}
+          <div className="grid grid-cols-5 gap-2 shrink-0 sticky top-6 self-start">
+            {attemptDetails.questions.map((q, idx) => {
+              const userSelected = selectedAnswers[q.id] || [];
+              const earnedPoints = calculateQuestionPoints(q, userSelected);
+              const maxPoints = getDifficultyPoints(q.difficulty);
+              const isFull = earnedPoints === maxPoints;
+              const isPartial = earnedPoints > 0 && earnedPoints < maxPoints;
+
+              const pillStyle = isFull
+                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/25 font-bold"
+                : isPartial
+                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40 hover:bg-amber-500/25 font-bold"
+                  : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/40 hover:bg-rose-500/25 font-bold";
+
+              return (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById(`report-question-${idx}`);
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                  }}
+                  className={`w-9 h-9 rounded-lg border text-xs flex items-center justify-center transition-all cursor-pointer select-none ${pillStyle}`}
+                  title={`${idx + 1}. ${isFull ? t("quizSolver.finishedCorrectFeedback") : isPartial ? "Częściowo poprawna" : t("quizSolver.finishedIncorrectFeedback")}`}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
@@ -310,22 +395,21 @@ export default function QuizSolverPage({
   return (
     <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-bold text-foreground line-clamp-1">
-            {attemptDetails.displayName}
-          </h2>
-        </div>
+      <div className="flex items-center gap-3.5 min-w-0">
         <button
-          onClick={() => {
-            if (confirm(t("quizSolver.cancelConfirm"))) {
-              handleCancel();
-            }
-          }}
-          className="text-[12px] text-muted-foreground hover:text-destructive hover:underline font-semibold cursor-pointer transition-colors"
+          type="button"
+          onClick={handleCancel}
+          title={t("quizDetails.backBtn")}
+          aria-label={t("quizDetails.backBtn")}
+          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
         >
-          {t("quizSolver.cancelBtn")}
+          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
         </button>
+        <div className="flex flex-col justify-center min-w-0">
+          <h1 className="text-xl font-bold text-foreground truncate">
+            {attemptDetails.displayName}
+          </h1>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -417,9 +501,6 @@ export default function QuizSolverPage({
               <div className="flex items-center gap-2">
                 {getTypeBadge(question.type)}
                 {getDifficultyBadge(question.difficulty)}
-                <span className="text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded uppercase">
-                  {t("quizSolver.points", { points: question.points })}
-                </span>
               </div>
             </div>
 

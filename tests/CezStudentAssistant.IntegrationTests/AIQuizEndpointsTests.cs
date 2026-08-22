@@ -270,7 +270,7 @@ public class AIQuizEndpointsTests
             user.Courses.Add(course);
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Electricity Quiz", DisplayName = "Electricity Quiz", CourseId = courseId };
-            var question = new Question { Content = "V=IR?", Type = QuestionType.SingleChoice, Points = 1, Quiz = quiz };
+            var question = new Question { Content = "V=IR?", Type = QuestionType.SingleChoice, Quiz = quiz };
             var option = new QuestionOption { Content = "Yes", IsCorrect = true, Question = question };
             question.Options.Add(option);
 
