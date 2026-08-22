@@ -100,8 +100,7 @@
         "deleteCourseSuccess": "Przedmiot został pomyślnie usunięty!"
     },
     "quizzes": {
-        "title": "Quizy",
-        "subtitle": "GENEROWANE AUTOMATYCZNIE",
+        "title": "Moje quizy",
         "noQuizzes": "Brak quizów.",
         "noQuizzesSubtitle": "Wejdź w zakładkę Kursy, wybierz przedmiot i wygeneruj quiz ze swoich plików dydaktycznych.",
         "statusGenerating": "Generowanie...",
@@ -116,6 +115,7 @@
         "noDesc": "Brak opisu przedmiotu w systemie. Możesz wgrać sylabus lub zasoby wykładowe, aby wygenerować bazę pytań.",
         "lastSynched": "Ostatnia aktualizacja w bazie: {{date}}",
         "filesTitle": "Zasoby",
+        "quizzesTitle": "Quizy",
         "noFiles": "Brak wgranych zasobów dla tego przedmiotu.",
         "download": "Pobierz",
         "downloadFile": "Pobierz plik",
@@ -149,6 +149,34 @@
         "tokensUnit": "tokenów",
         "tokenLimitExceededWarning": "Brak wystarczającej liczby tokenów na wygenerowanie tego quizu. Spróbuj zmniejszyć liczbę pytań lub poczekaj na odnowienie limitu.",
         "loadingDetails": "Ładowanie danych przedmiotu..."
+    },
+    "quizDetails": {
+        "backBtn": "Powrót",
+        "tag": "Quiz",
+        "loadingDetails": "Ładowanie szczegółów quizu...",
+        "stats": {
+            "questions": "Liczba pytań",
+            "estimatedTime": "Szacowany czas",
+            "totalPoints": "Maks. punktów",
+            "attempts": "Podejścia",
+            "bestScore": "Najlepszy wynik",
+            "pts": "pkt"
+        },
+        "startNewAttempt": "Rozwiąż",
+        "continueAttempt": "Kontynuuj podejście",
+        "starting": "Uruchamianie...",
+        "attemptsHistory": "Historia podejść",
+        "noAttempts": "Brak wcześniejszych podejść do tego quizu.",
+        "noAttemptsSubtitle": "Rozwiąż quiz, aby sprawdzić swoją wiedzę!",
+        "attemptNumber": "Podejście #{{number}}",
+        "status": {
+            "notStarted": "Nierozpoczęty",
+            "inProgress": "W toku",
+            "completed": "Ukończony"
+        },
+        "score": "Wynik",
+        "startedAt": "Rozpoczęto",
+        "actionContinue": "Kontynuuj"
     },
     "quizSolver": {
         "solvingQuiz": "Rozwiązujesz quiz: {{course}}",

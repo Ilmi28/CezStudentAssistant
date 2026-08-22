@@ -13,6 +13,26 @@ public class QuizDetailsDto
     public Guid CourseId { get; set; }
     public required string CourseName { get; set; }
     public List<QuestionDto> Questions { get; set; } = new();
+    public List<QuizAttemptDto> Attempts { get; set; } = new();
+}
+
+public class QuizAttemptDto
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public Guid QuizId { get; set; }
+    public QuizAttemptStatus Status { get; set; }
+    public decimal? Points { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime? ExpiresAt { get; set; }
+    public List<QuestionAnswerDto> Answers { get; set; } = new();
+}
+
+public class QuestionAnswerDto
+{
+    public Guid Id { get; set; }
+    public Guid QuestionId { get; set; }
+    public List<Guid> SelectedOptionIds { get; set; } = new();
 }
 
 public class QuestionDto

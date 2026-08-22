@@ -30,7 +30,21 @@ public static class QuizEndpoints
 
         group.MapPost("/{id:guid}/start", async (Guid id, IMediator mediator) =>
         {
-            var command = new StartQuizCommand { QuizAttemptId = id };
+            var command = new StartQuizCommand { QuizId = id };
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapGet("/attempt/{id:guid}", async (Guid id, IMediator mediator) =>
+        {
+            var query = new GetQuizAttemptByIdQuery { QuizAttemptId = id };
+            var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPost("/attempt/{id:guid}/complete", async (Guid id, IMediator mediator) =>
+        {
+            var command = new CompleteQuizAttemptCommand { QuizAttemptId = id };
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();

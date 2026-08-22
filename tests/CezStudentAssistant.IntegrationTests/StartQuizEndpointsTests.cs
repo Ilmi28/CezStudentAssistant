@@ -1,6 +1,6 @@
 using CezStudentAssistant.Application.Commands.Auth;
-using CezStudentAssistant.Application.Commands.Quiz;
 using CezStudentAssistant.Application.Consts;
+using CezStudentAssistant.Application.Dtos.Quiz;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
@@ -73,27 +73,20 @@ public class StartQuizEndpointsTests
             HandleCookies = false
         });
 
-        var command = new StartQuizCommand
-        {
-            QuizAttemptId = Guid.NewGuid()
-        };
-
-        var response = await unauthorizedClient.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
+        var response = await unauthorizedClient.PostAsync($"/quiz/{Guid.NewGuid()}/start", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Test]
-    public async Task StartQuiz_ShouldReturnSuccessAndUpdateStatus_WhenRequestIsValid()
+    public async Task StartQuiz_ShouldCreateAttemptAndReturnDetails_WhenRequestIsValid()
     {
-        // Arrange
         var username = "startuser1";
         await RegisterAndLogin(username, "Password123!");
         var userId = await GetCurrentUserIdFromDb(username);
 
         var courseId = Guid.NewGuid();
         var quizId = Guid.NewGuid();
-        var quizAttemptId = Guid.NewGuid();
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -103,41 +96,36 @@ public class StartQuizEndpointsTests
             var course = new Course { Id = courseId, Name = "Course 1", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", DisplayName = "Quiz 1", Course = course };
-            var attempt = new QuizAttempt
-            {
-                Id = quizAttemptId,
-                User = user,
-                Quiz = quiz,
-                Course = course,
-                Status = QuizAttemptStatus.NotStarted
-            };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", DisplayName = "Quiz Display 1", Course = course };
+            var question = new Question { Content = "What is 2+2?", Type = QuestionType.SingleChoice, Points = 1, Quiz = quiz };
+            var option = new QuestionOption { Content = "4", IsCorrect = true, Question = question };
+            question.Options.Add(option);
+            quiz.Questions.Add(question);
 
             db.Courses.Add(course);
             db.Quizzes.Add(quiz);
-            db.QuizAttempts.Add(attempt);
+            db.Questions.Add(question);
             await db.SaveChangesAsync();
         }
 
-        var command = new StartQuizCommand
-        {
-            QuizAttemptId = quizAttemptId
-        };
+        var response = await _client.PostAsync($"/quiz/{quizId}/start", null);
 
-        // Act
-        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
-
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<QuizAttemptDetailsDto>>(_jsonOptions);
         content.Should().NotBeNull();
         content!.Success.Should().BeTrue();
         content.Message.Should().Be(QuizMessageConsts.StartQuizSuccess);
+        content.Data.Should().NotBeNull();
+        content.Data!.QuizId.Should().Be(quizId);
+        content.Data.DisplayName.Should().Be("Quiz Display 1");
+        content.Data.Status.Should().Be(QuizAttemptStatus.InProgress);
+        content.Data.IsPending.Should().BeTrue();
+        content.Data.Questions.Should().HaveCount(1);
 
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
-            var attempt = await db.QuizAttempts.FirstOrDefaultAsync(a => a.Id == quizAttemptId);
+            var attempt = await db.QuizAttempts.FirstOrDefaultAsync(a => a.QuizId == quizId && a.UserId == userId);
 
             attempt.Should().NotBeNull();
             attempt!.Status.Should().Be(QuizAttemptStatus.InProgress);
@@ -145,100 +133,113 @@ public class StartQuizEndpointsTests
     }
 
     [Test]
-    public async Task StartQuiz_ShouldReturnNotFound_WhenQuizAttemptDoesNotExist()
+    public async Task StartQuiz_ShouldReturnNotFound_WhenQuizDoesNotExist()
     {
-        // Arrange
         await RegisterAndLogin("startuser2", "Password123!");
 
-        var command = new StartQuizCommand
-        {
-            QuizAttemptId = Guid.NewGuid()
-        };
+        var response = await _client.PostAsync($"/quiz/{Guid.NewGuid()}/start", null);
 
-        // Act
-        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
-
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Test]
-    public async Task StartQuiz_ShouldReturnForbidden_WhenQuizAttemptBelongsToOtherUser()
+    public async Task GetQuizAttempt_ShouldReturnAttemptDetails_WhenAttemptExistsAndBelongsToUser()
     {
-        // Arrange
-        var userA = "startuser3a";
-        var userB = "startuser3b";
-        
-        await RegisterAndLogin(userB, "Password123!");
-        var userBId = await GetCurrentUserIdFromDb(userB);
-
-        var quizAttemptId = Guid.NewGuid();
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
-            
-            var user = await db.Users.FirstAsync(u => u.Id == userBId);
-            var course = new Course { Name = "Course B", Type = CourseType.Cez };
-            user.Courses.Add(course);
-
-            var quiz = new Quiz { Name = "Quiz B", DisplayName = "Quiz B", Course = course, User = user };
-            var attempt = new QuizAttempt
-            {
-                Id = quizAttemptId,
-                User = user,
-                Quiz = quiz,
-                Course = course,
-                Status = QuizAttemptStatus.NotStarted
-            };
-
-            db.Courses.Add(course);
-            db.Quizzes.Add(quiz);
-            db.QuizAttempts.Add(attempt);
-            await db.SaveChangesAsync();
-        }
-
-        // Login as User A
-        await RegisterAndLogin(userA, "Password123!");
-
-        var command = new StartQuizCommand
-        {
-            QuizAttemptId = quizAttemptId
-        };
-
-        // Act
-        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Test]
-    public async Task StartQuiz_ShouldReturnBadRequest_WhenQuizAttemptAlreadyStarted()
-    {
-        // Arrange
-        var username = "startuser4";
+        var username = "attemptuser1";
         await RegisterAndLogin(username, "Password123!");
         var userId = await GetCurrentUserIdFromDb(username);
 
-        var quizAttemptId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        var attemptId = Guid.NewGuid();
 
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
             var user = await db.Users.FirstAsync(u => u.Id == userId);
             
-            var course = new Course { Name = "Course A", Type = CourseType.Cez };
+            var course = new Course { Id = courseId, Name = "Data Structures", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Name = "Quiz A", DisplayName = "Quiz A", Course = course, User = user };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "DS Quiz", DisplayName = "Trees Quiz", Course = course };
+            var question = new Question { Content = "Is binary tree hierarchical?", Type = QuestionType.SingleChoice, Points = 2, Quiz = quiz };
+            var option = new QuestionOption { Content = "Yes", IsCorrect = true, Question = question };
+            question.Options.Add(option);
+            quiz.Questions.Add(question);
+
             var attempt = new QuizAttempt
             {
-                Id = quizAttemptId,
-                User = user,
+                Id = attemptId,
+                UserId = userId,
                 Quiz = quiz,
                 Course = course,
-                Status = QuizAttemptStatus.InProgress // Already started
+                Status = QuizAttemptStatus.InProgress,
+                StartedAt = DateTime.UtcNow
+            };
+            var answer = new QuestionAnswer
+            {
+                QuizAttempt = attempt,
+                Question = question
+            };
+            answer.SelectedOptions.Add(new SelectedQuizOption
+            {
+                QuestionAnswer = answer,
+                QuestionOption = option
+            });
+            attempt.Answers.Add(answer);
+
+            db.Courses.Add(course);
+            db.Quizzes.Add(quiz);
+            db.Questions.Add(question);
+            db.QuizAttempts.Add(attempt);
+            await db.SaveChangesAsync();
+        }
+
+        var response = await _client.GetAsync($"/quiz/attempt/{attemptId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<QuizAttemptDetailsDto>>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+        content.Data.Should().NotBeNull();
+        content.Data!.AttemptId.Should().Be(attemptId);
+        content.Data.QuizId.Should().Be(quizId);
+        content.Data.DisplayName.Should().Be("Trees Quiz");
+        content.Data.Status.Should().Be(QuizAttemptStatus.InProgress);
+        content.Data.IsPending.Should().BeTrue();
+        content.Data.Questions.Should().HaveCount(1);
+        content.Data.Answers.Should().HaveCount(1);
+        content.Data.Points.Should().BeNull();
+    }
+
+    [Test]
+    public async Task CompleteQuizAttempt_ShouldUpdateStatusToCompleted_WhenRequestIsValid()
+    {
+        var username = "completeuser1";
+        await RegisterAndLogin(username, "Password123!");
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        var courseId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
+        var attemptId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var user = await db.Users.FirstAsync(u => u.Id == userId);
+            
+            var course = new Course { Id = courseId, Name = "Networks", Type = CourseType.Cez };
+            user.Courses.Add(course);
+
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Net Quiz", DisplayName = "Net Quiz", Course = course };
+            var attempt = new QuizAttempt
+            {
+                Id = attemptId,
+                UserId = userId,
+                Quiz = quiz,
+                Course = course,
+                Status = QuizAttemptStatus.InProgress,
+                StartedAt = DateTime.UtcNow
             };
 
             db.Courses.Add(course);
@@ -247,15 +248,21 @@ public class StartQuizEndpointsTests
             await db.SaveChangesAsync();
         }
 
-        var command = new StartQuizCommand
+        var response = await _client.PostAsync($"/quiz/attempt/{attemptId}/complete", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+        content.Message.Should().Be(QuizMessageConsts.CompleteQuizAttemptSuccess);
+
+        using (var scope = _factory.Services.CreateScope())
         {
-            QuizAttemptId = quizAttemptId
-        };
+            var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+            var attempt = await db.QuizAttempts.FirstOrDefaultAsync(a => a.Id == attemptId);
 
-        // Act
-        var response = await _client.PostAsync($"/quiz/{command.QuizAttemptId}/start", null);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            attempt.Should().NotBeNull();
+            attempt!.Status.Should().Be(QuizAttemptStatus.Completed);
+        }
     }
 }

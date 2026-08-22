@@ -110,7 +110,7 @@ public class SubmitQuizAnswerCommandHandlerTests
         result.Message.Should().Be(QuizMessageConsts.AnswerSubmittedSuccess);
 
         await _questionAnswerRepository.Received(1).AddAsync(Arg.Is<QuestionAnswer>(x => 
-            x.QuizAttemptId == quizAttemptId && x.QuestionId == questionId && x.EarnedPoints == null), Arg.Any<CancellationToken>());
+            x.QuizAttemptId == quizAttemptId && x.QuestionId == questionId), Arg.Any<CancellationToken>());
 
         await _selectedQuizOptionRepository.Received(1).AddRangeAsync(Arg.Is<IEnumerable<SelectedQuizOption>>(opts => 
             opts.Count() == 2 && 

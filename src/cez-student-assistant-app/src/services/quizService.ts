@@ -3,6 +3,7 @@ import { authService } from "./authService";
 import type {
   QuizDto,
   QuizDetailsDto,
+  QuizAttemptDetailsDto,
   SubmitAnswerResponseDto,
 } from "../types";
 
@@ -27,6 +28,26 @@ export const quizService = {
     return handleResponse<QuizDetailsDto>(res);
   },
 
+  async startQuiz(quizId: string): Promise<QuizAttemptDetailsDto> {
+    const res = await customFetch(
+      `${API_BASE_URL}/quiz/${quizId}/start`,
+      { method: "POST" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<QuizAttemptDetailsDto>(res);
+  },
+
+  async getQuizAttempt(attemptId: string): Promise<QuizAttemptDetailsDto> {
+    const res = await customFetch(
+      `${API_BASE_URL}/quiz/attempt/${attemptId}`,
+      { method: "GET" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<QuizAttemptDetailsDto>(res);
+  },
+
   async submitAnswer(
     quizAttemptId: string,
     questionId: string,
@@ -44,4 +65,15 @@ export const quizService = {
     );
     return handleResponse<SubmitAnswerResponseDto>(res);
   },
+
+  async completeQuizAttempt(attemptId: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/quiz/attempt/${attemptId}/complete`,
+      { method: "POST" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<void>(res);
+  },
 };
+

@@ -1,4 +1,4 @@
-﻿using CezStudentAssistant.Domain.Enums;
+using CezStudentAssistant.Domain.Enums;
 
 namespace CezStudentAssistant.Domain.Entities;
 
@@ -7,6 +7,7 @@ public class QuizAttempt : BaseEntity
     public Guid UserId { get; set; }
     public Guid QuizId { get; set; }
     public QuizAttemptStatus Status { get; set; }
+    public decimal? Points { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? ExpiresAt { get; set; }
 

@@ -159,7 +159,6 @@ public class SubmitQuizAnswerEndpointsTests
                 .FirstOrDefaultAsync(qa => qa.QuizAttemptId == quizAttemptId && qa.QuestionId == questionId);
 
             answer.Should().NotBeNull();
-            answer!.EarnedPoints.Should().BeNull();
             answer.SelectedOptions.Should().HaveCount(1);
             answer.SelectedOptions.First().QuestionOptionId.Should().Be(optionId);
         }

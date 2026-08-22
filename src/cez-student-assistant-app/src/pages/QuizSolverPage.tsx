@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, AlertCircle, Check, ArrowRight, Trophy, RefreshCw } from "lucide-react";
-import { quizService, QuestionDifficulty, type QuizDetailsDto, type QuestionDto } from "../services";
+import { quizService, QuestionDifficulty, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
 
 interface QuizSolverPageProps {
   setError: (msg: string) => void;
@@ -11,11 +11,12 @@ interface QuizSolverPageProps {
 export default function QuizSolverPage({
   setError
 }: QuizSolverPageProps) {
-  const { id } = useParams<{ id: string }>();
+  const { attemptId, id } = useParams<{ attemptId?: string; id?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
 
-  const [selectedQuiz, setSelectedQuiz] = useState<QuizDetailsDto | null>(null);
+  const [attemptDetails, setAttemptDetails] = useState<QuizAttemptDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [quizAttempt, setQuizAttempt] = useState<{
@@ -32,25 +33,69 @@ export default function QuizSolverPage({
   } | null>(null);
 
   useEffect(() => {
-    loadQuizDetails();
-  }, [id]);
+    loadAttempt();
+  }, [attemptId, id]);
 
-  const loadQuizDetails = async () => {
-    if (!id) return;
+  const loadAttempt = async () => {
+    const targetAttemptId = attemptId || (location.state as { initialAttempt?: QuizAttemptDetailsDto })?.initialAttempt?.attemptId;
+    const targetQuizId = id;
+
     setLoading(true);
     try {
-      const details = await quizService.getQuizDetails(id);
-      setSelectedQuiz(details);
-      setQuizAttempt({
-        currentQuestionIndex: 0,
-        selectedOptionIds: [],
-        score: 0,
-        checked: false,
-        answers: [],
-        finished: false
+      let details: QuizAttemptDetailsDto;
+
+      if ((location.state as { initialAttempt?: QuizAttemptDetailsDto })?.initialAttempt) {
+        details = (location.state as { initialAttempt: QuizAttemptDetailsDto }).initialAttempt;
+      } else if (targetAttemptId) {
+        details = await quizService.getQuizAttempt(targetAttemptId);
+      } else if (targetQuizId) {
+        details = await quizService.startQuiz(targetQuizId);
+      } else {
+        navigate("/quizzes");
+        return;
+      }
+
+      setAttemptDetails(details);
+
+      // Restore previously answered questions if any
+      const existingAnswers = details.answers || [];
+      const restoredAnswers = existingAnswers.map(ans => {
+        const q = details.questions.find(item => item.id === ans.questionId);
+        const correctOptions = q?.options.filter(o => o.isCorrect).map(o => o.id) || [];
+        const isCorrect = ans.selectedOptionIds.length === correctOptions.length &&
+          ans.selectedOptionIds.every(optId => correctOptions.includes(optId));
+        return {
+          questionId: ans.questionId,
+          isCorrect,
+          chosenOptionIds: ans.selectedOptionIds
+        };
       });
-    } catch (quizErr) {
-      console.warn("[QuizSolverPage] Failed to load quiz details:", quizErr);
+
+      const initialScore = existingAnswers.reduce((sum, ans) => {
+        const question = details.questions.find(q => q.id === ans.questionId);
+        if (!question) return sum;
+        const correctOptions = question.options.filter(o => o.isCorrect).map(o => o.id);
+        const isCorrect = ans.selectedOptionIds.length === correctOptions.length &&
+          ans.selectedOptionIds.every(optId => correctOptions.includes(optId));
+        return isCorrect ? sum + Number(question.points) : sum;
+      }, 0);
+      const firstUnansweredIndex = details.questions.findIndex(
+        q => !existingAnswers.some(ans => ans.questionId === q.id)
+      );
+
+      const startIndex = firstUnansweredIndex !== -1 ? firstUnansweredIndex : (existingAnswers.length >= details.questions.length ? 0 : existingAnswers.length);
+      const isAlreadyFinished = !details.isPending || (details.questions.length > 0 && existingAnswers.length === details.questions.length);
+
+      setQuizAttempt({
+        currentQuestionIndex: startIndex,
+        selectedOptionIds: [],
+        score: initialScore,
+        checked: false,
+        answers: restoredAnswers,
+        finished: isAlreadyFinished
+      });
+    } catch (err) {
+      console.warn("[QuizSolverPage] Failed to load quiz attempt:", err);
       setError(t("quizSolver.loadingQuiz"));
       navigate("/quizzes");
     } finally {
@@ -97,9 +142,9 @@ export default function QuizSolverPage({
     });
   };
 
-  const handleCheckAnswer = () => {
-    if (!quizAttempt || !selectedQuiz) return;
-    const currentQuestion = selectedQuiz.questions[quizAttempt.currentQuestionIndex];
+  const handleCheckAnswer = async () => {
+    if (!quizAttempt || !attemptDetails) return;
+    const currentQuestion = attemptDetails.questions[quizAttempt.currentQuestionIndex];
     
     const correctOptions = currentQuestion.options.filter(o => o.isCorrect);
     const correctOptionIds = correctOptions.map(o => o.id);
@@ -109,6 +154,16 @@ export default function QuizSolverPage({
       quizAttempt.selectedOptionIds.every(x => correctOptionIds.includes(x));
     
     const earnedPoints = isCorrect ? currentQuestion.points : 0;
+
+    try {
+      await quizService.submitAnswer(
+        attemptDetails.attemptId,
+        currentQuestion.id,
+        quizAttempt.selectedOptionIds
+      );
+    } catch (err) {
+      console.warn("[QuizSolverPage] Failed to submit answer:", err);
+    }
 
     setQuizAttempt(prev => {
       if (!prev) return null;
@@ -128,33 +183,58 @@ export default function QuizSolverPage({
     });
   };
 
-  const handleNextQuestion = () => {
-    if (!quizAttempt || !selectedQuiz) return;
-    const isLast = quizAttempt.currentQuestionIndex >= selectedQuiz.questions.length - 1;
-    setQuizAttempt(prev => {
-      if (!prev) return null;
-      if (isLast) {
-        return { ...prev, finished: true };
-      } else {
+  const handleNextQuestion = async () => {
+    if (!quizAttempt || !attemptDetails) return;
+    const isLast = quizAttempt.currentQuestionIndex >= attemptDetails.questions.length - 1;
+    if (isLast) {
+      try {
+        await quizService.completeQuizAttempt(attemptDetails.attemptId);
+      } catch (err) {
+        console.warn("[QuizSolverPage] Failed to complete quiz attempt:", err);
+      }
+      setQuizAttempt(prev => (prev ? { ...prev, finished: true } : null));
+    } else {
+      setQuizAttempt(prev => {
+        if (!prev) return null;
         return {
           ...prev,
           currentQuestionIndex: prev.currentQuestionIndex + 1,
           selectedOptionIds: [],
           checked: false
         };
-      }
-    });
+      });
+    }
   };
 
-  const handleRetry = () => {
-    loadQuizDetails();
+  const handleRetry = async () => {
+    if (!attemptDetails) return;
+    try {
+      const newAttempt = await quizService.startQuiz(attemptDetails.quizId);
+      setAttemptDetails(newAttempt);
+      setQuizAttempt({
+        currentQuestionIndex: 0,
+        selectedOptionIds: [],
+        score: 0,
+        checked: false,
+        answers: [],
+        finished: false
+      });
+      navigate(`/quiz/attempt/${newAttempt.attemptId}`, { replace: true });
+    } catch (err) {
+      console.warn("[QuizSolverPage] Failed to retry quiz:", err);
+      navigate(`/quiz/${attemptDetails.quizId}`);
+    }
   };
 
   const handleCancel = () => {
-    navigate("/quizzes");
+    if (attemptDetails?.quizId) {
+      navigate(`/quiz/${attemptDetails.quizId}`);
+    } else {
+      navigate("/quizzes");
+    }
   };
 
-  if (loading || !selectedQuiz || !quizAttempt) {
+  if (loading || !attemptDetails || !quizAttempt) {
     return (
       <div className="flex justify-center py-12">
         <div className="flex items-center gap-3 bg-card px-6 py-4 rounded-lg border border-border shadow-sm">
@@ -166,10 +246,10 @@ export default function QuizSolverPage({
   }
 
   const { currentQuestionIndex: qIndex, selectedOptionIds, checked, score, finished, answers } = quizAttempt;
-  const qCount = selectedQuiz.questions.length;
+  const qCount = attemptDetails.questions.length;
   
   if (finished) {
-    const totalPointsMax = selectedQuiz.questions.reduce((sum, q) => sum + q.points, 0);
+    const totalPointsMax = attemptDetails.questions.reduce((sum, q) => sum + Number(q.points), 0);
     return (
       <div className="max-w-2xl mx-auto bg-card rounded-lg border border-border p-8 text-center shadow-sm space-y-6 animate-in fade-in duration-300">
         <div className="inline-flex w-16 h-16 rounded-full bg-primary/10 items-center justify-center text-primary mb-2 border-2 border-primary/25">
@@ -194,7 +274,7 @@ export default function QuizSolverPage({
         {/* Individual answers recap */}
         <div className="text-left space-y-3 pt-4 border-t border-border">
           <h4 className="text-[11px] uppercase font-bold text-muted-foreground tracking-wider mb-2">{t("quizSolver.finishedSummary")}</h4>
-          {selectedQuiz.questions.map((q, idx) => {
+          {attemptDetails.questions.map((q, idx) => {
             const isCorrect = answers[idx]?.isCorrect;
             return (
               <div key={q.id} className="flex items-start justify-between text-[13px] py-1 border-b border-border last:border-b-0">
@@ -228,7 +308,7 @@ export default function QuizSolverPage({
     );
   }
 
-  const question: QuestionDto = selectedQuiz.questions[qIndex];
+  const question: QuestionDto = attemptDetails.questions[qIndex];
   const isMultiple = question.type === 1;
 
   return (
@@ -237,10 +317,10 @@ export default function QuizSolverPage({
       <div className="flex items-center justify-between">
         <div>
           <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-            {t("quizSolver.solvingQuiz", { course: selectedQuiz.courseName })}
+            {t("quizSolver.solvingQuiz", { course: attemptDetails.courseName })}
           </span>
           <h2 className="text-base font-bold text-foreground mt-0.5 line-clamp-1">
-            {selectedQuiz.displayName || selectedQuiz.name}
+            {attemptDetails.displayName}
           </h2>
         </div>
         <button

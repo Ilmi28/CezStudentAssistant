@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "API",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "dotnet run --project src/CezStudentAssistant.API --launch-profile \"Local API\"",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Frontend",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/cez-student-assistant-app/node_modules/vite/bin/vite.js",
+            "cwd": "${workspaceFolder}/src/cez-student-assistant-app",
+            "console": "integratedTerminal"
+        }
+    ]
+}

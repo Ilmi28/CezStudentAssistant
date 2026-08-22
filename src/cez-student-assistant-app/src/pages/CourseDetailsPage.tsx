@@ -305,7 +305,7 @@ export default function CourseDetailsPage({
           className="flex items-center justify-between cursor-pointer select-none group"
         >
           <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
-            {t("quizzes.title")} ({courseQuizzes.length})
+            {t("courseDetails.quizzesTitle")} ({courseQuizzes.length})
           </h3>
           <div className="flex items-center gap-1">
             <button

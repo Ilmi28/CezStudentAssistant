@@ -271,9 +271,34 @@ public class AIQuizEndpointsTests
 
             var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Electricity Quiz", DisplayName = "Electricity Quiz", CourseId = courseId };
             var question = new Question { Content = "V=IR?", Type = QuestionType.SingleChoice, Points = 1, Quiz = quiz };
-            question.Options.Add(new QuestionOption { Content = "Yes", IsCorrect = true, Question = question });
+            var option = new QuestionOption { Content = "Yes", IsCorrect = true, Question = question };
+            question.Options.Add(option);
+
+            var attempt = new QuizAttempt
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Quiz = quiz,
+                Course = course,
+                Status = QuizAttemptStatus.Completed,
+                Points = 1,
+                StartedAt = DateTime.UtcNow
+            };
+            var answer = new QuestionAnswer
+            {
+                QuizAttempt = attempt,
+                Question = question
+            };
+            answer.SelectedOptions.Add(new SelectedQuizOption
+            {
+                QuestionAnswer = answer,
+                QuestionOption = option
+            });
+            attempt.Answers.Add(answer);
+
             db.Quizzes.Add(quiz);
             db.Questions.Add(question);
+            db.QuizAttempts.Add(attempt);
             await db.SaveChangesAsync();
         }
 
@@ -289,6 +314,10 @@ public class AIQuizEndpointsTests
         content.Data.Questions.Should().HaveCount(1);
         content.Data.Questions[0].Content.Should().Be("V=IR?");
         content.Data.Questions[0].Options.Should().HaveCount(1);
+        content.Data.Attempts.Should().HaveCount(1);
+        content.Data.Attempts[0].Status.Should().Be(QuizAttemptStatus.Completed);
+        content.Data.Attempts[0].Answers.Should().HaveCount(1);
+        content.Data.Attempts[0].Points.Should().Be(1);
     }
 
     [Test]

@@ -100,8 +100,7 @@
         "deleteCourseSuccess": "Course deleted successfully!"
     },
     "quizzes": {
-        "title": "Quizzes",
-        "subtitle": "GENERATED AUTOMATICALLY",
+        "title": "My Quizzes",
         "noQuizzes": "No quizzes yet.",
         "noQuizzesSubtitle": "Go to the Courses tab, select a course, and generate a quiz from your educational files.",
         "statusGenerating": "Generating...",
@@ -116,6 +115,7 @@
         "noDesc": "No course description in the system. You can upload a syllabus or lecture slides to generate a question database.",
         "lastSynched": "Last database update: {{date}}",
         "filesTitle": "Resources",
+        "quizzesTitle": "Quizzes",
         "noFiles": "No files uploaded for this course.",
         "download": "Download",
         "downloadFile": "Download file",
@@ -149,6 +149,34 @@
         "tokensUnit": "tokens",
         "tokenLimitExceededWarning": "Not enough daily tokens to generate this quiz. Try reducing the question count or wait for daily reset.",
         "loadingDetails": "Loading course details..."
+    },
+    "quizDetails": {
+        "backBtn": "Back",
+        "tag": "Quiz",
+        "loadingDetails": "Loading quiz details...",
+        "stats": {
+            "questions": "Questions",
+            "estimatedTime": "Est. Time",
+            "totalPoints": "Max Points",
+            "attempts": "Attempts",
+            "bestScore": "Best Score",
+            "pts": "pts"
+        },
+        "startNewAttempt": "Solve",
+        "continueAttempt": "Continue Attempt",
+        "starting": "Starting...",
+        "attemptsHistory": "Attempt History",
+        "noAttempts": "No previous attempts for this quiz.",
+        "noAttemptsSubtitle": "Solve the quiz to test your knowledge!",
+        "attemptNumber": "Attempt #{{number}}",
+        "status": {
+            "notStarted": "Not Started",
+            "inProgress": "In Progress",
+            "completed": "Completed"
+        },
+        "score": "Score",
+        "startedAt": "Started",
+        "actionContinue": "Continue"
     },
     "quizSolver": {
         "solvingQuiz": "Solving test: {{course}}",

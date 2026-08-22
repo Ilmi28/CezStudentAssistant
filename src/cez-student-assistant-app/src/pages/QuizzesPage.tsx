@@ -18,7 +18,6 @@ export default function QuizzesPage({ quizzes }: QuizzesPageProps) {
           <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
             {t("quizzes.title")}
           </h3>
-          <span className="text-xs text-muted-foreground">{t("quizzes.subtitle")}</span>
         </div>
 
         {quizzes.length === 0 ? (

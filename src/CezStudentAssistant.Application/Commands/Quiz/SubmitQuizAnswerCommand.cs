@@ -43,8 +43,7 @@ public class SubmitQuizAnswerCommandHandler(IUnitOfWork unitOfWork) : BaseComman
         var questionAnswer = new QuestionAnswer
         {
             QuizAttemptId = command.QuizAttemptId,
-            QuestionId = command.QuestionId,
-            EarnedPoints = null
+            QuestionId = command.QuestionId
         };
         await questionAnswerRepo.AddAsync(questionAnswer, ct);
 

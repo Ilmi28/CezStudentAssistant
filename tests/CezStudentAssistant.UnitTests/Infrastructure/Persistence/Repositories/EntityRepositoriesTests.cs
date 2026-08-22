@@ -118,8 +118,7 @@ public class EntityRepositoriesTests
         var entity = new QuestionAnswer 
         { 
             QuizAttempt = quizAttempt,
-            Question = question,
-            EarnedPoints = 10m
+            Question = question
         };
 
         await repository.AddAsync(entity);
@@ -127,6 +126,6 @@ public class EntityRepositoriesTests
 
         var retrieved = await repository.GetByIdAsync(entity.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.EarnedPoints.Should().Be(10m);
+        retrieved!.QuestionId.Should().Be(question.Id);
     }
 }

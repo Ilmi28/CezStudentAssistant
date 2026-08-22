@@ -4,6 +4,7 @@ using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Responses;
+using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -38,6 +39,12 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
         if (quiz == null)
             throw new NotFoundException(QuizMessageConsts.QuizNotFound);
 
+        var quizAttemptRepo = unitOfWork.Repository<IQuizAttemptRepository>();
+        var attempts = await quizAttemptRepo.Find(a => a.QuizId == query.QuizId && a.UserId == query.UserId)
+            .Include(a => a.Answers)
+                .ThenInclude(ans => ans.SelectedOptions)
+            .ToListAsync(ct);
+
         return new QuizDetailsDto
         {
             Id = quiz.Id,
@@ -58,6 +65,22 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
                     Id = o.Id,
                     Content = o.Content,
                     IsCorrect = o.IsCorrect
+                }).ToList()
+            }).ToList(),
+            Attempts = attempts.Select(a => new QuizAttemptDto
+            {
+                Id = a.Id,
+                UserId = a.UserId,
+                QuizId = a.QuizId,
+                Status = a.Status,
+                Points = a.Points,
+                StartedAt = a.StartedAt,
+                ExpiresAt = a.ExpiresAt,
+                Answers = a.Answers.Select(ans => new QuestionAnswerDto
+                {
+                    Id = ans.Id,
+                    QuestionId = ans.QuestionId,
+                    SelectedOptionIds = ans.SelectedOptions.Select(so => so.QuestionOptionId).ToList()
                 }).ToList()
             }).ToList()
         };

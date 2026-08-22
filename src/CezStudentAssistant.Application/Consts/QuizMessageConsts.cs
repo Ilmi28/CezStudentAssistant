@@ -6,6 +6,8 @@ public static class QuizMessageConsts
     public const string GetQuizzesError = "An error occurred while retrieving quizzes.";
     public const string GetQuizSuccess = "Successfully retrieved quiz details.";
     public const string GetQuizError = "An error occurred while retrieving quiz details.";
+    public const string GetQuizAttemptSuccess = "Successfully retrieved quiz attempt details.";
+    public const string GetQuizAttemptError = "An error occurred while retrieving quiz attempt details.";
     public const string QuizNotFound = "Requested quiz not found.";
 
     public const string AnswerSubmittedSuccess = "Answer submitted successfully.";
@@ -28,4 +30,7 @@ public static class QuizMessageConsts
     public const string StartQuizError = "An error occurred while starting the quiz.";
     public const string UnauthorizedStartAccess = "You are not authorized to start this quiz attempt.";
     public const string QuizAttemptNotReady = "This quiz attempt is not ready to be started.";
+
+    public const string CompleteQuizAttemptSuccess = "Quiz attempt completed successfully.";
+    public const string CompleteQuizAttemptError = "An error occurred while completing the quiz attempt.";
 }

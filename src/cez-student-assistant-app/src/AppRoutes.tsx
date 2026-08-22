@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage";
 import CoursesPage from "./pages/CoursesPage";
 import QuizzesPage from "./pages/QuizzesPage";
 import CourseDetailsPage from "./pages/CourseDetailsPage";
+import QuizDetailsPage from "./pages/QuizDetailsPage";
 import QuizSolverPage from "./pages/QuizSolverPage";
 import PreferencesPage from "./pages/PreferencesPage";
 
@@ -31,7 +32,9 @@ export default function AppRoutes() {
         <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} onCreateCourse={createCourse} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
         <Route path="/quizzes"    element={<QuizzesPage quizzes={quizzes} />} />
         <Route path="/course/:id" element={<CourseDetailsPage setError={setError} setSuccess={setSuccess} />} />
-        <Route path="/quiz/:id"   element={<QuizSolverPage setError={setError} />} />
+        <Route path="/quiz/:id"   element={<QuizDetailsPage setError={setError} />} />
+        <Route path="/quiz/:id/solve" element={<QuizSolverPage setError={setError} />} />
+        <Route path="/quiz/attempt/:attemptId" element={<QuizSolverPage setError={setError} />} />
         <Route path="/preferences" element={<PreferencesPage />} />
       </Route>
 
