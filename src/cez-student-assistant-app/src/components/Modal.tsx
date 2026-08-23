@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 export interface ModalProps {
@@ -61,16 +62,20 @@ export const Modal: React.FC<ModalProps> = ({
       }
     };
     if (shouldRender) {
+      document.body.style.overflow = "hidden";
       document.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
     }
     return () => {
+      document.body.style.overflow = "";
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [shouldRender, isClosing]);
 
   if (!shouldRender) return null;
 
-  return (
+  return createPortal(
     <div
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -107,7 +112,8 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Content */}
         <div className="p-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

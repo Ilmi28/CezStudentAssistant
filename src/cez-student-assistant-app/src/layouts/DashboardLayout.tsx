@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useQuiz } from "../hooks";
 import Topbar from "../components/Topbar";
@@ -8,6 +8,7 @@ import { userService, cezService, UnauthorizedError } from "../services";
 import { UserLanguage } from "../types";
 
 export default function DashboardLayout() {
+  const location = useLocation();
   const { username, handleLogout, handleCezLinkSubmit, setIsCezConnected, setLastCezSync } = useAuth();
   const { loading, setLoading, applyTheme, showCezModal, setShowCezModal, setError } = useUI();
   const { refreshCourses } = useCourse();
@@ -61,7 +62,9 @@ export default function DashboardLayout() {
       />
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         <div className="max-w-5xl mx-auto w-full space-y-8">
-          <Outlet />
+          <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
+            <Outlet />
+          </div>
         </div>
       </div>
       <CezModal

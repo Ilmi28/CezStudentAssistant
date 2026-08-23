@@ -217,7 +217,11 @@ export default function QuizSolverPage({
 
   const handleCancel = () => {
     if (attemptDetails?.quizId) {
-      navigate(`/quiz/${attemptDetails.quizId}`);
+      navigate(`/quiz/${attemptDetails.quizId}`, {
+        state: { fromPath: location.state?.fromPath }
+      });
+    } else if (location.state?.fromPath) {
+      navigate(location.state.fromPath);
     } else {
       navigate("/quizzes");
     }
@@ -263,13 +267,48 @@ export default function QuizSolverPage({
         <div className="flex flex-col md:flex-row gap-4 items-start">
           {/* Main Report Card */}
           <div className="flex-1 w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
-            <div className="flex items-center gap-3 pb-4 border-b border-border">
-              <span className="text-base font-bold text-primary">
-                {formatScore(finalScore)} / {formatScore(totalPointsMax)} pkt
-              </span>
-              <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-md">
-                {totalPointsMax > 0 ? `${((finalScore / totalPointsMax) * 100).toFixed(0)}%` : "0%"}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <span className="text-base font-bold text-foreground">
+                  {formatScore(finalScore)} / {formatScore(totalPointsMax)} pkt
+                </span>
+                <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-md">
+                  {totalPointsMax > 0 ? `${((finalScore / totalPointsMax) * 100).toFixed(0)}%` : "0%"}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
+                {(() => {
+                  if (!attemptDetails?.startedAt) return null;
+                  const start = new Date(attemptDetails.startedAt).getTime();
+                  const end = attemptDetails.completedAt
+                    ? new Date(attemptDetails.completedAt).getTime()
+                    : Date.now();
+
+                  const diffMs = Math.max(0, end - start);
+                  const totalSec = Math.floor(diffMs / 1000);
+                  const mins = Math.floor(totalSec / 60);
+                  const secs = totalSec % 60;
+                  const formattedSpent = mins === 0 ? `${secs} s` : `${mins} min ${secs} s`;
+
+                  return (
+                    <div className="flex items-center gap-1.5 bg-background px-2.5 py-1 rounded-lg border border-border/60">
+                      <Clock size={13} className="text-primary shrink-0" />
+                      <span>
+                        {t("quizSolver.timeSpent", "Czas")}: <strong className="text-foreground font-semibold">{formattedSpent}</strong>
+                      </span>
+                    </div>
+                  );
+                })()}
+
+                {attemptDetails.timeLimitMinutes && (
+                  <div className="flex items-center gap-1.5 bg-background px-2.5 py-1 rounded-lg border border-border/60">
+                    <span>
+                      {t("quizSolver.timeLimit", "Limit")}: <strong className="text-foreground font-semibold">{attemptDetails.timeLimitMinutes} min</strong>
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Questions list with feedback and selected options */}

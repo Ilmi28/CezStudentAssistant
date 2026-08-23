@@ -171,6 +171,10 @@
             "totalPoints": "Points",
             "attempts": "Attempts",
             "bestScore": "Record",
+            "averageScore": "Average Score",
+            "masteryIndex": "Progress",
+            "masteredQuestions": "Progress",
+            "questionsSuffix": "questions",
             "difficultyBreakdown": "Difficulty",
             "hoverHint": "Hover over bar to view details",
             "pts": "pts"

@@ -12,6 +12,8 @@ export interface QuizDto {
   lastAttemptStatus?: QuizAttemptStatus | null;
   lastAttemptExpiresAt?: string | null;
   lastAttemptPoints?: number | null;
+  progressPercentage?: number;
+  hasCompletedAttempts?: boolean;
 }
 
 export interface QuestionOptionDto {
@@ -61,6 +63,8 @@ export interface QuizDetailsDto {
   mediumQuestionCountPerAttempt?: number | null;
   hardQuestionCountPerAttempt?: number | null;
   maxPoints?: number | null;
+  progressPercentage?: number;
+  masteredQuestionCount?: number;
   questions: QuestionDto[];
   attempts: QuizAttemptDto[];
 }
@@ -89,6 +93,7 @@ export interface QuizAttemptDetailsDto {
   timeLimitMinutes?: number | null;
   startedAt: string;
   expiresAt?: string | null;
+  completedAt?: string | null;
   questions: QuestionDto[];
   answers: QuestionAnswerDto[];
 }

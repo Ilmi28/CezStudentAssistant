@@ -171,6 +171,10 @@
             "totalPoints": "Punkty",
             "attempts": "Podejścia",
             "bestScore": "Rekord",
+            "averageScore": "Średni wynik",
+            "masteryIndex": "Progres",
+            "masteredQuestions": "Progres",
+            "questionsSuffix": "pytań",
             "difficultyBreakdown": "Trudność",
             "hoverHint": "Najedź na pasek, aby zobaczyć szczegóły",
             "pts": "pkt"

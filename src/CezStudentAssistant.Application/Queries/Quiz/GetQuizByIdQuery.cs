@@ -47,6 +47,8 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
             .OrderBy(a => a.StartedAt)
             .ToListAsync(ct);
 
+        var mastery = QuizMasteryCalculationHelper.CalculateMastery(quiz.Questions, attempts);
+
         return new QuizDetailsDto
         {
             Id = quiz.Id,
@@ -61,6 +63,8 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
             MediumQuestionCountPerAttempt = quiz.MediumQuestionCountPerAttempt,
             HardQuestionCountPerAttempt = quiz.HardQuestionCountPerAttempt,
             MaxPoints = quiz.Questions.Sum(qn => qn.Difficulty == QuestionDifficulty.Easy ? 1m : qn.Difficulty == QuestionDifficulty.Hard ? 3m : 2m),
+            ProgressPercentage = mastery.ProgressPercentage,
+            MasteredQuestionCount = mastery.MasteredCount,
             Questions = quiz.Questions.Select(q => new QuestionDto
             {
                 Id = q.Id,

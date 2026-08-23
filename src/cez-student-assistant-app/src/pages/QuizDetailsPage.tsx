@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
   Play,
   Pencil,
-  Trophy,
   Target,
   HelpCircle,
   Clock,
-  Layers
+  Layers,
+  Award
 } from "lucide-react";
-import { quizService, QuizAttemptStatus, QuestionDifficulty, type QuizDetailsDto } from "../services";
+import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizDetailsDto } from "../services";
 import Card from "../components/Card";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import LoadingScreen from "../components/LoadingScreen";
@@ -83,6 +83,7 @@ function AttemptCountdownBadge({
 export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { refreshQuizzes } = useQuiz();
 
@@ -108,7 +109,11 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     } catch (err) {
       console.warn("[QuizDetailsPage] Failed to load quiz details:", err);
       setError(t("common.genericError"));
-      navigate("/quizzes");
+      if (location.state?.fromPath) {
+        navigate(location.state.fromPath);
+      } else {
+        navigate("/quizzes");
+      }
     } finally {
       if (showFullLoading) {
         setLoading(false);
@@ -119,7 +124,13 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const handleGoBack = () => {
     setIsNavigatingBack(true);
     setTimeout(() => {
-      navigate("/quizzes");
+      if (location.state?.fromPath) {
+        navigate(location.state.fromPath);
+      } else if (quiz?.courseId) {
+        navigate(`/course/${quiz.courseId}`);
+      } else {
+        navigate("/quizzes");
+      }
     }, 200);
   };
 
@@ -130,7 +141,10 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
       const attempt = await quizService.startQuiz(quiz.id);
       refreshQuizzes().catch(() => {});
       navigate(`/quiz/attempt/${attempt.attemptId}`, {
-        state: { initialAttempt: attempt }
+        state: {
+          initialAttempt: attempt,
+          fromPath: location.state?.fromPath || (quiz.courseId ? `/course/${quiz.courseId}` : "/quizzes")
+        }
       });
     } catch (err) {
       console.warn("[QuizDetailsPage] Failed to start quiz:", err);
@@ -141,7 +155,11 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   };
 
   const handleContinueAttempt = (attemptId: string) => {
-    navigate(`/quiz/attempt/${attemptId}`);
+    navigate(`/quiz/attempt/${attemptId}`, {
+      state: {
+        fromPath: location.state?.fromPath || (quiz?.courseId ? `/course/${quiz.courseId}` : "/quizzes")
+      }
+    });
   };
 
   const handleEditQuizSubmit = async (
@@ -172,9 +190,36 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const totalPointsMax = quiz.maxPoints ?? 0;
   const completedAttempts = quiz.attempts.filter(a => a.status === QuizAttemptStatus.Completed);
 
-  const bestScore = completedAttempts.length > 0
-    ? Math.max(...completedAttempts.map(a => Number(a.points ?? 0)))
-    : null;
+  // Stopień opanowania bazy pytań
+  const masteredQuestionIds = new Set<string>();
+  if (quiz.questions.length > 0 && completedAttempts.length > 0) {
+    quiz.questions.forEach((q) => {
+      const correctOptionIds = q.options.filter((o) => o.isCorrect).map((o) => o.id);
+      if (correctOptionIds.length === 0) return;
+
+      const isAnsweredCorrectly = completedAttempts.some((a) => {
+        const ans = a.answers.find((ansItem) => ansItem.questionId === q.id);
+        if (!ans) return false;
+        const selected = ans.selectedOptionIds || [];
+
+        if (q.type === QuestionType.SingleChoice) {
+          return selected.length === 1 && correctOptionIds.includes(selected[0]);
+        }
+        return (
+          selected.length === correctOptionIds.length &&
+          selected.every((id) => correctOptionIds.includes(id))
+        );
+      });
+
+      if (isAnsweredCorrectly) {
+        masteredQuestionIds.add(q.id);
+      }
+    });
+  }
+
+  const masteredCount = masteredQuestionIds.size;
+  const poolTotalCount = quiz.questions.length;
+  const masteryPercentage = poolTotalCount > 0 ? Math.round((masteredCount / poolTotalCount) * 100) : 0;
 
   const formatScore = (val: number) => {
     if (Number.isInteger(val)) return val.toString();
@@ -314,23 +359,45 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
             </div>
           </div>
 
-          {/* Best Score */}
+          {/* Pool Mastery Percentage */}
           <div className="flex items-center gap-2.5 pt-3 sm:pt-3 xl:pt-0 sm:pl-3 xl:pl-4">
             <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-              <Trophy size={18} strokeWidth={2.25} />
+              <Award size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
-                {t("quizDetails.stats.bestScore")}
+                {t("quizDetails.stats.masteryIndex")}
               </span>
-              <span key={String(bestScore)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
-                {bestScore !== null && totalPointsMax > 0
-                  ? `${Math.round((bestScore / totalPointsMax) * 100)}%`
-                  : "-"}
+              <span key={String(masteryPercentage)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
+                {completedAttempts.length > 0 ? `${masteryPercentage}%` : "-"}
               </span>
             </div>
           </div>
         </div>
+
+        {/* Pool Mastery Progress Bar */}
+        {quiz.questions.length > 0 && (
+          <div className="mt-4 pt-3.5 border-t border-border/50 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span>{t("quizDetails.stats.masteredQuestions")}</span>
+              <span className="text-foreground font-bold">
+                {masteredCount} / {poolTotalCount} {t("quizDetails.stats.questionsSuffix")} ({masteryPercentage}%)
+              </span>
+            </div>
+            <MultiSegmentProgressBar
+              segments={[
+                {
+                  id: "progres",
+                  value: masteredCount,
+                  colorClass: "bg-emerald-500",
+                  customTooltip: `${t("quizDetails.stats.masteredQuestions")}: ${masteredCount} / ${poolTotalCount} (${masteryPercentage}%)`,
+                },
+              ]}
+              totalValue={poolTotalCount}
+              heightClass="h-3.5"
+            />
+          </div>
+        )}
 
         {/* Bottom Difficulty Distribution Bar */}
         {quiz.questions.length > 0 && (

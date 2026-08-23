@@ -18,6 +18,8 @@ public class QuizDetailsDto
     public int? MediumQuestionCountPerAttempt { get; set; }
     public int? HardQuestionCountPerAttempt { get; set; }
     public decimal? MaxPoints { get; set; }
+    public int ProgressPercentage { get; set; }
+    public int MasteredQuestionCount { get; set; }
     public List<QuestionDto> Questions { get; set; } = new();
     public List<QuizAttemptDto> Attempts { get; set; } = new();
 }

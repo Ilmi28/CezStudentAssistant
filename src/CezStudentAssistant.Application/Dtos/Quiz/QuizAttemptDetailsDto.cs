@@ -18,6 +18,7 @@ public class QuizAttemptDetailsDto
     public int? TimeLimitMinutes { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? ExpiresAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public List<QuestionDto> Questions { get; set; } = new();
     public List<QuestionAnswerDto> Answers { get; set; } = new();
 }

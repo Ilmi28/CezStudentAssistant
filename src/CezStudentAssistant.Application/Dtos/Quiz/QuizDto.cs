@@ -17,4 +17,6 @@ public class QuizDto
     public QuizAttemptStatus? LastAttemptStatus { get; set; }
     public DateTime? LastAttemptExpiresAt { get; set; }
     public decimal? LastAttemptPoints { get; set; }
+    public int ProgressPercentage { get; set; }
+    public bool HasCompletedAttempts { get; set; }
 }

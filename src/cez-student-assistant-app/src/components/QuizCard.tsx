@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 import type { QuizDto } from "../types";
@@ -69,6 +69,7 @@ export default function QuizCard({
   showCourseName = true,
 }: QuizCardProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { refreshQuizzes } = useQuiz();
   const isGenerating = quiz.status === QuizStatusEnum.Generating;
@@ -77,7 +78,6 @@ export default function QuizCard({
   const isGenericTitle = !rawTitle || rawTitle.startsWith("Quiz z") || rawTitle === quiz.courseName;
   const displayTitle = index !== undefined && isGenericTitle ? `Quiz #${index}` : (rawTitle || (index !== undefined ? `Quiz #${index}` : "Quiz"));
 
-  const isCompleted = quiz.lastAttemptStatus === QuizAttemptStatus.Completed;
   const isInProgress = quiz.lastAttemptStatus === QuizAttemptStatus.InProgress;
 
   const percentage =
@@ -90,7 +90,7 @@ export default function QuizCard({
       hoverEffect={!isGenerating}
       onClick={() => {
         if (!isGenerating) {
-          navigate(`/quiz/${quiz.id}`);
+          navigate(`/quiz/${quiz.id}`, { state: { fromPath: location.pathname } });
         }
       }}
       className={`p-4 flex-row items-center justify-between gap-3.5 ${className}`}
@@ -137,20 +137,22 @@ export default function QuizCard({
               )
             )}
 
-            {/* If last attempt is completed */}
-            {isCompleted && (
+            {/* Display Progress (0% - 100%) */}
+            {!isInProgress && (
               <>
                 <span
                   className={`text-base font-bold tabular-nums leading-tight ${
-                    percentage !== null && percentage >= 50
+                    (quiz.progressPercentage ?? 0) >= 50
                       ? "text-emerald-500 dark:text-emerald-400"
-                      : "text-amber-500 dark:text-amber-400"
+                      : (quiz.progressPercentage ?? 0) > 0
+                        ? "text-amber-500 dark:text-amber-400"
+                        : "text-muted-foreground/70"
                   }`}
                 >
-                  {percentage !== null ? `${percentage}%` : (quiz.lastAttemptPoints !== null && quiz.lastAttemptPoints !== undefined ? `${quiz.lastAttemptPoints} pkt` : "0%")}
+                  {quiz.progressPercentage ?? 0}%
                 </span>
                 <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                  {t("quizDetails.status.completed")}
+                  {t("quizDetails.stats.masteryIndex", "PROGRES")}
                 </span>
               </>
             )}
