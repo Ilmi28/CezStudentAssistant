@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Brain } from "lucide-react";
 import { Alert } from "./Alert";
 import { PrimaryButton, SecondaryButton } from "./Button";
 import Modal from "./Modal";
+import MultiSegmentProgressBar from "./MultiSegmentProgressBar";
 import { courseService } from "../services/courseService";
 import type { EstimateQuizTokensResponseDto } from "../types";
 
@@ -164,15 +164,11 @@ export default function GenerateQuizModal({
 
   const isSubmitDisabled = !hasFiles || (currentEstimation !== null && !currentEstimation.canGenerate);
 
-  const easyPct = totalSelected > 0 ? (easyCount / totalSelected) * 100 : 0;
-  const mediumPct = totalSelected > 0 ? (mediumCount / totalSelected) * 100 : 0;
-
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
       title={t("courseDetails.generateTitle")}
-      icon={<Brain size={20} className="text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Alert message={modalError} />
@@ -255,29 +251,14 @@ export default function GenerateQuizModal({
             </span>
           </div>
 
-          <div className="h-3.5 w-full bg-secondary rounded-full flex gap-1 p-0.5 border border-border/50 overflow-hidden shadow-xs">
-            {easyCount > 0 && (
-              <div
-                style={{ width: `${easyPct}%` }}
-                className="h-full bg-emerald-500 rounded-full transition-all duration-200"
-                title={`${t("quizSolver.difficulty.easy", "Łatwe")}: ${easyCount}`}
-              />
-            )}
-            {mediumCount > 0 && (
-              <div
-                style={{ width: `${mediumPct}%` }}
-                className="h-full bg-amber-500 rounded-full transition-all duration-200"
-                title={`${t("quizSolver.difficulty.medium", "Średnie")}: ${mediumCount}`}
-              />
-            )}
-            {hardCount > 0 && (
-              <div
-                style={{ width: `${100 - easyPct - mediumPct}%` }}
-                className="h-full bg-rose-500 rounded-full transition-all duration-200"
-                title={`${t("quizSolver.difficulty.hard", "Trudne")}: ${hardCount}`}
-              />
-            )}
-          </div>
+          <MultiSegmentProgressBar
+            segments={[
+              { id: "easy", value: easyCount, colorClass: "bg-emerald-500", customTooltip: `${t("quizSolver.difficulty.easy", "Łatwe")} (${easyCount})` },
+              { id: "medium", value: mediumCount, colorClass: "bg-amber-500", customTooltip: `${t("quizSolver.difficulty.medium", "Średnie")} (${mediumCount})` },
+              { id: "hard", value: hardCount, colorClass: "bg-rose-500", customTooltip: `${t("quizSolver.difficulty.hard", "Trudne")} (${hardCount})` },
+            ]}
+            heightClass="h-3.5"
+          />
 
           <div className="space-y-2">
             <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
@@ -397,39 +378,56 @@ export default function GenerateQuizModal({
                 <div className="flex justify-between items-baseline">
                   <span
                     className={`text-sm font-bold ${
-                      currentEstimation.canGenerate ? "text-primary" : "text-destructive"
+                      currentEstimation.canGenerate ? "text-foreground" : "text-destructive"
                     }`}
                   >
                     ~{currentEstimation.estimatedDailyUsagePercentage}%
                   </span>
-                  <span className="text-xs font-medium text-foreground">
-                    ~{currentEstimation.estimatedTokens.toLocaleString()} {t("courseDetails.tokensUnit")}
-                  </span>
                 </div>
-                <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden flex">
-                  {currentEstimation.dailyTokenLimit > 0 && currentEstimation.dailyTokensUsed > 0 && (
-                    <div
-                      className="h-full bg-primary/35 transition-all duration-300"
-                      style={{
-                        width: `${Math.min(
-                          100,
-                          (currentEstimation.dailyTokensUsed / currentEstimation.dailyTokenLimit) * 100
-                        )}%`,
-                      }}
-                      title={`${t("preferences.dailyUsage")}: ${currentEstimation.dailyTokensUsed.toLocaleString()}`}
+
+                {(() => {
+                  const limit = currentEstimation.dailyTokenLimit || 1;
+                  const realUsed = currentEstimation.dailyTokensUsed || 0;
+                  const otherReserved = currentEstimation.dailyTokensReserved || 0;
+                  const thisQuizEstimated = currentEstimation.estimatedTokens || 0;
+                  const remainingTokens = Math.max(0, limit - realUsed - otherReserved - thisQuizEstimated);
+
+                  const realPctStr = limit > 0 ? ((realUsed / limit) * 100).toFixed(1) : "0";
+                  const otherReservedPctStr = limit > 0 ? ((otherReserved / limit) * 100).toFixed(1) : "0";
+                  const thisQuizPctStr = limit > 0 ? ((thisQuizEstimated / limit) * 100).toFixed(1) : "0";
+                  const remainingPctStr = limit > 0 ? ((remainingTokens / limit) * 100).toFixed(1) : "0";
+
+                  const segments = [
+                    {
+                      id: "real",
+                      value: realUsed,
+                      colorClass: "bg-sky-500",
+                      customTooltip: `Zużyte: ${realUsed.toLocaleString()} (${realPctStr}%)`,
+                    },
+                    {
+                      id: "other",
+                      value: otherReserved,
+                      colorClass: "bg-amber-500",
+                      customTooltip: `Inne zlecenia: ${otherReserved.toLocaleString()} (${otherReservedPctStr}%)`,
+                    },
+                    {
+                      id: "thisQuiz",
+                      value: thisQuizEstimated,
+                      colorClass: "bg-indigo-500",
+                      customTooltip: `Ten quiz: ${thisQuizEstimated.toLocaleString()} (${thisQuizPctStr}%)`,
+                    },
+                  ];
+
+                  return (
+                    <MultiSegmentProgressBar
+                      segments={segments}
+                      totalValue={limit}
+                      heightClass="h-3.5"
+                      showRemainingSegment
+                      remainingSegmentTooltip={`Wolne: ${remainingTokens.toLocaleString()} (${remainingPctStr}%)`}
                     />
-                  )}
-                  <div
-                    className="h-full bg-primary transition-all duration-300"
-                    style={{
-                      width: `${Math.min(
-                        100 - (currentEstimation.dailyTokenLimit > 0 ? (currentEstimation.dailyTokensUsed / currentEstimation.dailyTokenLimit) * 100 : 0),
-                        currentEstimation.estimatedDailyUsagePercentage
-                      )}%`,
-                    }}
-                    title={`${t("courseDetails.estimatedDailyUsage")}: ${currentEstimation.estimatedDailyUsagePercentage}%`}
-                  />
-                </div>
+                  );
+                })()}
               </div>
             ) : null}
           </div>
@@ -443,7 +441,6 @@ export default function GenerateQuizModal({
             type="submit"
             loading={loading}
             disabled={isSubmitDisabled}
-            icon={<Brain size={16} />}
           >
             {t("courseDetails.generateBtn")}
           </PrimaryButton>

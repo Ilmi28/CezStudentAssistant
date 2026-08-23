@@ -38,13 +38,23 @@ public class GetUserUsageQueryHandler(IUnitOfWork unitOfWork, IConfiguration con
         }
 
         var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
-        var dailyTokensUsed = await tokenUsageRepo.GetDailyTokenUsageAsync(query.UserId, DateTime.UtcNow, ct);
+        var (completedTokens, reservedTokens) = await tokenUsageRepo.GetDailyTokenUsageBreakdownAsync(query.UserId, DateTime.UtcNow, ct);
+        if (completedTokens == 0 && reservedTokens == 0)
+        {
+            var fallbackUsed = await tokenUsageRepo.GetDailyTokenUsageAsync(query.UserId, DateTime.UtcNow, ct);
+            if (fallbackUsed > 0)
+            {
+                completedTokens = fallbackUsed;
+            }
+        }
 
-        var usagePercentage = Math.Round((double)dailyTokensUsed / dailyTokenLimit * 100, 2);
+        var totalUsedAndReserved = completedTokens + reservedTokens;
+        var usagePercentage = Math.Round((double)totalUsedAndReserved / dailyTokenLimit * 100, 2);
 
         return new UserUsageDto
         {
-            DailyTokensUsed = dailyTokensUsed,
+            DailyTokensUsed = completedTokens,
+            DailyTokensReserved = reservedTokens,
             DailyTokenLimit = dailyTokenLimit,
             DailyUsagePercentage = usagePercentage
         };

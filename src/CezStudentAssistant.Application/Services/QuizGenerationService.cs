@@ -74,7 +74,7 @@ public class QuizGenerationService(
                 throw new BadRequestException(aiResponse.Message ?? AIMessageConsts.QuizGenerationError);
             }
 
-            await RecordTokenUsageAsync(dto.UserId, aiResponse.TotalTokens, ct);
+            await CommitTokenUsageAsync(dto.UserId, dto.ReservationId, aiResponse.TotalTokens, ct);
             await SaveQuizWithQuestionsAsync(dto, aiResponse.Data, ct);
 
             await unitOfWork.SaveChangesAsync(ct);
@@ -82,6 +82,7 @@ public class QuizGenerationService(
         }
         catch
         {
+            await ReleaseTokenReservationAsync(dto.ReservationId, ct);
             await CleanupGeneratingQuizAsync(dto.QuizId, ct);
             await jobService.UpdateJobAsync(job, JobStatus.Failed, ct: ct);
             throw;
@@ -110,15 +111,45 @@ public class QuizGenerationService(
         return files;
     }
 
-    private async Task RecordTokenUsageAsync(Guid userId, int tokenCount, CancellationToken ct)
+    private async Task CommitTokenUsageAsync(Guid userId, Guid reservationId, int tokenCount, CancellationToken ct)
     {
         var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
+        if (reservationId != Guid.Empty)
+        {
+            var reservation = await tokenUsageRepo.GetByIdAsync(reservationId, ct);
+            if (reservation != null)
+            {
+                reservation.UsageType = UsageTokenType.QuizGeneration;
+                reservation.UsageCount = tokenCount;
+                return;
+            }
+        }
+
         await tokenUsageRepo.AddAsync(new TokenUsage
         {
             UserId = userId,
             UsageType = UsageTokenType.QuizGeneration,
             UsageCount = tokenCount
         }, ct);
+    }
+
+    private async Task ReleaseTokenReservationAsync(Guid reservationId, CancellationToken ct)
+    {
+        if (reservationId == Guid.Empty) return;
+        try
+        {
+            var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
+            var reservation = await tokenUsageRepo.GetByIdAsync(reservationId, ct);
+            if (reservation != null)
+            {
+                await tokenUsageRepo.DeleteAsync(reservation, ct);
+                await unitOfWork.SaveChangesAsync(ct);
+            }
+        }
+        catch
+        {
+            // Ignore failure during reservation release
+        }
     }
 
     private async Task SaveQuizWithQuestionsAsync(GenerateQuizDto dto, AIQuiz aiQuiz, CancellationToken ct)

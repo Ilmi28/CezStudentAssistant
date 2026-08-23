@@ -47,6 +47,7 @@ export interface EstimateQuizTokensResponseDto {
   estimatedTokens: number;
   dailyTokenLimit: number;
   dailyTokensUsed: number;
+  dailyTokensReserved?: number;
   estimatedDailyUsagePercentage: number;
   remainingDailyTokens: number;
   canGenerate: boolean;

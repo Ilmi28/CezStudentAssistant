@@ -24,6 +24,7 @@ export interface UpdateUserConfigurationPayload {
 
 export interface UserUsageDto {
   dailyTokensUsed: number;
+  dailyTokensReserved?: number;
   dailyTokenLimit: number;
   dailyUsagePercentage: number;
 }

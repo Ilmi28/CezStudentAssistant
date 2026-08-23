@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,6 +16,7 @@ import Card from "../components/Card";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import LoadingScreen from "../components/LoadingScreen";
 import EditQuizModal from "../components/EditQuizModal";
+import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
 import { useCountdown, useQuiz } from "../hooks";
 
 interface QuizDetailsPageProps {
@@ -90,16 +91,16 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const [starting, setStarting] = useState(false);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [mousePos, setMousePos] = useState<{ x: number; diff: 'easy' | 'medium' | 'hard' } | null>(null);
-  const barContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!id) return;
     loadQuizDetails(id);
   }, [id]);
 
-  const loadQuizDetails = async (quizId: string) => {
-    setLoading(true);
+  const loadQuizDetails = async (quizId: string, showFullLoading = true) => {
+    if (showFullLoading) {
+      setLoading(true);
+    }
     try {
       const data = await quizService.getQuizDetails(quizId);
       setQuiz(data);
@@ -109,7 +110,9 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
       setError(t("common.genericError"));
       navigate("/quizzes");
     } finally {
-      setLoading(false);
+      if (showFullLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -159,8 +162,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
       mediumCount,
       hardCount
     );
-    refreshQuizzes().catch(() => {});
-    await loadQuizDetails(id);
+    await loadQuizDetails(id, false);
   };
 
   if (loading || !quiz) {
@@ -197,24 +199,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const configuredAttemptMaxPoints = (quiz.easyQuestionCountPerAttempt != null || quiz.mediumQuestionCountPerAttempt != null || quiz.hardQuestionCountPerAttempt != null)
     ? (easyAttemptCount * 1 + mediumAttemptCount * 2 + hardAttemptCount * 3)
     : totalPointsMax;
-
-  const handleBarMouseMove = (e: React.MouseEvent<HTMLDivElement>, diff: 'easy' | 'medium' | 'hard') => {
-    if (!barContainerRef.current) return;
-    const rect = barContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    setMousePos({ x, diff });
-  };
-
-  const getTooltipText = (diff: 'easy' | 'medium' | 'hard') => {
-    if (diff === 'easy') {
-      return `${t("quizSolver.difficulty.easy")} - ${easyAttemptCount}`;
-    }
-    if (diff === 'medium') {
-      return `${t("quizSolver.difficulty.medium")} - ${mediumAttemptCount}`;
-    }
-    return `${t("quizSolver.difficulty.hard")} - ${hardAttemptCount}`;
-  };
-
   return (
     <div
       className={`max-w-4xl mx-auto space-y-6 ${
@@ -279,7 +263,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.questions")}
               </span>
-              <span className="text-lg font-bold text-foreground block truncate">
+              <span key={String(quiz.questionCountPerAttempt ?? totalAttemptConfigured)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {quiz.questionCountPerAttempt ?? totalAttemptConfigured}
               </span>
             </div>
@@ -294,7 +278,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.questionPool")}
               </span>
-              <span className="text-lg font-bold text-foreground block truncate">
+              <span key={String(quiz.questions.length)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {quiz.questions.length}
               </span>
             </div>
@@ -309,7 +293,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.timeLimit")}
               </span>
-              <span className="text-lg font-bold text-foreground block whitespace-nowrap truncate">
+              <span key={String(quiz.timeLimitMinutes)} className="text-lg font-bold text-foreground block whitespace-nowrap truncate animate-in fade-in zoom-in-95 duration-300">
                 {quiz.timeLimitMinutes ? `${quiz.timeLimitMinutes} min` : t("quizDetails.stats.noLimit")}
               </span>
             </div>
@@ -324,7 +308,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.totalPoints")}
               </span>
-              <span className="text-lg font-bold text-foreground block whitespace-nowrap truncate">
+              <span key={String(configuredAttemptMaxPoints)} className="text-lg font-bold text-foreground block whitespace-nowrap truncate animate-in fade-in zoom-in-95 duration-300">
                 {formatScore(configuredAttemptMaxPoints)} {t("quizDetails.stats.pts")}
               </span>
             </div>
@@ -339,7 +323,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.bestScore")}
               </span>
-              <span className="text-lg font-bold text-foreground block truncate">
+              <span key={String(bestScore)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {bestScore !== null && totalPointsMax > 0
                   ? `${Math.round((bestScore / totalPointsMax) * 100)}%`
                   : "-"}
@@ -355,48 +339,14 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               <span>{t("quizDetails.stats.difficultyBreakdown")}</span>
             </div>
 
-            {/* Segmented Interactive Progress Bar */}
-            <div
-              ref={barContainerRef}
-              onMouseLeave={() => setMousePos(null)}
-              className="h-3.5 w-full bg-secondary rounded-full flex gap-1 p-0.5 border border-border/50 relative"
-            >
-              {mousePos && (
-                <div
-                  style={{ left: `${mousePos.x}px` }}
-                  className="absolute bottom-full mb-2.5 -translate-x-1/2 flex flex-col items-center z-30 pointer-events-none transition-none"
-                >
-                  <div className="px-3 py-1.5 rounded-lg bg-card text-foreground text-xs font-semibold shadow-xl border border-border whitespace-nowrap">
-                    {getTooltipText(mousePos.diff)}
-                  </div>
-                  <div className="w-2.5 h-2.5 -mt-1.5 rotate-45 bg-card border-r border-b border-border" />
-                </div>
-              )}
-
-              {easyAttemptCount > 0 && (
-                <div
-                  style={{ width: `${(easyAttemptCount / Math.max(1, totalAttemptConfigured)) * 100}%` }}
-                  onMouseMove={(e) => handleBarMouseMove(e, 'easy')}
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-200 cursor-pointer hover:brightness-125 hover:scale-y-125"
-                />
-              )}
-
-              {mediumAttemptCount > 0 && (
-                <div
-                  style={{ width: `${(mediumAttemptCount / Math.max(1, totalAttemptConfigured)) * 100}%` }}
-                  onMouseMove={(e) => handleBarMouseMove(e, 'medium')}
-                  className="h-full bg-amber-500 rounded-full transition-all duration-200 cursor-pointer hover:brightness-125 hover:scale-y-125"
-                />
-              )}
-
-              {hardAttemptCount > 0 && (
-                <div
-                  style={{ width: `${(hardAttemptCount / Math.max(1, totalAttemptConfigured)) * 100}%` }}
-                  onMouseMove={(e) => handleBarMouseMove(e, 'hard')}
-                  className="h-full bg-rose-500 rounded-full transition-all duration-200 cursor-pointer hover:brightness-125 hover:scale-y-125"
-                />
-              )}
-            </div>
+            <MultiSegmentProgressBar
+              segments={[
+                { id: "easy", value: easyAttemptCount, colorClass: "bg-emerald-500", customTooltip: `${t("quizSolver.difficulty.easy", "Łatwe")} (${easyAttemptCount})` },
+                { id: "medium", value: mediumAttemptCount, colorClass: "bg-amber-500", customTooltip: `${t("quizSolver.difficulty.medium", "Średnie")} (${mediumAttemptCount})` },
+                { id: "hard", value: hardAttemptCount, colorClass: "bg-rose-500", customTooltip: `${t("quizSolver.difficulty.hard", "Trudne")} (${hardAttemptCount})` },
+              ]}
+              heightClass="h-3.5"
+            />
           </div>
         )}
       </Card>

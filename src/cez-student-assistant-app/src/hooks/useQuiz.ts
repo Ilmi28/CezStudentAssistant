@@ -31,10 +31,8 @@ export function useQuiz() {
       fetchQuizzes();
       signalRService.startConnection();
 
-      const unsubscribe = signalRService.subscribeJobStatus((_jobId, status) => {
-        if (status === "Succeeded" || status === "Failed") {
-          fetchQuizzes();
-        }
+      const unsubscribe = signalRService.subscribeJobStatus((_jobId, _status) => {
+        fetchQuizzes();
       });
 
       return () => {

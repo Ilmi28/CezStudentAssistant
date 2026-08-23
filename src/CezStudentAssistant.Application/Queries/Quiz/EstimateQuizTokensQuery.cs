@@ -52,7 +52,16 @@ public class EstimateQuizTokensQueryHandler(
         }
 
         var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
-        var dailyTokensUsed = await tokenUsageRepo.GetDailyTokenUsageAsync(query.UserId, DateTime.UtcNow, ct);
+        var (completedTokens, reservedTokens) = await tokenUsageRepo.GetDailyTokenUsageBreakdownAsync(query.UserId, DateTime.UtcNow, ct);
+        if (completedTokens == 0 && reservedTokens == 0)
+        {
+            var fallbackUsed = await tokenUsageRepo.GetDailyTokenUsageAsync(query.UserId, DateTime.UtcNow, ct);
+            if (fallbackUsed > 0)
+            {
+                completedTokens = fallbackUsed;
+            }
+        }
+        var totalUsedAndReserved = completedTokens + reservedTokens;
 
         var inputTokens = await CalculateInputTokensAsync(query.CourseId, ct);
 
@@ -60,14 +69,15 @@ public class EstimateQuizTokensQueryHandler(
         var totalEstimatedTokens = inputTokens + estimatedOutputTokens;
 
         var estimatedPercentage = Math.Round((double)totalEstimatedTokens / dailyTokenLimit * 100, 2);
-        var remainingDailyTokens = Math.Max(0, dailyTokenLimit - dailyTokensUsed);
-        var canGenerate = (dailyTokensUsed + totalEstimatedTokens) <= dailyTokenLimit;
+        var remainingDailyTokens = Math.Max(0, dailyTokenLimit - totalUsedAndReserved);
+        var canGenerate = (totalUsedAndReserved + totalEstimatedTokens) <= dailyTokenLimit;
 
         return new EstimateQuizTokensDto
         {
             EstimatedTokens = totalEstimatedTokens,
             DailyTokenLimit = dailyTokenLimit,
-            DailyTokensUsed = dailyTokensUsed,
+            DailyTokensUsed = completedTokens,
+            DailyTokensReserved = reservedTokens,
             EstimatedDailyUsagePercentage = estimatedPercentage,
             RemainingDailyTokens = remainingDailyTokens,
             CanGenerate = canGenerate

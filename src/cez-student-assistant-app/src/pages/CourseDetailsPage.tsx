@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Brain } from "lucide-react";
-import { courseService, quizService, type CourseDetailsDto, type QuizDto } from "../services";
+import { courseService, type CourseDetailsDto } from "../services";
 import EditCourseModal from "../components/EditCourseModal";
 import ConfirmModal from "../components/ConfirmModal";
 import UploadFileModal from "../components/UploadFileModal";
@@ -22,10 +22,9 @@ export default function CourseDetailsPage({
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { refreshQuizzes } = useQuiz();
+  const { refreshQuizzes, quizzes } = useQuiz();
 
   const [selectedCourse, setSelectedCourse] = useState<CourseDetailsDto | null>(null);
-  const [courseQuizzes, setCourseQuizzes] = useState<QuizDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFilesExpanded, setIsFilesExpanded] = useState(false);
   const [isQuizzesExpanded, setIsQuizzesExpanded] = useState(false);
@@ -37,6 +36,8 @@ export default function CourseDetailsPage({
   const [isGenerateQuizModalOpen, setIsGenerateQuizModalOpen] = useState(false);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
+  const courseQuizzes = quizzes.filter((q) => q.courseId === id);
+
   useEffect(() => {
     loadCourseDetailsAndQuizzes();
   }, [id]);
@@ -45,15 +46,9 @@ export default function CourseDetailsPage({
     if (!id) return;
     setLoading(true);
     try {
-      const [details, allQuizzes] = await Promise.all([
-        courseService.getCourseDetails(id),
-        quizService.getQuizzes().catch((quizErr) => {
-          console.debug("[CourseDetailsPage] Failed to load quizzes:", quizErr);
-          return [] as QuizDto[];
-        })
-      ]);
+      const details = await courseService.getCourseDetails(id);
       setSelectedCourse(details);
-      setCourseQuizzes(allQuizzes.filter((q) => q.courseId === id));
+      await refreshQuizzes().catch(() => {});
     } catch (err) {
       console.warn("[CourseDetailsPage] Failed to load details:", err);
       setError(t("common.genericError"));

@@ -4,6 +4,7 @@ import { Input } from "./Input";
 import { Alert } from "./Alert";
 import { PrimaryButton, SecondaryButton } from "./Button";
 import Modal from "./Modal";
+import MultiSegmentProgressBar from "./MultiSegmentProgressBar";
 
 interface EditQuizModalProps {
   isOpen: boolean;
@@ -137,9 +138,6 @@ export default function EditQuizModal({
     onClose();
   };
 
-  const easyPct = totalSelected > 0 ? (easyCount / totalSelected) * 100 : 0;
-  const mediumPct = totalSelected > 0 ? (mediumCount / totalSelected) * 100 : 0;
-
   return (
     <Modal
       isOpen={isOpen}
@@ -205,29 +203,14 @@ export default function EditQuizModal({
           </div>
 
           {/* Segmented Live Preview Bar */}
-          <div className="h-3.5 w-full bg-secondary rounded-full flex gap-1 p-0.5 border border-border/50 overflow-hidden shadow-xs">
-            {easyCount > 0 && (
-              <div
-                style={{ width: `${easyPct}%` }}
-                className="h-full bg-emerald-500 rounded-full transition-all duration-200"
-                title={`${t("quizSolver.difficulty.easy", "Łatwe")}: ${easyCount}`}
-              />
-            )}
-            {mediumCount > 0 && (
-              <div
-                style={{ width: `${mediumPct}%` }}
-                className="h-full bg-amber-500 rounded-full transition-all duration-200"
-                title={`${t("quizSolver.difficulty.medium", "Średnie")}: ${mediumCount}`}
-              />
-            )}
-            {hardCount > 0 && (
-              <div
-                style={{ width: `${100 - easyPct - mediumPct}%` }}
-                className="h-full bg-rose-500 rounded-full transition-all duration-200"
-                title={`${t("quizSolver.difficulty.hard", "Trudne")}: ${hardCount}`}
-              />
-            )}
-          </div>
+          <MultiSegmentProgressBar
+            segments={[
+              { id: "easy", value: easyCount, colorClass: "bg-emerald-500", customTooltip: `${t("quizSolver.difficulty.easy", "Łatwe")} (${easyCount})` },
+              { id: "medium", value: mediumCount, colorClass: "bg-amber-500", customTooltip: `${t("quizSolver.difficulty.medium", "Średnie")} (${mediumCount})` },
+              { id: "hard", value: hardCount, colorClass: "bg-rose-500", customTooltip: `${t("quizSolver.difficulty.hard", "Trudne")} (${hardCount})` },
+            ]}
+            heightClass="h-3.5"
+          />
 
           {/* 3 Spacious Control Rows */}
           <div className="space-y-2">

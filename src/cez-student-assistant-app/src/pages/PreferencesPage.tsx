@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useUser } from "../hooks";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import { Select } from "../components/Select";
+import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
 import { userService } from "../services";
 import { UserTheme, UserLanguage } from "../types";
 
@@ -49,16 +50,7 @@ export default function PreferencesPage() {
     await updateUserLanguage(newLang);
   };
 
-  const themeOptions = [
-    { value: UserTheme.Light, label: t("preferences.themeLight") },
-    { value: UserTheme.Dark, label: t("preferences.themeDark") },
-    { value: UserTheme.System, label: t("preferences.themeSystem") },
-  ];
 
-  const languageOptions = [
-    { value: UserLanguage.Polish, label: "Polski" },
-    { value: UserLanguage.English, label: "English" },
-  ];
 
   const formattedSyncDate = lastCezSync
     ? new Date(lastCezSync).toLocaleString(i18n.language === "pl" ? "pl-PL" : "en-US", {
@@ -68,77 +60,92 @@ export default function PreferencesPage() {
     : t("courses.syncSubtitleNoDate");
 
   return (
-    <div className="max-w-2xl mx-auto space-y-10 py-4 animate-in fade-in duration-150">
-      {/* Main Page Title */}
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">
+        <h1 className="text-2xl font-black text-foreground tracking-tight">
           {t("preferences.title")}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-0.5 font-normal">
           {t("preferences.subtitle")}
         </p>
       </div>
 
       {/* Section 1: User Profile */}
+
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
           <h2 className="text-base font-bold text-foreground tracking-wide">
-            {t("preferences.accountSection")}
+            {t("preferences.profileSection")}
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              {t("auth.usernameLabel")}
-            </label>
-            <div className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground text-sm font-medium flex items-center justify-between shadow-xs">
-              <span>{username || "Student"}</span>
+
+        <div className="flex items-center gap-4 py-1">
+          <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg">
+            {username ? username.charAt(0).toUpperCase() : "U"}
+          </div>
+          <div>
+            <div className="text-sm font-bold text-foreground">
+              {username || t("preferences.defaultUsername")}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {t("preferences.userRole")}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 2: Appearance & Interface */}
+      {/* Section 2: App Preferences */}
+
       <section className="space-y-4">
+
         <div className="border-b border-border pb-2.5">
           <h2 className="text-base font-bold text-foreground tracking-wide">
-            {t("preferences.appearanceSection")}
+            {t("preferences.appSection")}
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-          {/* Theme Selector */}
-          <div className="space-y-1.5">
-            <label htmlFor="themeSelect" className="block text-sm font-medium text-foreground mb-1.5">
-              {t("preferences.themeLabel")}
-            </label>
-            <Select
-              id="themeSelect"
-              value={theme}
-              options={themeOptions}
-              disabled={fetchingConfig}
-              onChange={handleThemeSelect}
-            />
-          </div>
 
-          {/* Language Selector */}
-          <div className="space-y-1.5">
-            <label htmlFor="langSelect" className="block text-sm font-medium text-foreground mb-1.5">
-              {t("preferences.languageLabel")}
-            </label>
-            <Select
-              id="langSelect"
-              value={language}
-              options={languageOptions}
-              disabled={fetchingConfig}
-              onChange={handleLanguageSelect}
-            />
+        {fetchingConfig ? (
+          <div className="h-10 animate-pulse bg-muted rounded-xl" />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
+                {t("preferences.themeLabel")}
+              </label>
+
+              <Select
+                value={theme}
+                onChange={(val) => handleThemeSelect(val as UserTheme)}
+                options={[
+                  { value: UserTheme.Dark, label: t("preferences.themeDark") },
+                  { value: UserTheme.Light, label: t("preferences.themeLight") },
+                ]}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
+                {t("preferences.languageLabel")}
+              </label>
+
+              <Select
+                value={language}
+                onChange={(val) => handleLanguageSelect(val as UserLanguage)}
+                options={[
+                  { value: UserLanguage.Polish, label: t("preferences.langPolish") },
+                  { value: UserLanguage.English, label: t("preferences.langEnglish") },
+                ]}
+              />
+            </div>
+
           </div>
-        </div>
+        )}
+
       </section>
 
       {/* Section 3: Limit Dzienny */}
       <section className="space-y-4">
-
         <div className="border-b border-border pb-2.5">
           <h2 className="text-base font-bold text-foreground tracking-wide">
             {t("preferences.usageSection")}
@@ -149,27 +156,54 @@ export default function PreferencesPage() {
             <div className="h-6 animate-pulse bg-muted rounded-lg" />
           ) : usage ? (
             <>
-              <div className="flex justify-between items-baseline">
-                <span className="text-base font-bold text-primary">
-                  {usage.dailyUsagePercentage}%
-                </span>
-                <span className="text-sm font-medium text-foreground">
-                  {t("preferences.tokensUsedFormat", {
-                    used: usage.dailyTokensUsed.toLocaleString(),
-                    limit: usage.dailyTokenLimit.toLocaleString(),
-                  })}
-                </span>
-              </div>
-              <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${Math.min(100, Math.max(0, usage.dailyUsagePercentage))}%` }}
-                />
-              </div>
+              {(() => {
+                const limit = usage.dailyTokenLimit || 1;
+                const realUsed = usage.dailyTokensUsed || 0;
+                const reserved = usage.dailyTokensReserved || 0;
+                const totalUsedAndReserved = realUsed + reserved;
+                const totalPct = Math.min(100, Math.max(0, usage.dailyUsagePercentage));
+
+                const realPctStr = limit > 0 ? ((realUsed / limit) * 100).toFixed(1) : "0";
+                const reservedPctStr = limit > 0 ? ((reserved / limit) * 100).toFixed(1) : "0";
+                const remainingTokens = Math.max(0, limit - totalUsedAndReserved);
+                const remainingPctStr = limit > 0 ? ((remainingTokens / limit) * 100).toFixed(1) : "0";
+
+                const segments = [
+                  {
+                    id: "real",
+                    value: realUsed,
+                    colorClass: "bg-sky-500",
+                    customTooltip: `Zużyte: ${realUsed.toLocaleString()} (${realPctStr}%)`,
+                  },
+                  {
+                    id: "reserved",
+                    value: reserved,
+                    colorClass: "bg-amber-500",
+                    customTooltip: `Rezerwacje: ${reserved.toLocaleString()} (${reservedPctStr}%)`,
+                  },
+                ];
+
+                return (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-base font-bold text-primary">
+                        {totalPct}%
+                      </span>
+                    </div>
+
+                    <MultiSegmentProgressBar
+                      segments={segments}
+                      totalValue={limit}
+                      heightClass="h-4"
+                      showRemainingSegment
+                      remainingSegmentTooltip={`Wolne: ${remainingTokens.toLocaleString()} (${remainingPctStr}%)`}
+                    />
+                  </div>
+                );
+              })()}
             </>
           ) : null}
         </div>
-
       </section>
 
 
