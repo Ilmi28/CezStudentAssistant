@@ -3,6 +3,7 @@ using System;
 using CezStudentAssistant.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260823094546_AddedSnapshotInfoToQuizAttempt")]
+    partial class AddedSnapshotInfoToQuizAttempt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -254,17 +257,8 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("EasyQuestionCountPerAttempt")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("HardQuestionCountPerAttempt")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("LastModifiedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("MediumQuestionCountPerAttempt")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()

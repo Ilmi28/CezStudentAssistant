@@ -27,6 +27,14 @@ public class AIQuizService(IMapper mapper, ILogger<AIQuizService> logger) : IAIQ
 
         var instructionPrompt = string.Format(QuizPrompts.InstructionPromptTemplate, request.QuestionCount, languageName);
 
+        if (request.EasyCount.HasValue || request.MediumCount.HasValue || request.HardCount.HasValue)
+        {
+            var easy = request.EasyCount ?? 0;
+            var medium = request.MediumCount ?? 0;
+            var hard = request.HardCount ?? 0;
+            instructionPrompt += string.Format(QuizPrompts.DifficultyBreakdownTemplate, easy, medium, hard, request.QuestionCount);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.AdditionalInstructions))
         {
             instructionPrompt += string.Format(QuizPrompts.AdditionalInstructionsTemplate, request.AdditionalInstructions);

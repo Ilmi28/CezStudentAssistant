@@ -17,6 +17,16 @@ public static class QuizPrompts
         6. The entire quiz (title, description, questions, and options) must be written in the following language: {1}.
         """;
 
+    public const string DifficultyBreakdownTemplate = """
+
+        [SYSTEM CRITICAL - Question Difficulty Distribution]:
+        You MUST generate the questions adhering to this exact difficulty distribution:
+        - "Easy" questions: exactly {0}
+        - "Medium" questions: exactly {1}
+        - "Hard" questions: exactly {2}
+        Total questions generated must be exactly {3}.
+        """;
+
     public const string AdditionalInstructionsTemplate = """
 
         [SYSTEM CRITICAL - Additional User Constraints]:

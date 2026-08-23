@@ -12,4 +12,7 @@ public class GenerateQuizDto
     public int? TimeLimitMinutes { get; set; }
     public QuizLanguage Language { get; set; } = QuizLanguage.PL;
     public string? AdditionalInstructions { get; set; }
+    public int? EasyQuestionCountPerAttempt { get; set; }
+    public int? MediumQuestionCountPerAttempt { get; set; }
+    public int? HardQuestionCountPerAttempt { get; set; }
 }

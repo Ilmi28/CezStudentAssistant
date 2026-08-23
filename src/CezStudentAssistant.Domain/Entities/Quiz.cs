@@ -10,6 +10,10 @@ public class Quiz : BaseEntity
     public Guid CourseId { get; set; }
     public QuizStatusEnum Status { get; set; }
     public int? TimeLimitMinutes { get; set; }
+    public int? QuestionCountPerAttempt { get; set; }
+    public int? EasyQuestionCountPerAttempt { get; set; }
+    public int? MediumQuestionCountPerAttempt { get; set; }
+    public int? HardQuestionCountPerAttempt { get; set; }
 
     public User User { get; set; } = null!;
     public Course Course { get; set; } = null!;

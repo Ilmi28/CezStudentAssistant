@@ -13,6 +13,10 @@ public class QuizDetailsDto
     public Guid CourseId { get; set; }
     public required string CourseName { get; set; }
     public int? TimeLimitMinutes { get; set; }
+    public int? QuestionCountPerAttempt { get; set; }
+    public int? EasyQuestionCountPerAttempt { get; set; }
+    public int? MediumQuestionCountPerAttempt { get; set; }
+    public int? HardQuestionCountPerAttempt { get; set; }
     public decimal? MaxPoints { get; set; }
     public List<QuestionDto> Questions { get; set; } = new();
     public List<QuizAttemptDto> Attempts { get; set; } = new();
@@ -25,6 +29,9 @@ public class QuizAttemptDto
     public Guid QuizId { get; set; }
     public QuizAttemptStatus Status { get; set; }
     public decimal? Points { get; set; }
+    public decimal? MaxPoints { get; set; }
+    public int QuestionCount { get; set; }
+    public int? TimeLimitMinutes { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? ExpiresAt { get; set; }
     public List<QuestionAnswerDto> Answers { get; set; } = new();

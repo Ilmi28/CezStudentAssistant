@@ -52,7 +52,10 @@ public class QuizGenerationService(
                 QuestionCount = dto.QuestionCount,
                 Language = dto.Language,
                 Files = aiFiles,
-                AdditionalInstructions = dto.AdditionalInstructions
+                AdditionalInstructions = dto.AdditionalInstructions,
+                EasyCount = dto.EasyQuestionCountPerAttempt,
+                MediumCount = dto.MediumQuestionCountPerAttempt,
+                HardCount = dto.HardQuestionCountPerAttempt
             };
 
             var estimatedTokens = await aiClient.EstimateTokenUsageAsync(aiRequest);
@@ -137,7 +140,8 @@ public class QuizGenerationService(
                 DisplayName = finalTitle,
                 CourseId = dto.CourseId,
                 Status = QuizStatusEnum.Ready,
-                TimeLimitMinutes = dto.TimeLimitMinutes
+                TimeLimitMinutes = dto.TimeLimitMinutes,
+                QuestionCountPerAttempt = Math.Min(5, aiQuiz.Questions.Count)
             };
             await quizRepo.AddAsync(quiz, ct);
             foreach (var question in MapQuestions(quiz, aiQuiz.Questions))

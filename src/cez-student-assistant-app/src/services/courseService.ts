@@ -67,14 +67,26 @@ export const courseService = {
     courseId: string,
     questionCount: number,
     timeLimitMinutes?: number | null,
-    additionalInstructions?: string
+    additionalInstructions?: string,
+    easyQuestionCountPerAttempt?: number | null,
+    mediumQuestionCountPerAttempt?: number | null,
+    hardQuestionCountPerAttempt?: number | null,
+    questionCountPerAttempt?: number | null
   ): Promise<GenerateQuizResponseDto> {
     const res = await customFetch(
       `${API_BASE_URL}/course/${courseId}/generate-quiz`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionCount, timeLimitMinutes, additionalInstructions }),
+        body: JSON.stringify({
+          questionCount,
+          timeLimitMinutes,
+          additionalInstructions,
+          easyQuestionCountPerAttempt,
+          mediumQuestionCountPerAttempt,
+          hardQuestionCountPerAttempt,
+          questionCountPerAttempt,
+        }),
       },
       false,
       authService.refreshToken

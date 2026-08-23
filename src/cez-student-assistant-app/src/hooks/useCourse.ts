@@ -13,7 +13,7 @@ export function useCourse() {
 
   const { t } = useTranslation();
   const { isAuthenticated, isAuthChecking, handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
-  const { setError, setSuccess, setSyncing } = useUI();
+  const { setError, setSyncing } = useUI();
 
   const fetchCourses = async () => {
     try {
@@ -51,7 +51,6 @@ export function useCourse() {
     setSyncing(true);
     try {
       await cezService.syncCourses();
-      setSuccess(t("common.syncSuccess"));
       await refreshCourses();
       try {
         const cezStatus = await cezService.getCezStatus();
@@ -74,7 +73,6 @@ export function useCourse() {
   const createCourse = async (name: string, description?: string) => {
     try {
       await courseService.createCourse(name, description);
-      setSuccess(t("courses.addCourseSuccess"));
       await refreshCourses();
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {

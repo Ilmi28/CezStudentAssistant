@@ -13,6 +13,9 @@ public class QuizAttemptDetailsDto
     public QuizAttemptStatus Status { get; set; }
     public bool IsPending { get; set; }
     public decimal? Points { get; set; }
+    public decimal? MaxPoints { get; set; }
+    public int QuestionCount { get; set; }
+    public int? TimeLimitMinutes { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? ExpiresAt { get; set; }
     public List<QuestionDto> Questions { get; set; } = new();

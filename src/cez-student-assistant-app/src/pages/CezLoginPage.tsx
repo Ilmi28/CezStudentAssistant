@@ -11,12 +11,10 @@ import { PrimaryButton, SecondaryButton } from "../components/Button";
 interface CezLoginPageProps {
   onLoginSuccess: (username: string) => void;
   setError: (msg: string) => void;
-  setSuccess: (msg: string) => void;
 }
 
 export default function CezLoginPage({
-  onLoginSuccess,
-  setSuccess
+  onLoginSuccess
 }: CezLoginPageProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -36,7 +34,6 @@ export default function CezLoginPage({
     try {
       await authService.loginCez(cezUser, cezPass);
       onLoginSuccess(cezUser);
-      setSuccess(t("auth.cezSuccess"));
     } catch (err: any) {
       setFormError(err.message || t("auth.genericError"));
     } finally {

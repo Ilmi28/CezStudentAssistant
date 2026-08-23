@@ -8,10 +8,33 @@ import Modal from "./Modal";
 interface EditQuizModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (displayName: string, timeLimitMinutes?: number | null) => Promise<void>;
+  onSubmit: (
+    displayName: string,
+    timeLimitMinutes?: number | null,
+    questionCountPerAttempt?: number | null,
+    easyCount?: number | null,
+    mediumCount?: number | null,
+    hardCount?: number | null
+  ) => Promise<void>;
   initialDisplayName: string;
   initialTimeLimitMinutes?: number | null;
+  initialQuestionCountPerAttempt?: number | null;
+  initialEasyCount?: number | null;
+  initialMediumCount?: number | null;
+  initialHardCount?: number | null;
+  easyInPool: number;
+  mediumInPool: number;
+  hardInPool: number;
 }
+
+const formatQuestionCount = (n: number, lang: string) => {
+  if (lang.startsWith("en")) {
+    return n === 1 ? "1 question" : `${n} questions`;
+  }
+  if (n === 1) return "1 pytanie";
+  if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return `${n} pytania`;
+  return `${n} pytań`;
+};
 
 export default function EditQuizModal({
   isOpen,
@@ -19,12 +42,30 @@ export default function EditQuizModal({
   onSubmit,
   initialDisplayName,
   initialTimeLimitMinutes,
+  initialQuestionCountPerAttempt,
+  initialEasyCount,
+  initialMediumCount,
+  initialHardCount,
+  easyInPool,
+  mediumInPool,
+  hardInPool,
 }: EditQuizModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [displayName, setDisplayName] = useState(initialDisplayName || "");
   const [timeLimitMinutes, setTimeLimitMinutes] = useState<number | "">(
     initialTimeLimitMinutes ?? ""
   );
+
+  const [easyCount, setEasyCount] = useState<number>(
+    initialEasyCount ?? Math.min(2, easyInPool)
+  );
+  const [mediumCount, setMediumCount] = useState<number>(
+    initialMediumCount ?? Math.min(2, mediumInPool)
+  );
+  const [hardCount, setHardCount] = useState<number>(
+    initialHardCount ?? Math.min(1, hardInPool)
+  );
+
   const [modalError, setModalError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,9 +73,25 @@ export default function EditQuizModal({
     if (isOpen) {
       setDisplayName(initialDisplayName || "");
       setTimeLimitMinutes(initialTimeLimitMinutes ?? "");
+      setEasyCount(initialEasyCount ?? Math.min(2, easyInPool));
+      setMediumCount(initialMediumCount ?? Math.min(2, mediumInPool));
+      setHardCount(initialHardCount ?? Math.min(1, hardInPool));
       setModalError(null);
     }
-  }, [isOpen, initialDisplayName, initialTimeLimitMinutes]);
+  }, [
+    isOpen,
+    initialDisplayName,
+    initialTimeLimitMinutes,
+    initialQuestionCountPerAttempt,
+    initialEasyCount,
+    initialMediumCount,
+    initialHardCount,
+    easyInPool,
+    mediumInPool,
+    hardInPool,
+  ]);
+
+  const totalSelected = easyCount + mediumCount + hardCount;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,10 +104,22 @@ export default function EditQuizModal({
         ? timeLimitMinutes
         : null;
 
+    if (totalSelected <= 0) {
+      setModalError(t("quizDetails.atLeastOneQuestionError", "Wybierz co najmniej 1 pytanie w podejściu."));
+      return;
+    }
+
     setModalError(null);
     setLoading(true);
     try {
-      await onSubmit(displayName.trim(), limit);
+      await onSubmit(
+        displayName.trim(),
+        limit,
+        totalSelected,
+        easyCount,
+        mediumCount,
+        hardCount
+      );
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -67,6 +136,9 @@ export default function EditQuizModal({
     setModalError(null);
     onClose();
   };
+
+  const easyPct = totalSelected > 0 ? (easyCount / totalSelected) * 100 : 0;
+  const mediumPct = totalSelected > 0 ? (mediumCount / totalSelected) * 100 : 0;
 
   return (
     <Modal
@@ -86,18 +158,188 @@ export default function EditQuizModal({
           }}
         />
 
-        <Input
-          type="number"
-          min={1}
-          max={300}
-          label={t("quizDetails.quizTimeLimitLabel")}
-          value={timeLimitMinutes}
-          onChange={(e) => {
-            const val = e.target.value === "" ? "" : parseInt(e.target.value, 10);
-            setTimeLimitMinutes(val === "" || isNaN(val) ? "" : Math.max(1, val));
-            if (modalError) setModalError(null);
-          }}
-        />
+        {/* Time Limit Section with Slider & Presets */}
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-foreground font-medium">
+              {t("quizDetails.quizTimeLimitLabel", "Limit czasu")}
+            </span>
+            <span
+              className={`text-xs font-bold px-2.5 py-0.5 rounded-full border transition-colors ${
+                timeLimitMinutes && Number(timeLimitMinutes) > 0
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : "bg-secondary text-muted-foreground border-border"
+              }`}
+            >
+              {timeLimitMinutes && Number(timeLimitMinutes) > 0
+                ? `${timeLimitMinutes} min`
+                : t("quizDetails.stats.noLimit", "Brak limitu")}
+            </span>
+          </div>
+
+          {/* Time Limit Slider (0 = Brak limitu, 1..60 = minuty) */}
+          <input
+            type="range"
+            min={0}
+            max={60}
+            step={1}
+            value={timeLimitMinutes === "" || timeLimitMinutes === null ? 0 : Number(timeLimitMinutes)}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setTimeLimitMinutes(val === 0 ? "" : val);
+              if (modalError) setModalError(null);
+            }}
+            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+        </div>
+
+        {/* Difficulty Distribution Section */}
+        <div className="space-y-3.5 pt-3 border-t border-border/60">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-foreground font-medium">
+              {t("quizDetails.difficultyDistribution", "Rozkład trudności pytań")}
+            </span>
+            <span className="text-foreground font-bold text-xs bg-secondary px-2.5 py-0.5 rounded-full border border-border">
+              {formatQuestionCount(totalSelected, i18n.language)}
+            </span>
+          </div>
+
+          {/* Segmented Live Preview Bar */}
+          <div className="h-3.5 w-full bg-secondary rounded-full flex gap-1 p-0.5 border border-border/50 overflow-hidden shadow-xs">
+            {easyCount > 0 && (
+              <div
+                style={{ width: `${easyPct}%` }}
+                className="h-full bg-emerald-500 rounded-full transition-all duration-200"
+                title={`${t("quizSolver.difficulty.easy", "Łatwe")}: ${easyCount}`}
+              />
+            )}
+            {mediumCount > 0 && (
+              <div
+                style={{ width: `${mediumPct}%` }}
+                className="h-full bg-amber-500 rounded-full transition-all duration-200"
+                title={`${t("quizSolver.difficulty.medium", "Średnie")}: ${mediumCount}`}
+              />
+            )}
+            {hardCount > 0 && (
+              <div
+                style={{ width: `${100 - easyPct - mediumPct}%` }}
+                className="h-full bg-rose-500 rounded-full transition-all duration-200"
+                title={`${t("quizSolver.difficulty.hard", "Trudne")}: ${hardCount}`}
+              />
+            )}
+          </div>
+
+          {/* 3 Spacious Control Rows */}
+          <div className="space-y-2">
+            {/* Easy Row */}
+            <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shrink-0" />
+                <span className="text-xs font-semibold text-foreground">
+                  {t("quizSolver.difficulty.easy", "Łatwe")}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                  {easyCount} / {easyInPool} {t("quizDetails.inBank", "w bazie")}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setEasyCount((prev) => Math.max(0, prev - 1))}
+                    disabled={easyCount <= 0}
+                    className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+                  >
+                    -
+                  </button>
+                  <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
+                    {easyCount}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setEasyCount((prev) => Math.min(easyInPool, prev + 1))}
+                    disabled={easyCount >= easyInPool}
+                    className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Medium Row */}
+            <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shrink-0" />
+                <span className="text-xs font-semibold text-foreground">
+                  {t("quizSolver.difficulty.medium", "Średnie")}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                  {mediumCount} / {mediumInPool} {t("quizDetails.inBank", "w bazie")}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setMediumCount((prev) => Math.max(0, prev - 1))}
+                    disabled={mediumCount <= 0}
+                    className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+                  >
+                    -
+                  </button>
+                  <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
+                    {mediumCount}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMediumCount((prev) => Math.min(mediumInPool, prev + 1))}
+                    disabled={mediumCount >= mediumInPool}
+                    className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Hard Row */}
+            <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shrink-0" />
+                <span className="text-xs font-semibold text-foreground">
+                  {t("quizSolver.difficulty.hard", "Trudne")}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                  {hardCount} / {hardInPool} {t("quizDetails.inBank", "w bazie")}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setHardCount((prev) => Math.max(0, prev - 1))}
+                    disabled={hardCount <= 0}
+                    className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+                  >
+                    -
+                  </button>
+                  <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
+                    {hardCount}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setHardCount((prev) => Math.min(hardInPool, prev + 1))}
+                    disabled={hardCount >= hardInPool}
+                    className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="pt-2 flex gap-3">
           <SecondaryButton type="button" onClick={handleClose} className="flex-1">

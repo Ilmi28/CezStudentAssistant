@@ -56,6 +56,10 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
             CourseId = quiz.CourseId,
             CourseName = quiz.Course.Name,
             TimeLimitMinutes = quiz.TimeLimitMinutes,
+            QuestionCountPerAttempt = quiz.QuestionCountPerAttempt ?? Math.Min(5, quiz.Questions.Count),
+            EasyQuestionCountPerAttempt = quiz.EasyQuestionCountPerAttempt,
+            MediumQuestionCountPerAttempt = quiz.MediumQuestionCountPerAttempt,
+            HardQuestionCountPerAttempt = quiz.HardQuestionCountPerAttempt,
             MaxPoints = quiz.Questions.Sum(qn => qn.Difficulty == QuestionDifficulty.Easy ? 1m : qn.Difficulty == QuestionDifficulty.Hard ? 3m : 2m),
             Questions = quiz.Questions.Select(q => new QuestionDto
             {
@@ -70,21 +74,32 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
                     IsCorrect = o.IsCorrect
                 }).ToList()
             }).ToList(),
-            Attempts = attempts.Select(a => new QuizAttemptDto
+            Attempts = attempts.Select(a =>
             {
-                Id = a.Id,
-                UserId = a.UserId,
-                QuizId = a.QuizId,
-                Status = a.Status,
-                Points = a.Points,
-                StartedAt = a.StartedAt,
-                ExpiresAt = a.ExpiresAt,
-                Answers = a.Answers.Select(ans => new QuestionAnswerDto
+                var drawnQuestionIds = a.Answers.Select(ans => ans.QuestionId).ToHashSet();
+                var attemptMaxPoints = a.MaxPoints ?? (drawnQuestionIds.Count > 0
+                    ? quiz.Questions.Where(q => drawnQuestionIds.Contains(q.Id)).Sum(qn => qn.Difficulty == QuestionDifficulty.Easy ? 1m : qn.Difficulty == QuestionDifficulty.Hard ? 3m : 2m)
+                    : quiz.Questions.Sum(qn => qn.Difficulty == QuestionDifficulty.Easy ? 1m : qn.Difficulty == QuestionDifficulty.Hard ? 3m : 2m));
+
+                return new QuizAttemptDto
                 {
-                    Id = ans.Id,
-                    QuestionId = ans.QuestionId,
-                    SelectedOptionIds = ans.SelectedOptions.Select(so => so.QuestionOptionId).ToList()
-                }).ToList()
+                    Id = a.Id,
+                    UserId = a.UserId,
+                    QuizId = a.QuizId,
+                    Status = a.Status,
+                    Points = a.Points,
+                    MaxPoints = attemptMaxPoints,
+                    QuestionCount = a.QuestionCount > 0 ? a.QuestionCount : (a.Answers.Count > 0 ? a.Answers.Count : quiz.Questions.Count),
+                    TimeLimitMinutes = a.TimeLimitMinutes,
+                    StartedAt = a.StartedAt,
+                    ExpiresAt = a.ExpiresAt,
+                    Answers = a.Answers.Select(ans => new QuestionAnswerDto
+                    {
+                        Id = ans.Id,
+                        QuestionId = ans.QuestionId,
+                        SelectedOptionIds = ans.SelectedOptions.Select(so => so.QuestionOptionId).ToList()
+                    }).ToList()
+                };
             }).ToList()
         };
     }

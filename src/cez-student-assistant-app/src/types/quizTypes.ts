@@ -40,6 +40,9 @@ export interface QuizAttemptDto {
   quizId: string;
   status: QuizAttemptStatus;
   points?: number | null;
+  maxPoints?: number | null;
+  questionCount?: number;
+  timeLimitMinutes?: number | null;
   startedAt: string;
   expiresAt?: string | null;
   answers: QuestionAnswerDto[];
@@ -53,6 +56,10 @@ export interface QuizDetailsDto {
   courseId: string;
   courseName: string;
   timeLimitMinutes?: number | null;
+  questionCountPerAttempt?: number | null;
+  easyQuestionCountPerAttempt?: number | null;
+  mediumQuestionCountPerAttempt?: number | null;
+  hardQuestionCountPerAttempt?: number | null;
   maxPoints?: number | null;
   questions: QuestionDto[];
   attempts: QuizAttemptDto[];
@@ -77,6 +84,9 @@ export interface QuizAttemptDetailsDto {
   status: QuizAttemptStatus;
   isPending: boolean;
   points?: number | null;
+  maxPoints?: number | null;
+  questionCount?: number;
+  timeLimitMinutes?: number | null;
   startedAt: string;
   expiresAt?: string | null;
   questions: QuestionDto[];

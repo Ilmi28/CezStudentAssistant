@@ -47,6 +47,15 @@ public class GetQuizAttemptByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryH
         var isPending = quizAttempt.Status == QuizAttemptStatus.InProgress &&
             (quizAttempt.ExpiresAt == null || quizAttempt.ExpiresAt > DateTime.UtcNow);
 
+        var drawnQuestionIds = quizAttempt.Answers.Select(a => a.QuestionId).ToHashSet();
+        var questions = drawnQuestionIds.Count > 0
+            ? quizAttempt.Quiz.Questions.Where(q => drawnQuestionIds.Contains(q.Id)).ToList()
+            : quizAttempt.Quiz.Questions.ToList();
+
+        var attemptMaxPoints = quizAttempt.MaxPoints ?? questions.Sum(qn => qn.Difficulty == QuestionDifficulty.Easy ? 1m : qn.Difficulty == QuestionDifficulty.Hard ? 3m : 2m);
+        var timeLimitMinutes = quizAttempt.TimeLimitMinutes;
+        var questionCount = quizAttempt.QuestionCount > 0 ? quizAttempt.QuestionCount : questions.Count;
+
         return new QuizAttemptDetailsDto
         {
             AttemptId = quizAttempt.Id,
@@ -56,9 +65,12 @@ public class GetQuizAttemptByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryH
             Status = quizAttempt.Status,
             IsPending = isPending,
             Points = quizAttempt.Points,
+            MaxPoints = attemptMaxPoints,
+            QuestionCount = questionCount,
+            TimeLimitMinutes = timeLimitMinutes,
             StartedAt = quizAttempt.StartedAt,
             ExpiresAt = quizAttempt.ExpiresAt,
-            Questions = quizAttempt.Quiz.Questions.Select(q => new QuestionDto
+            Questions = questions.Select(q => new QuestionDto
             {
                 Id = q.Id,
                 Content = q.Content,

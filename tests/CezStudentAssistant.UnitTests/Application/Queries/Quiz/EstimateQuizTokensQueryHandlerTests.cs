@@ -1,6 +1,8 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Application.Queries.Quiz;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
@@ -26,6 +28,8 @@ public class EstimateQuizTokensQueryHandlerTests
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _resourceRepository = null!;
     private ITokenUsageRepository _tokenUsageRepository = null!;
+    private IFileService _fileService = null!;
+    private IAIClient _aiClient = null!;
     private IConfiguration _configuration = null!;
     private EstimateQuizTokensQueryHandler _sut = null!;
 
@@ -37,6 +41,8 @@ public class EstimateQuizTokensQueryHandlerTests
         _courseRepository = Substitute.For<ICourseRepository>();
         _resourceRepository = Substitute.For<ICezResourceRepository>();
         _tokenUsageRepository = Substitute.For<ITokenUsageRepository>();
+        _fileService = Substitute.For<IFileService>();
+        _aiClient = Substitute.For<IAIClient>();
 
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
@@ -44,10 +50,11 @@ public class EstimateQuizTokensQueryHandlerTests
 
         _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            { "Gemini:MaximumDailyTokens", "1000000" }
+            { "Gemini:MaximumDailyTokens", "1000000" },
+            { "BlobContainerSettings:CourseFilesContainer", "course-files" }
         }).Build();
 
-        _sut = new EstimateQuizTokensQueryHandler(_unitOfWork, _configuration);
+        _sut = new EstimateQuizTokensQueryHandler(_unitOfWork, _fileService, _aiClient, _configuration);
     }
 
     [TearDown]
@@ -122,9 +129,12 @@ public class EstimateQuizTokensQueryHandlerTests
     [Test]
     public async Task Handle_ShouldThrowInvalidOperationException_WhenMaximumDailyTokensConfigMissing()
     {
-        var invalidConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build();
+        var invalidConfig = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            { "BlobContainerSettings:CourseFilesContainer", "course-files" }
+        }).Build();
 
-        var sut = new EstimateQuizTokensQueryHandler(_unitOfWork, invalidConfig);
+        var sut = new EstimateQuizTokensQueryHandler(_unitOfWork, _fileService, _aiClient, invalidConfig);
 
         var courseId = Guid.NewGuid();
         var course = new CourseEntity { Id = courseId, Name = "Test Course", Type = Domain.Enums.CourseType.Cez };
@@ -179,5 +189,50 @@ public class EstimateQuizTokensQueryHandlerTests
         result.Should().NotBeNull();
         result.Data!.EstimatedTokens.Should().Be(7000);
         result.Data.CanGenerate.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Handle_ShouldCalculateAndPersistTokens_WhenResourceEstimatedTokensIsZero()
+    {
+        var userId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+        var course = new CourseEntity { Id = courseId, Name = "Test Course", Type = Domain.Enums.CourseType.Cez };
+        _courseRepository.GetByIdAsync(courseId, Arg.Any<CancellationToken>()).Returns(course);
+
+        var resource = new Resource
+        {
+            Id = Guid.NewGuid(),
+            Name = "lecture.pdf",
+            DisplayName = "Lecture",
+            MimeType = "application/pdf",
+            EstimatedTokens = 0,
+            CourseId = courseId
+        };
+        var mockResourceDbSet = new List<Resource> { resource }.BuildMockDbSet();
+        _resourceRepository.Find(Arg.Any<Expression<Func<Resource, bool>>>()).Returns(mockResourceDbSet);
+
+        var dummyStream = new MemoryStream([1, 2, 3]);
+        _fileService.DownloadAsync($"{courseId}/lecture.pdf", "course-files", Arg.Any<CancellationToken>())
+            .Returns(dummyStream);
+
+        _aiClient.EstimateTokenUsageAsync(Arg.Any<CezStudentAssistant.Application.Requests.AI.AIQuizRequest>())
+            .Returns(4500);
+
+        _tokenUsageRepository.GetDailyTokenUsageAsync(userId, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(10000);
+
+        var query = new EstimateQuizTokensQuery
+        {
+            UserId = userId,
+            CourseId = courseId,
+            QuestionCount = 5
+        };
+
+        var result = await _sut.Handle(query, CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result.Data!.EstimatedTokens.Should().Be(5500); // 4500 + 5*200
+        resource.EstimatedTokens.Should().Be(4500);
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

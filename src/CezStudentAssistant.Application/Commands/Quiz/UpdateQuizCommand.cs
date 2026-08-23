@@ -15,6 +15,10 @@ public class UpdateQuizCommand : ICommand, IUserRequest
     public Guid QuizId { get; set; }
     public required string DisplayName { get; set; }
     public int? TimeLimitMinutes { get; set; }
+    public int? QuestionCountPerAttempt { get; set; }
+    public int? EasyQuestionCountPerAttempt { get; set; }
+    public int? MediumQuestionCountPerAttempt { get; set; }
+    public int? HardQuestionCountPerAttempt { get; set; }
 }
 
 public class UpdateQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandler<UpdateQuizCommand>
@@ -40,6 +44,10 @@ public class UpdateQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandl
         quiz.DisplayName = command.DisplayName;
         quiz.Name = command.DisplayName;
         quiz.TimeLimitMinutes = command.TimeLimitMinutes;
+        quiz.QuestionCountPerAttempt = command.QuestionCountPerAttempt;
+        quiz.EasyQuestionCountPerAttempt = command.EasyQuestionCountPerAttempt;
+        quiz.MediumQuestionCountPerAttempt = command.MediumQuestionCountPerAttempt;
+        quiz.HardQuestionCountPerAttempt = command.HardQuestionCountPerAttempt;
 
         await quizRepository.UpdateAsync(quiz, ct);
         await unitOfWork.SaveChangesAsync(ct);

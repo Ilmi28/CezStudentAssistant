@@ -14,12 +14,10 @@ import { useQuiz } from "../hooks";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
-  setSuccess: (msg: string) => void;
 }
 
 export default function CourseDetailsPage({
-  setError,
-  setSuccess
+  setError
 }: CourseDetailsPageProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -76,7 +74,6 @@ export default function CourseDetailsPage({
   const handleEditCourseSubmit = async (name: string, description?: string) => {
     if (!id) return;
     await courseService.updateCourse(id, name, description);
-    setSuccess(t("courses.editCourseSuccess"));
     const details = await courseService.getCourseDetails(id);
     setSelectedCourse(details);
   };
@@ -84,26 +81,36 @@ export default function CourseDetailsPage({
   const handleDeleteCourseConfirm = async () => {
     if (!id) return;
     await courseService.deleteCourse(id);
-    setSuccess(t("courses.deleteCourseSuccess"));
     navigate("/courses");
   };
 
   const handleFileUploadSubmit = async (file: File) => {
     if (!id) return;
     await courseService.uploadCourseFile(id, file);
-    setSuccess(t("courseDetails.uploadBtn") + " ✓");
     const details = await courseService.getCourseDetails(id);
     setSelectedCourse(details);
   };
 
   const handleGenerateQuizSubmit = async (
     questionCount: number,
-    timeLimitMinutes?: number,
-    additionalInstructions?: string
+    timeLimitMinutes?: number | null,
+    additionalInstructions?: string,
+    easyCount?: number | null,
+    mediumCount?: number | null,
+    hardCount?: number | null,
+    questionCountPerAttempt?: number | null
   ) => {
     if (!id) return;
-    await courseService.generateQuiz(id, questionCount, timeLimitMinutes, additionalInstructions);
-    setSuccess(t("courseDetails.generateBtn") + " ✓");
+    await courseService.generateQuiz(
+      id,
+      questionCount,
+      timeLimitMinutes,
+      additionalInstructions,
+      easyCount,
+      mediumCount,
+      hardCount,
+      questionCountPerAttempt
+    );
     await refreshQuizzes();
   };
 
@@ -121,7 +128,6 @@ export default function CourseDetailsPage({
     if (!id || !fileToDelete) return;
     try {
       await courseService.deleteCourseFile(id, fileToDelete.id);
-      setSuccess(t("courseDetails.deleteFileSuccess"));
       const details = await courseService.getCourseDetails(id);
       setSelectedCourse(details);
     } catch (deleteErr) {

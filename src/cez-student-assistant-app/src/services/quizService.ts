@@ -79,14 +79,25 @@ export const quizService = {
   async updateQuiz(
     quizId: string,
     displayName: string,
-    timeLimitMinutes?: number | null
+    timeLimitMinutes?: number | null,
+    questionCountPerAttempt?: number | null,
+    easyQuestionCountPerAttempt?: number | null,
+    mediumQuestionCountPerAttempt?: number | null,
+    hardQuestionCountPerAttempt?: number | null
   ): Promise<void> {
     const res = await customFetch(
       `${API_BASE_URL}/quiz/${quizId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName, timeLimitMinutes }),
+        body: JSON.stringify({
+          displayName,
+          timeLimitMinutes,
+          questionCountPerAttempt,
+          easyQuestionCountPerAttempt,
+          mediumQuestionCountPerAttempt,
+          hardQuestionCountPerAttempt,
+        }),
       },
       false,
       authService.refreshToken

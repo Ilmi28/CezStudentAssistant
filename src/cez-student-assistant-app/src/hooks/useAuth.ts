@@ -13,7 +13,7 @@ export function useAuth() {
 
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { setError, setSuccess, setLoading, setShowCezModal } = useUI();
+  const { setError, setLoading, setShowCezModal } = useUI();
 
   const checkAuthStatus = async () => {
     try {
@@ -81,7 +81,6 @@ export function useAuth() {
     try {
       await authService.loginCez(cezUser, cezPass);
       ctx.setIsCezConnected(true);
-      setSuccess(t("common.syncSuccess"));
       setShowCezModal(false);
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {

@@ -9,12 +9,9 @@ import { PrimaryButton } from "../components/Button";
 
 interface RegisterPageProps {
   setError: (msg: string) => void;
-  setSuccess: (msg: string) => void;
 }
 
-export default function RegisterPage({
-  setSuccess
-}: RegisterPageProps) {
+export default function RegisterPage({}: RegisterPageProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [regUser, setRegUser] = useState("");
@@ -32,7 +29,6 @@ export default function RegisterPage({
     setLoading(true);
     try {
       await authService.register(regUser, regPass);
-      setSuccess(t("auth.registerSuccess"));
       navigate("/login");
     } catch (err: any) {
       setFormError(err.message || t("auth.genericError"));

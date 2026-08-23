@@ -17,22 +17,22 @@ export default function AppRoutes() {
   const { isAuthenticated, isCezConnected, lastCezSync, handleLoginSuccess } = useAuth();
   const { courses, handleSyncCourses, createCourse } = useCourse();
   const { quizzes } = useQuiz();
-  const { syncing, setError, setSuccess } = useUI();
+  const { syncing, setError } = useUI();
 
   return (
     <Routes>
       {/* Public */}
-      <Route path="/login"     element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage     onLoginSuccess={handleLoginSuccess} setError={setError} setSuccess={setSuccess} />} />
-      <Route path="/register"  element={isAuthenticated ? <Navigate to="/home" replace /> : <RegisterPage  setError={setError} setSuccess={setSuccess} />} />
-      <Route path="/login-cez" element={isAuthenticated ? <Navigate to="/home" replace /> : <CezLoginPage  onLoginSuccess={handleLoginSuccess} setError={setError} setSuccess={setSuccess} />} />
+      <Route path="/login"     element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage     onLoginSuccess={handleLoginSuccess} setError={setError} />} />
+      <Route path="/register"  element={isAuthenticated ? <Navigate to="/home" replace /> : <RegisterPage  setError={setError} />} />
+      <Route path="/login-cez" element={isAuthenticated ? <Navigate to="/home" replace /> : <CezLoginPage  onLoginSuccess={handleLoginSuccess} setError={setError} />} />
 
       {/* Protected */}
       <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" replace />}>
         <Route path="/home"       element={<HomePage courses={courses} quizzes={quizzes} />} />
         <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} onCreateCourse={createCourse} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
         <Route path="/quizzes"    element={<QuizzesPage quizzes={quizzes} />} />
-        <Route path="/course/:id" element={<CourseDetailsPage setError={setError} setSuccess={setSuccess} />} />
-        <Route path="/quiz/:id"   element={<QuizDetailsPage setError={setError} setSuccess={setSuccess} />} />
+        <Route path="/course/:id" element={<CourseDetailsPage setError={setError} />} />
+        <Route path="/quiz/:id"   element={<QuizDetailsPage setError={setError} />} />
         <Route path="/quiz/:id/solve" element={<QuizSolverPage setError={setError} />} />
         <Route path="/quiz/attempt/:attemptId" element={<QuizSolverPage setError={setError} />} />
         <Route path="/preferences" element={<PreferencesPage />} />

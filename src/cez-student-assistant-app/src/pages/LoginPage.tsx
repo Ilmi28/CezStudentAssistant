@@ -11,12 +11,10 @@ import cezLogo from "../assets/cez-logo.png";
 interface LoginPageProps {
   onLoginSuccess: (username: string) => void;
   setError: (msg: string) => void;
-  setSuccess: (msg: string) => void;
 }
 
 export default function LoginPage({
-  onLoginSuccess,
-  setSuccess
+  onLoginSuccess
 }: LoginPageProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -36,7 +34,6 @@ export default function LoginPage({
     try {
       await authService.login(loginUser, loginPass);
       onLoginSuccess(loginUser);
-      setSuccess(t("auth.loginSuccess"));
     } catch (err: any) {
       setFormError(err.message || t("auth.genericError"));
     } finally {

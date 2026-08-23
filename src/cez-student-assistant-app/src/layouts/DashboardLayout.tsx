@@ -9,7 +9,7 @@ import { UserLanguage } from "../types";
 
 export default function DashboardLayout() {
   const { username, handleLogout, handleCezLinkSubmit, setIsCezConnected, setLastCezSync } = useAuth();
-  const { loading, setLoading, applyTheme, showCezModal, setShowCezModal, setError, setSuccess } = useUI();
+  const { loading, setLoading, applyTheme, showCezModal, setShowCezModal, setError } = useUI();
   const { refreshCourses } = useCourse();
   const { refreshQuizzes } = useQuiz();
   const { t, i18n } = useTranslation();
@@ -40,7 +40,6 @@ export default function DashboardLayout() {
       } catch (cezErr) {
         console.debug("[DashboardLayout] CEZ status fallback on refresh:", cezErr);
       }
-      setSuccess(t("common.refreshSuccess"));
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {
         handleLogout();

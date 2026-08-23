@@ -18,6 +18,10 @@ public sealed class GenerateQuizCommand : ICommand, IUserRequest
     public int QuestionCount { get; set; }
     public int? TimeLimitMinutes { get; set; }
     public string? AdditionalInstructions { get; set; }
+    public int? EasyQuestionCountPerAttempt { get; set; }
+    public int? MediumQuestionCountPerAttempt { get; set; }
+    public int? HardQuestionCountPerAttempt { get; set; }
+    public int? QuestionCountPerAttempt { get; set; }
 }
 
 public class GenerateQuizCommandHandler(
@@ -47,7 +51,11 @@ public class GenerateQuizCommandHandler(
             DisplayName = quizTitle,
             CourseId = command.CourseId,
             Status = QuizStatusEnum.Generating,
-            TimeLimitMinutes = command.TimeLimitMinutes
+            TimeLimitMinutes = command.TimeLimitMinutes,
+            EasyQuestionCountPerAttempt = command.EasyQuestionCountPerAttempt,
+            MediumQuestionCountPerAttempt = command.MediumQuestionCountPerAttempt,
+            HardQuestionCountPerAttempt = command.HardQuestionCountPerAttempt,
+            QuestionCountPerAttempt = command.QuestionCountPerAttempt
         };
 
         await quizRepo.AddAsync(quiz, ct);
@@ -63,7 +71,10 @@ public class GenerateQuizCommandHandler(
             QuestionCount = command.QuestionCount,
             TimeLimitMinutes = command.TimeLimitMinutes,
             Language = QuizLanguage.PL,
-            AdditionalInstructions = command.AdditionalInstructions
+            AdditionalInstructions = command.AdditionalInstructions,
+            EasyQuestionCountPerAttempt = command.EasyQuestionCountPerAttempt,
+            MediumQuestionCountPerAttempt = command.MediumQuestionCountPerAttempt,
+            HardQuestionCountPerAttempt = command.HardQuestionCountPerAttempt
         };
 
         var jobId = jobScheduler.Enqueue<IQuizGenerationService>(service => service.GenerateQuiz(dto, ct));
