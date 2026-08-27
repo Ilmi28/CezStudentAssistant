@@ -1,6 +1,7 @@
 export enum QuizStatusEnum {
   Generating = 1,
   Ready = 2,
+  Failed = 3,
 }
 
 export enum QuizAttemptStatus {

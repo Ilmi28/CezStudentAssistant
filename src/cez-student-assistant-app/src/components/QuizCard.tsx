@@ -55,6 +55,7 @@ export default function QuizCard({
   const { t } = useTranslation();
   const { refreshQuizzes } = useQuiz();
   const isGenerating = quiz.status === QuizStatusEnum.Generating;
+  const isFailed = quiz.status === QuizStatusEnum.Failed;
 
   const rawTitle = quiz.name;
   const isGenericTitle = !rawTitle || rawTitle.startsWith("Quiz z") || rawTitle === quiz.courseName;
@@ -83,6 +84,11 @@ export default function QuizCard({
               onExpire={() => refreshQuizzes().catch(() => {})}
             />
           )}
+          {isFailed && (
+            <span className="text-[11px] font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full border border-destructive/20">
+              Błąd generowania (Ponawianie...)
+            </span>
+          )}
         </div>
         {showCourseName && quiz.courseName && (
           <p className="text-xs text-muted-foreground line-clamp-1">
@@ -97,6 +103,13 @@ export default function QuizCard({
             title={t("quizzes.btnGenerating")}
             aria-label={t("quizzes.btnGenerating")}
             className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
+          >
+            <RefreshCw size={15} className="animate-spin" />
+          </div>
+        ) : isFailed ? (
+          <div
+            title="Błąd generowania. Zadanie oczekuje na ponowienie..."
+            className="w-8 h-8 rounded-full bg-destructive/15 text-destructive flex items-center justify-center shrink-0 border border-destructive/25"
           >
             <RefreshCw size={15} className="animate-spin" />
           </div>

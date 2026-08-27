@@ -12,6 +12,8 @@ import CourseDetailsPage from "./pages/CourseDetailsPage";
 import QuizDetailsPage from "./pages/QuizDetailsPage";
 import QuizSolverPage from "./pages/QuizSolverPage";
 import PreferencesPage from "./pages/PreferencesPage";
+import FlashcardDeckDetailsPage from "./pages/FlashcardDeckDetailsPage";
+import FlashcardStudyPage from "./pages/FlashcardStudyPage";
 
 export default function AppRoutes() {
   const { isAuthenticated, isCezConnected, lastCezSync, handleLoginSuccess } = useAuth();
@@ -35,6 +37,8 @@ export default function AppRoutes() {
         <Route path="/quiz/:id"   element={<QuizDetailsPage setError={setError} />} />
         <Route path="/quiz/:id/solve" element={<QuizSolverPage setError={setError} />} />
         <Route path="/quiz/attempt/:attemptId" element={<QuizSolverPage setError={setError} />} />
+        <Route path="/flashcards/:id" element={<FlashcardDeckDetailsPage />} />
+        <Route path="/flashcards/:id/study" element={<FlashcardStudyPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
       </Route>
 

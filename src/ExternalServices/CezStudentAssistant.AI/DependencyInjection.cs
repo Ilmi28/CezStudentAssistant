@@ -18,6 +18,7 @@ public static class DependencyInjection
             services.AddSingleton(x => new Client(apiKey: apiKey));
             services.AddScoped<IFileContentProcessorService, FileContentProcessorService>();
             services.AddScoped<IAIQuizService, AIQuizService>();
+            services.AddScoped<IAIFlashcardService, AIFlashcardService>();
             services.AddScoped<IAIClient, GeminiAIClient>();
 
             services.AddAutoMapper(cfg =>

@@ -61,4 +61,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Resource> Resources { get; set; }
     public DbSet<Job> Jobs { get; set; }
     public DbSet<TokenUsage> TokenUsages { get; set; }
+    public DbSet<FlashcardDeck> FlashcardDecks { get; set; }
+    public DbSet<Flashcard> Flashcards { get; set; }
+    public DbSet<FlashcardAttempt> FlashcardAttempts { get; set; }
 }

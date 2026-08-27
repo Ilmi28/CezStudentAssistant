@@ -3,14 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Brain } from "lucide-react";
 import { courseService, type CourseDetailsDto } from "../services";
+import { flashcardService } from "../services/flashcardService";
 import EditCourseModal from "../components/EditCourseModal";
 import ConfirmModal from "../components/ConfirmModal";
 import UploadFileModal from "../components/UploadFileModal";
 import GenerateQuizModal from "../components/GenerateQuizModal";
+import GenerateFlashcardsModal from "../components/GenerateFlashcardsModal";
 import QuizCard from "../components/QuizCard";
+import { FlashcardDeckCard } from "../components/FlashcardDeckCard";
 import LoadingScreen from "../components/LoadingScreen";
 
-import { useQuiz } from "../hooks";
+import { useQuiz, useFlashcards } from "../hooks";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
@@ -23,17 +26,20 @@ export default function CourseDetailsPage({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { refreshQuizzes, quizzes } = useQuiz();
+  const { decks, refreshDecks } = useFlashcards(id);
 
   const [selectedCourse, setSelectedCourse] = useState<CourseDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFilesExpanded, setIsFilesExpanded] = useState(false);
   const [isQuizzesExpanded, setIsQuizzesExpanded] = useState(false);
+  const [isFlashcardsExpanded, setIsFlashcardsExpanded] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteFileModalOpen, setIsDeleteFileModalOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isGenerateQuizModalOpen, setIsGenerateQuizModalOpen] = useState(false);
+  const [isGenerateFlashcardsModalOpen, setIsGenerateFlashcardsModalOpen] = useState(false);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   const courseQuizzes = quizzes.filter((q) => q.courseId === id);
@@ -107,6 +113,25 @@ export default function CourseDetailsPage({
       questionCountPerAttempt
     );
     await refreshQuizzes();
+  };
+
+  const handleGenerateFlashcardsSubmit = async (
+    cardCount: number,
+    additionalInstructions?: string,
+    easyCount?: number | null,
+    mediumCount?: number | null,
+    hardCount?: number | null
+  ) => {
+    if (!id) return;
+    await flashcardService.generateFlashcards(
+      id,
+      cardCount,
+      additionalInstructions,
+      easyCount,
+      mediumCount,
+      hardCount
+    );
+    await refreshDecks();
   };
 
   const handleFileDownload = async (fileId: string, fileName: string) => {
@@ -350,6 +375,65 @@ export default function CourseDetailsPage({
         </div>
       </div>
 
+      {/* Flashcards Section */}
+      <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
+        <div
+          onClick={() => setIsFlashcardsExpanded(!isFlashcardsExpanded)}
+          className="flex items-center justify-between cursor-pointer select-none group"
+        >
+          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
+            Fiszki ({decks.length})
+          </h3>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsGenerateFlashcardsModalOpen(true);
+              }}
+              title="Wygeneruj fiszki"
+              aria-label="Wygeneruj fiszki"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
+            >
+              <Plus size={20} />
+            </button>
+            <button
+              type="button"
+              className="text-muted-foreground group-hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted cursor-pointer"
+            >
+              <ChevronDown
+                size={18}
+                className={`transition-transform duration-300 ${isFlashcardsExpanded ? "rotate-180" : ""}`}
+              />
+            </button>
+          </div>
+        </div>
+
+        <div
+          className={`grid transition-all duration-300 ease-in-out ${
+            isFlashcardsExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="pt-3.5 border-t border-border mt-3.5">
+              {decks.length === 0 ? (
+                <div className="py-8 text-center">
+                  <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
+                  <p className="text-xs text-muted-foreground">Brak wygenerowanych fiszek dla tego przedmiotu.</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1">Kliknij "+", aby wygenerować zestaw fiszek przy pomocy AI.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {decks.map((deck, idx) => (
+                    <FlashcardDeckCard key={deck.id} deck={deck} index={idx + 1} showCourseName={false} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <EditCourseModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -391,6 +475,14 @@ export default function CourseDetailsPage({
         isOpen={isGenerateQuizModalOpen}
         onClose={() => setIsGenerateQuizModalOpen(false)}
         onSubmit={handleGenerateQuizSubmit}
+        hasFiles={selectedCourse.files.length > 0}
+        courseId={id || ""}
+      />
+
+      <GenerateFlashcardsModal
+        isOpen={isGenerateFlashcardsModalOpen}
+        onClose={() => setIsGenerateFlashcardsModalOpen(false)}
+        onSubmit={handleGenerateFlashcardsSubmit}
         hasFiles={selectedCourse.files.length > 0}
         courseId={id || ""}
       />

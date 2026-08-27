@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Alert } from "./Alert";
 import { PrimaryButton, SecondaryButton } from "./Button";
 import Modal from "./Modal";
-import MultiSegmentProgressBar from "./MultiSegmentProgressBar";
+import DifficultyControlsGroup from "./DifficultyControlsGroup";
+import TokenEstimationWidget from "./TokenEstimationWidget";
 import { courseService } from "../services/courseService";
 import type { EstimateQuizTokensResponseDto } from "../types";
 
@@ -241,121 +242,21 @@ export default function GenerateQuizModal({
           />
         </div>
 
-        <div className="space-y-3.5 pt-2 border-t border-border/60">
-          <div className="flex items-center justify-between text-xs font-semibold">
-            <span className="text-foreground font-medium">
-              {t("quizDetails.difficultyDistribution", "Trudność")}
-            </span>
-            <span className="text-foreground font-bold text-xs bg-secondary px-2.5 py-0.5 rounded-full border border-border">
-              {formatQuestionCount(totalSelected, i18n.language)}
-            </span>
-          </div>
-
-          <MultiSegmentProgressBar
-            segments={[
-              { id: "easy", value: easyCount, colorClass: "bg-emerald-500", customTooltip: `${t("quizSolver.difficulty.easy", "Łatwe")} (${easyCount})` },
-              { id: "medium", value: mediumCount, colorClass: "bg-amber-500", customTooltip: `${t("quizSolver.difficulty.medium", "Średnie")} (${mediumCount})` },
-              { id: "hard", value: hardCount, colorClass: "bg-rose-500", customTooltip: `${t("quizSolver.difficulty.hard", "Trudne")} (${hardCount})` },
-            ]}
-            heightClass="h-3.5"
-          />
-
-          <div className="space-y-2">
-            <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shrink-0" />
-                <span className="text-xs font-semibold text-foreground">
-                  {t("quizSolver.difficulty.easy", "Łatwe")}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setEasyCount((prev) => Math.max(0, prev - 1))}
-                  disabled={easyCount <= 0}
-                  className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
-                >
-                  -
-                </button>
-                <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
-                  {easyCount}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setEasyCount((prev) => Math.min(20, prev + 1))}
-                  disabled={easyCount >= 20}
-                  className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shrink-0" />
-                <span className="text-xs font-semibold text-foreground">
-                  {t("quizSolver.difficulty.medium", "Średnie")}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setMediumCount((prev) => Math.max(0, prev - 1))}
-                  disabled={mediumCount <= 0}
-                  className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
-                >
-                  -
-                </button>
-                <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
-                  {mediumCount}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setMediumCount((prev) => Math.min(20, prev + 1))}
-                  disabled={mediumCount >= 20}
-                  className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shrink-0" />
-                <span className="text-xs font-semibold text-foreground">
-                  {t("quizSolver.difficulty.hard", "Trudne")}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setHardCount((prev) => Math.max(0, prev - 1))}
-                  disabled={hardCount <= 0}
-                  className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
-                >
-                  -
-                </button>
-                <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
-                  {hardCount}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setHardCount((prev) => Math.min(20, prev + 1))}
-                  disabled={hardCount >= 20}
-                  className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DifficultyControlsGroup
+          easyCount={easyCount}
+          mediumCount={mediumCount}
+          hardCount={hardCount}
+          setEasyCount={setEasyCount}
+          setMediumCount={setMediumCount}
+          setHardCount={setHardCount}
+          totalSelected={totalSelected}
+          itemUnitLabel={formatQuestionCount(totalSelected, i18n.language).replace(/^\d+\s*/, "")}
+          maxPerCategory={20}
+        />
 
         <div>
           <label className="block text-xs font-medium text-foreground mb-1.5">
-            {t("courseDetails.generateInstructions")}
+            {t("courseDetails.generateInstructions", "Własne instrukcje")}
           </label>
           <textarea
             value={additionalInstructions}
@@ -365,73 +266,12 @@ export default function GenerateQuizModal({
           />
         </div>
 
-        {hasFiles && (
-          <div className="space-y-2 pt-1">
-            <span className="block text-xs font-semibold text-foreground tracking-wide">
-              {t("courseDetails.estimatedUsageTitle")}
-            </span>
-
-            {loadingEstimation ? (
-              <div className="h-6 animate-pulse bg-muted rounded-lg" />
-            ) : currentEstimation ? (
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-baseline">
-                  <span
-                    className={`text-sm font-bold ${
-                      currentEstimation.canGenerate ? "text-foreground" : "text-destructive"
-                    }`}
-                  >
-                    ~{currentEstimation.estimatedDailyUsagePercentage}%
-                  </span>
-                </div>
-
-                {(() => {
-                  const limit = currentEstimation.dailyTokenLimit || 1;
-                  const realUsed = currentEstimation.dailyTokensUsed || 0;
-                  const otherReserved = currentEstimation.dailyTokensReserved || 0;
-                  const thisQuizEstimated = currentEstimation.estimatedTokens || 0;
-                  const remainingTokens = Math.max(0, limit - realUsed - otherReserved - thisQuizEstimated);
-
-                  const realPctStr = limit > 0 ? ((realUsed / limit) * 100).toFixed(1) : "0";
-                  const otherReservedPctStr = limit > 0 ? ((otherReserved / limit) * 100).toFixed(1) : "0";
-                  const thisQuizPctStr = limit > 0 ? ((thisQuizEstimated / limit) * 100).toFixed(1) : "0";
-                  const remainingPctStr = limit > 0 ? ((remainingTokens / limit) * 100).toFixed(1) : "0";
-
-                  const segments = [
-                    {
-                      id: "real",
-                      value: realUsed,
-                      colorClass: "bg-sky-500",
-                      customTooltip: `Zużyte: ${realUsed.toLocaleString()} (${realPctStr}%)`,
-                    },
-                    {
-                      id: "other",
-                      value: otherReserved,
-                      colorClass: "bg-amber-500",
-                      customTooltip: `Inne zlecenia: ${otherReserved.toLocaleString()} (${otherReservedPctStr}%)`,
-                    },
-                    {
-                      id: "thisQuiz",
-                      value: thisQuizEstimated,
-                      colorClass: "bg-indigo-500",
-                      customTooltip: `Ten quiz: ${thisQuizEstimated.toLocaleString()} (${thisQuizPctStr}%)`,
-                    },
-                  ];
-
-                  return (
-                    <MultiSegmentProgressBar
-                      segments={segments}
-                      totalValue={limit}
-                      heightClass="h-3.5"
-                      showRemainingSegment
-                      remainingSegmentTooltip={`Wolne: ${remainingTokens.toLocaleString()} (${remainingPctStr}%)`}
-                    />
-                  );
-                })()}
-              </div>
-            ) : null}
-          </div>
-        )}
+        <TokenEstimationWidget
+          hasFiles={hasFiles}
+          loading={loadingEstimation}
+          estimation={currentEstimation}
+          itemLabel="Ten quiz"
+        />
 
         <div className="flex justify-end gap-3 pt-2">
           <SecondaryButton type="button" onClick={handleClose}>

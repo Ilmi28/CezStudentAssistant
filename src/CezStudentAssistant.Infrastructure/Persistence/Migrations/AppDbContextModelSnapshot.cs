@@ -59,7 +59,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("CezUsers", (string)null);
+                    b.ToTable("CezUsers");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Course", b =>
@@ -95,7 +95,146 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Flashcard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Back")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DeckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Front")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("State")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeckId");
+
+                    b.ToTable("Flashcards");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.FlashcardAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CardCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DeckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LearningCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MasteredCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProgressPercentage")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeckId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FlashcardAttempts");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.FlashcardDeck", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("CardCountPerAttempt")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EasyCardCountPerAttempt")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("HardCardCountPerAttempt")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("MediumCardCountPerAttempt")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FlashcardDecks");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Job", b =>
@@ -130,7 +269,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Jobs", (string)null);
+                    b.ToTable("Jobs");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Question", b =>
@@ -170,7 +309,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuizId");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.QuestionAnswer", b =>
@@ -200,7 +339,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuizAttemptId");
 
-                    b.ToTable("QuestionAnswers", (string)null);
+                    b.ToTable("QuestionAnswers");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.QuestionOption", b =>
@@ -232,7 +371,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("QuestionOptions", (string)null);
+                    b.ToTable("QuestionOptions");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Quiz", b =>
@@ -249,10 +388,6 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int?>("EasyQuestionCountPerAttempt")
                         .HasColumnType("integer");
@@ -344,7 +479,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QuizAttempts", (string)null);
+                    b.ToTable("QuizAttempts");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.RefreshToken", b =>
@@ -376,7 +511,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Resource", b =>
@@ -422,7 +557,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Resources", (string)null);
+                    b.ToTable("Resources");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.SelectedQuizOption", b =>
@@ -452,7 +587,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuestionOptionId");
 
-                    b.ToTable("SelectedQuizOption", (string)null);
+                    b.ToTable("SelectedQuizOption");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.TokenUsage", b =>
@@ -481,7 +616,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TokenUsages", (string)null);
+                    b.ToTable("TokenUsages");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.User", b =>
@@ -508,7 +643,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.UserConfiguration", b =>
@@ -540,7 +675,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserConfigurations", (string)null);
+                    b.ToTable("UserConfigurations");
                 });
 
             modelBuilder.Entity("CourseUser", b =>
@@ -555,7 +690,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("CourseUser", (string)null);
+                    b.ToTable("CourseUser");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.CezUser", b =>
@@ -565,6 +700,55 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CezStudentAssistant.Domain.Entities.CezUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Flashcard", b =>
+                {
+                    b.HasOne("CezStudentAssistant.Domain.Entities.FlashcardDeck", "Deck")
+                        .WithMany("Cards")
+                        .HasForeignKey("DeckId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Deck");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.FlashcardAttempt", b =>
+                {
+                    b.HasOne("CezStudentAssistant.Domain.Entities.FlashcardDeck", "Deck")
+                        .WithMany("Attempts")
+                        .HasForeignKey("DeckId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CezStudentAssistant.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Deck");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.FlashcardDeck", b =>
+                {
+                    b.HasOne("CezStudentAssistant.Domain.Entities.Course", "Course")
+                        .WithMany("FlashcardDecks")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CezStudentAssistant.Domain.Entities.User", "User")
+                        .WithMany("FlashcardDecks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
 
                     b.Navigation("User");
                 });
@@ -740,9 +924,18 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Course", b =>
                 {
+                    b.Navigation("FlashcardDecks");
+
                     b.Navigation("Questions");
 
                     b.Navigation("Resources");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.FlashcardDeck", b =>
+                {
+                    b.Navigation("Attempts");
+
+                    b.Navigation("Cards");
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Question", b =>
@@ -772,6 +965,8 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.Navigation("CezUser");
 
                     b.Navigation("Configuration");
+
+                    b.Navigation("FlashcardDecks");
 
                     b.Navigation("Quizzes");
 

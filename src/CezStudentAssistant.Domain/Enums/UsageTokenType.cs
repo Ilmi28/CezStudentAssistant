@@ -5,5 +5,6 @@ public enum UsageTokenType
     QuizGeneration = 1,
     CardGeneration = 2,
     SummaryGeneration = 3,
-    ReservedQuizGeneration = 10
+    ReservedQuizGeneration = 10,
+    ReservedCardGeneration = 20
 }

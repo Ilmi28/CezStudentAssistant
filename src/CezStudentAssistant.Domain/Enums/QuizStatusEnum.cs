@@ -1,7 +1,8 @@
-﻿namespace CezStudentAssistant.Domain.Enums;
+namespace CezStudentAssistant.Domain.Enums;
 
 public enum QuizStatusEnum
 {
     Generating = 1,
-    Ready = 2
+    Ready = 2,
+    Failed = 3
 }

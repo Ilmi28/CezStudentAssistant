@@ -1,7 +1,8 @@
-﻿namespace CezStudentAssistant.Domain.Enums;
+namespace CezStudentAssistant.Domain.Enums;
 
 public enum JobType
 {
     CezSync = 1,
-    QuizGeneration = 2
+    QuizGeneration = 2,
+    FlashcardGeneration = 3
 }

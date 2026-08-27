@@ -40,6 +40,7 @@ public static class DependencyInjection
     {
         services.AddScoped<ICezService, CezService>();
         services.AddScoped<IQuizGenerationService, QuizGenerationService>();
+        services.AddScoped<IFlashcardGenerationService, FlashcardGenerationService>();
         services.AddScoped<IJobService, JobService>();
         return services;
     }

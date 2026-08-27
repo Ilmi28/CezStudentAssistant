@@ -8,4 +8,5 @@ export enum JobStatus {
 export enum JobType {
   CezSync = 1,
   QuizGeneration = 2,
+  FlashcardGeneration = 3,
 }

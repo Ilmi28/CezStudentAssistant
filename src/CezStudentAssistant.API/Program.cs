@@ -142,6 +142,7 @@ public class Program
         app.MapCezEndpoints();
         app.MapCourseEndpoints();
         app.MapQuizEndpoints();
+        app.MapFlashcardEndpoints();
         app.MapHub<CezSyncNotificationHub>("/sync-hub");
     }
 

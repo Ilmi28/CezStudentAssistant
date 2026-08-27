@@ -9,6 +9,8 @@ using Google.GenAI.Types;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
+using CezStudentAssistant.Application.Responses.AI.Flashcard;
+
 namespace CezStudentAssistant.AI;
 
 public class GeminiAIClient(
@@ -16,6 +18,7 @@ public class GeminiAIClient(
     IConfiguration configuration,
     ILogger<GeminiAIClient> logger,
     IAIQuizService quizService,
+    IAIFlashcardService flashcardService,
     IFileContentProcessorService fileContentProcessor) : IAIClient
 {
     private readonly string _model = configuration["Gemini:DefaultModel"]
@@ -68,6 +71,45 @@ public class GeminiAIClient(
                 Success = false,
                 Message = string.Format(AIErrorMessages.GeneralErrorMessageFormat, ex.Message)
             };
+        }
+    }
+
+    public async Task<AIFlashcardDeck> GenerateFlashcardsAsync(AIFlashcardRequest request)
+    {
+        try
+        {
+            var prompt = flashcardService.BuildPrompt(request);
+            var schema = flashcardService.BuildSchema();
+
+            var content = await BuildContentAsync(prompt, request.Files);
+
+            var config = new GenerateContentConfig
+            {
+                ResponseMimeType = AIModelSettings.ResponseMimeTypeJson,
+                ResponseSchema = schema
+            };
+
+            var response = await GenerateContentWithRetryAsync(content, config);
+
+            var jsonText = response.Text;
+            if (string.IsNullOrWhiteSpace(jsonText))
+            {
+                logger.LogWarning("[GEMINI] AI returned an empty response text for flashcards.");
+                throw new InvalidOperationException(AIErrorMessages.EmptyResponseErrorMessage);
+            }
+
+            var parsedDeck = flashcardService.ParseResponse(jsonText);
+            if (parsedDeck == null || !parsedDeck.Cards.Any())
+            {
+                throw new InvalidOperationException("AI generated empty flashcards structure.");
+            }
+
+            return parsedDeck;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[GEMINI] GenerateFlashcardsAsync failed: {Message}", ex.Message);
+            throw;
         }
     }
 

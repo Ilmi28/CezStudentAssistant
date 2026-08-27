@@ -33,6 +33,19 @@ public class QuizGenerationService(
 
         await jobService.UpdateJobAsync(job, JobStatus.Processing, ct: ct);
 
+        // Ensure quiz is in Generating status during processing / retries
+        if (dto.QuizId != Guid.Empty)
+        {
+            var quizRepo = unitOfWork.Repository<IQuizRepository>();
+            var quiz = await quizRepo.GetByIdAsync(dto.QuizId, ct);
+            if (quiz != null && quiz.Status != QuizStatusEnum.Generating)
+            {
+                quiz.Status = QuizStatusEnum.Generating;
+                await quizRepo.UpdateAsync(quiz, ct);
+                await unitOfWork.SaveChangesAsync(ct);
+            }
+        }
+
         var aiFiles = new List<AIFile>();
         try
         {
@@ -83,7 +96,7 @@ public class QuizGenerationService(
         catch
         {
             await ReleaseTokenReservationAsync(dto.ReservationId, ct);
-            await CleanupGeneratingQuizAsync(dto.QuizId, ct);
+            await MarkQuizAsFailedAsync(dto.QuizId, ct);
             await jobService.UpdateJobAsync(job, JobStatus.Failed, ct: ct);
             throw;
         }
@@ -251,7 +264,7 @@ public class QuizGenerationService(
         }).ToList();
     }
 
-    private async Task CleanupGeneratingQuizAsync(Guid quizId, CancellationToken ct)
+    private async Task MarkQuizAsFailedAsync(Guid quizId, CancellationToken ct)
     {
         if (quizId == Guid.Empty) return;
 
@@ -259,15 +272,16 @@ public class QuizGenerationService(
         {
             var quizRepo = unitOfWork.Repository<IQuizRepository>();
             var quiz = await quizRepo.GetByIdAsync(quizId, ct);
-            if (quiz is { Status: QuizStatusEnum.Generating })
+            if (quiz != null)
             {
-                await quizRepo.DeleteAsync(quiz, ct);
+                quiz.Status = QuizStatusEnum.Failed;
+                await quizRepo.UpdateAsync(quiz, ct);
                 await unitOfWork.SaveChangesAsync(ct);
             }
         }
         catch
         {
-            // Ignore cleanup failures on error path
+            // Ignore failure on error path
         }
     }
 
