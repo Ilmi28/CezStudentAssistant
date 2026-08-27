@@ -3,7 +3,6 @@ import { QuizStatusEnum, QuizAttemptStatus, QuestionDifficulty } from '../enums/
 export interface QuizDto {
   id: string;
   name: string;
-  displayName: string;
   courseId: string;
   courseName: string;
   status?: QuizStatusEnum;
@@ -54,7 +53,6 @@ export interface QuizDetailsDto {
   id: string;
   userId?: string;
   name: string;
-  displayName: string;
   courseId: string;
   courseName: string;
   timeLimitMinutes?: number | null;
@@ -83,7 +81,7 @@ export interface SubmitAnswerResponseDto {
 export interface QuizAttemptDetailsDto {
   attemptId: string;
   quizId: string;
-  displayName: string;
+  name: string;
   courseName: string;
   status: QuizAttemptStatus;
   isPending: boolean;

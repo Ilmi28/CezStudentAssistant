@@ -78,7 +78,7 @@ export const quizService = {
 
   async updateQuiz(
     quizId: string,
-    displayName: string,
+    name: string,
     timeLimitMinutes?: number | null,
     questionCountPerAttempt?: number | null,
     easyQuestionCountPerAttempt?: number | null,
@@ -91,7 +91,7 @@ export const quizService = {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          displayName,
+          name,
           timeLimitMinutes,
           questionCountPerAttempt,
           easyQuestionCountPerAttempt,

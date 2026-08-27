@@ -54,7 +54,6 @@ public class GetUserQuizzesQueryHandlerTests
             Id = Guid.NewGuid(),
             UserId = userId,
             Name = "Quiz 1",
-            DisplayName = "Quiz 1 Display",
             CourseId = course.Id,
             Course = course,
             TimeLimitMinutes = 25,

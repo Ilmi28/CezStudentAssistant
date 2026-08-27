@@ -10,7 +10,7 @@ public class UpdateQuizCommandValidator : AbstractValidator<UpdateQuizCommand>
         RuleFor(x => x.QuizId)
             .NotEmpty();
 
-        RuleFor(x => x.DisplayName)
+        RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(200);
 

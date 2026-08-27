@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, Check, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import ConfirmModal from "../components/ConfirmModal";
 import LoadingScreen from "../components/LoadingScreen";
 import { useCountdown, useQuiz } from "../hooks";
+import { getScoreBadgeColorClass } from "../utils/scoreUtils";
 
 interface QuizSolverPageProps {
   setError: (msg: string) => void;
@@ -232,10 +233,6 @@ export default function QuizSolverPage({
   }
 
   const qCount = attemptDetails.questions.length;
-  const answeredCount = attemptDetails.questions.filter(
-    q => (selectedAnswers[q.id]?.length || 0) > 0
-  ).length;
-  const isAllAnswered = answeredCount === qCount && qCount > 0;
 
   if (finished) {
     const totalPointsMax = attemptDetails.questions.reduce((sum, q) => sum + getDifficultyPoints(q.difficulty), 0);
@@ -259,7 +256,7 @@ export default function QuizSolverPage({
           </button>
           <div className="flex flex-col justify-center min-w-0">
             <h1 className="text-xl font-bold text-foreground truncate">
-              {attemptDetails.displayName}
+              {attemptDetails.name}
             </h1>
           </div>
         </div>
@@ -272,9 +269,14 @@ export default function QuizSolverPage({
                 <span className="text-base font-bold text-foreground">
                   {formatScore(finalScore)} / {formatScore(totalPointsMax)} pkt
                 </span>
-                <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-md">
-                  {totalPointsMax > 0 ? `${((finalScore / totalPointsMax) * 100).toFixed(0)}%` : "0%"}
-                </span>
+                {(() => {
+                  const scorePercent = totalPointsMax > 0 ? Math.round((finalScore / totalPointsMax) * 100) : 0;
+                  return (
+                    <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md border ${getScoreBadgeColorClass(scorePercent)}`}>
+                      {scorePercent}%
+                    </span>
+                  );
+                })()}
               </div>
 
               <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
@@ -440,47 +442,28 @@ export default function QuizSolverPage({
   const currentQuestionSelected = selectedAnswers[question.id] || [];
 
   return (
-    <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
+    <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+      {/* Top Header: Back btn + Title */}
+      <div className="flex items-center gap-3.5 min-w-0">
+        <button
+          type="button"
+          onClick={handleCancel}
+          title={t("quizDetails.backBtn")}
+          aria-label={t("quizDetails.backBtn")}
+          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
+        >
+          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
+        </button>
+        <div className="flex flex-col justify-center min-w-0">
+          <h1 className="text-xl font-bold text-foreground truncate">
+            {attemptDetails.name}
+          </h1>
+        </div>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-4 items-start">
         {/* Main Content Column */}
-        <div className="flex-1 w-full space-y-5">
-          {/* Top Header: Back btn + Title on left, Compact Timer aligned with right of question card */}
-          <div className="flex items-center justify-between gap-3.5 min-w-0">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <button
-                type="button"
-                onClick={handleCancel}
-                title={t("quizDetails.backBtn")}
-                aria-label={t("quizDetails.backBtn")}
-                className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-              >
-                <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-              </button>
-              <div className="flex flex-col justify-center min-w-0">
-                <h1 className="text-xl font-bold text-foreground truncate">
-                  {attemptDetails.displayName}
-                </h1>
-              </div>
-            </div>
-
-            {attemptDetails.expiresAt && !finished && (
-              <div
-                className={`px-3 py-2 rounded-xl border inline-flex items-center gap-2 shadow-xs transition-all shrink-0 ${
-                  isExpired
-                    ? "bg-rose-500/15 border-rose-500/30 text-rose-500 font-bold"
-                    : isTimeLow
-                      ? "bg-rose-500/15 border-rose-500/30 text-rose-500 font-bold animate-pulse"
-                      : "bg-card border-border text-foreground font-semibold"
-                }`}
-              >
-                <Clock size={15} strokeWidth={2.25} className={isExpired || isTimeLow ? "text-rose-500" : "text-primary"} />
-                <span className="text-xs font-bold tabular-nums">
-                  {isExpired ? "00:00" : timeLeftFormatted}
-                </span>
-              </div>
-            )}
-          </div>
-
+        <div className="flex-1 w-full">
           {/* Main Content Area: Question Card or Review Screen */}
           {isReviewMode ? (
             <div className="w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
@@ -551,8 +534,6 @@ export default function QuizSolverPage({
                 <PrimaryButton
                   size="sm"
                   onClick={() => setShowSubmitModal(true)}
-                  disabled={!isAllAnswered}
-                  icon={<CheckCircle size={15} />}
                   className="px-6 font-semibold"
                 >
                   {t("quizSolver.submitAttemptBtn")}
@@ -650,8 +631,25 @@ export default function QuizSolverPage({
           )}
         </div>
 
-        {/* Right Sidebar: Question Selector Tiles (aligned with top of question card) */}
-        <div className="shrink-0 sticky top-6 self-start pt-0 md:pt-[60px]">
+        {/* Right Sidebar: Timer + Question Selector Tiles */}
+        <div className="shrink-0 sticky top-6 self-start space-y-3">
+          {attemptDetails.expiresAt && !finished && (
+            <div
+              className={`px-3 py-2 rounded-xl border flex items-center justify-center gap-2 shadow-xs transition-all ${
+                isExpired
+                  ? "bg-rose-500/15 border-rose-500/30 text-rose-500 font-bold"
+                  : isTimeLow
+                    ? "bg-rose-500/15 border-rose-500/30 text-rose-500 font-bold animate-pulse"
+                    : "bg-card border-border text-foreground font-semibold"
+              }`}
+            >
+              <Clock size={15} strokeWidth={2.25} className={isExpired || isTimeLow ? "text-rose-500" : "text-primary"} />
+              <span className="text-xs font-bold tabular-nums">
+                {isExpired ? "00:00" : timeLeftFormatted}
+              </span>
+            </div>
+          )}
+
           <div className="grid grid-cols-5 gap-2">
             {attemptDetails.questions.map((q, idx) => {
               const isCurrent = !isReviewMode && idx === currentQuestionIndex;

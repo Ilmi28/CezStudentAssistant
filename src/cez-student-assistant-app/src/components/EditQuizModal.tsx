@@ -10,14 +10,14 @@ interface EditQuizModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (
-    displayName: string,
+    name: string,
     timeLimitMinutes?: number | null,
     questionCountPerAttempt?: number | null,
     easyCount?: number | null,
     mediumCount?: number | null,
     hardCount?: number | null
   ) => Promise<void>;
-  initialDisplayName: string;
+  initialName: string;
   initialTimeLimitMinutes?: number | null;
   initialQuestionCountPerAttempt?: number | null;
   initialEasyCount?: number | null;
@@ -41,7 +41,7 @@ export default function EditQuizModal({
   isOpen,
   onClose,
   onSubmit,
-  initialDisplayName,
+  initialName,
   initialTimeLimitMinutes,
   initialQuestionCountPerAttempt,
   initialEasyCount,
@@ -52,7 +52,7 @@ export default function EditQuizModal({
   hardInPool,
 }: EditQuizModalProps) {
   const { t, i18n } = useTranslation();
-  const [displayName, setDisplayName] = useState(initialDisplayName || "");
+  const [name, setName] = useState(initialName || "");
   const [timeLimitMinutes, setTimeLimitMinutes] = useState<number | "">(
     initialTimeLimitMinutes ?? ""
   );
@@ -72,7 +72,7 @@ export default function EditQuizModal({
 
   useEffect(() => {
     if (isOpen) {
-      setDisplayName(initialDisplayName || "");
+      setName(initialName || "");
       setTimeLimitMinutes(initialTimeLimitMinutes ?? "");
       setEasyCount(initialEasyCount ?? Math.min(2, easyInPool));
       setMediumCount(initialMediumCount ?? Math.min(2, mediumInPool));
@@ -81,7 +81,7 @@ export default function EditQuizModal({
     }
   }, [
     isOpen,
-    initialDisplayName,
+    initialName,
     initialTimeLimitMinutes,
     initialQuestionCountPerAttempt,
     initialEasyCount,
@@ -96,7 +96,7 @@ export default function EditQuizModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!displayName.trim()) {
+    if (!name.trim()) {
       setModalError(t("auth.emptyFields"));
       return;
     }
@@ -114,7 +114,7 @@ export default function EditQuizModal({
     setLoading(true);
     try {
       await onSubmit(
-        displayName.trim(),
+        name.trim(),
         limit,
         totalSelected,
         easyCount,
@@ -123,11 +123,8 @@ export default function EditQuizModal({
       );
       onClose();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setModalError(err.message || t("common.genericError"));
-      } else {
-        setModalError(t("common.genericError"));
-      }
+      console.warn("[EditQuizModal] Failed to update quiz:", err);
+      setModalError(t("common.genericError"));
     } finally {
       setLoading(false);
     }
@@ -149,9 +146,9 @@ export default function EditQuizModal({
 
         <Input
           label={t("quizDetails.quizNameLabel")}
-          value={displayName}
+          value={name}
           onChange={(e) => {
-            setDisplayName(e.target.value);
+            setName(e.target.value);
             if (modalError) setModalError(null);
           }}
         />

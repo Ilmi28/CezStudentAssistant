@@ -233,7 +233,7 @@ public class AIQuizEndpointsTests
             db.Courses.Add(course);
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Calculus 1 Quiz", DisplayName = "Calculus 1 Quiz", CourseId = courseId };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Calculus 1 Quiz", CourseId = courseId };
             db.Quizzes.Add(quiz);
             await db.SaveChangesAsync();
         }
@@ -269,7 +269,7 @@ public class AIQuizEndpointsTests
             db.Courses.Add(course);
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Electricity Quiz", DisplayName = "Electricity Quiz", CourseId = courseId };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Electricity Quiz", CourseId = courseId };
             var question = new Question { Content = "V=IR?", Type = QuestionType.SingleChoice, Quiz = quiz };
             var option = new QuestionOption { Content = "Yes", IsCorrect = true, Question = question };
             question.Options.Add(option);

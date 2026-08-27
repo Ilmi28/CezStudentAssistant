@@ -96,7 +96,7 @@ public class StartQuizEndpointsTests
             var course = new Course { Id = courseId, Name = "Course 1", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", DisplayName = "Quiz Display 1", Course = course };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Quiz 1", Course = course };
             var question = new Question { Content = "What is 2+2?", Type = QuestionType.SingleChoice, Quiz = quiz };
             var option = new QuestionOption { Content = "4", IsCorrect = true, Question = question };
             question.Options.Add(option);
@@ -117,7 +117,7 @@ public class StartQuizEndpointsTests
         content.Message.Should().Be(QuizMessageConsts.StartQuizSuccess);
         content.Data.Should().NotBeNull();
         content.Data!.QuizId.Should().Be(quizId);
-        content.Data.DisplayName.Should().Be("Quiz Display 1");
+        content.Data.Name.Should().Be("Quiz 1");
         content.Data.Status.Should().Be(QuizAttemptStatus.InProgress);
         content.Data.IsPending.Should().BeTrue();
         content.Data.Questions.Should().HaveCount(1);
@@ -161,7 +161,7 @@ public class StartQuizEndpointsTests
             var course = new Course { Id = courseId, Name = "Data Structures", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "DS Quiz", DisplayName = "Trees Quiz", Course = course };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Trees Quiz", Course = course };
             var question = new Question { Content = "Is binary tree hierarchical?", Type = QuestionType.SingleChoice, Quiz = quiz };
             var option = new QuestionOption { Content = "Yes", IsCorrect = true, Question = question };
             question.Options.Add(option);
@@ -204,7 +204,7 @@ public class StartQuizEndpointsTests
         content.Data.Should().NotBeNull();
         content.Data!.AttemptId.Should().Be(attemptId);
         content.Data.QuizId.Should().Be(quizId);
-        content.Data.DisplayName.Should().Be("Trees Quiz");
+        content.Data.Name.Should().Be("Trees Quiz");
         content.Data.Status.Should().Be(QuizAttemptStatus.InProgress);
         content.Data.IsPending.Should().BeTrue();
         content.Data.Questions.Should().HaveCount(1);
@@ -231,7 +231,7 @@ public class StartQuizEndpointsTests
             var course = new Course { Id = courseId, Name = "Networks", Type = CourseType.Cez };
             user.Courses.Add(course);
 
-            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Net Quiz", DisplayName = "Net Quiz", Course = course };
+            var quiz = new Quiz { Id = quizId, UserId = userId, Name = "Net Quiz", Course = course };
             var attempt = new QuizAttempt
             {
                 Id = attemptId,

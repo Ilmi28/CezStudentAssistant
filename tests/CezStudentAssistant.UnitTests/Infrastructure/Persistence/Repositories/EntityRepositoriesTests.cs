@@ -47,7 +47,7 @@ public class EntityRepositoriesTests
         var repository = new QuestionRepository(_context);
         var course = new Course { Name = "Course" };
         var user = new User { UserName = "u1" };
-        var quiz = new Quiz { Name = "Quiz", DisplayName = "Quiz", Course = course, User = user };
+        var quiz = new Quiz { Name = "Quiz", Course = course, User = user };
         var entity = new Question 
         { 
             Content = "Test Question", 
@@ -68,7 +68,7 @@ public class EntityRepositoriesTests
         var repository = new QuestionOptionRepository(_context);
         var course = new Course { Name = "Course" };
         var user = new User { UserName = "u2" };
-        var quiz = new Quiz { Name = "Quiz", DisplayName = "Quiz", Course = course, User = user };
+        var quiz = new Quiz { Name = "Quiz", Course = course, User = user };
         var question = new Question { Content = "Question", Quiz = quiz };
         var entity = new QuestionOption 
         { 
@@ -111,7 +111,7 @@ public class EntityRepositoriesTests
         var repository = new QuestionAnswerRepository(_context);
         var user = new User { UserName = "testuser" };
         var course = new Course { Name = "Course" };
-        var quiz = new Quiz { Name = "Quiz", DisplayName = "Quiz", Course = course, User = user };
+        var quiz = new Quiz { Name = "Quiz", Course = course, User = user };
         var question = new Question { Content = "Question", Quiz = quiz };
         var quizAttempt = new QuizAttempt { User = user, Course = course, Quiz = quiz };
         

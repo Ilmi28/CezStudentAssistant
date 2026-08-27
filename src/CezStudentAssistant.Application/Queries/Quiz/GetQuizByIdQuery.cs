@@ -54,7 +54,6 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
             Id = quiz.Id,
             UserId = quiz.UserId,
             Name = quiz.Name,
-            DisplayName = quiz.DisplayName,
             CourseId = quiz.CourseId,
             CourseName = quiz.Course.Name,
             TimeLimitMinutes = quiz.TimeLimitMinutes,

@@ -8,7 +8,7 @@ public class QuizAttemptDetailsDto
 {
     public Guid AttemptId { get; set; }
     public Guid QuizId { get; set; }
-    public required string DisplayName { get; set; }
+    public required string Name { get; set; }
     public required string CourseName { get; set; }
     public QuizAttemptStatus Status { get; set; }
     public bool IsPending { get; set; }

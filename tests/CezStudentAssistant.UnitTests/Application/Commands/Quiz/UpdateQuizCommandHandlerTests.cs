@@ -46,7 +46,6 @@ public class UpdateQuizCommandHandlerTests
             Id = quizId,
             UserId = userId,
             Name = "Old Name",
-            DisplayName = "Old Display Name",
             CourseId = Guid.NewGuid(),
             TimeLimitMinutes = 10
         };
@@ -57,7 +56,7 @@ public class UpdateQuizCommandHandlerTests
         {
             UserId = userId,
             QuizId = quizId,
-            DisplayName = "New Quiz Name",
+            Name = "New Quiz Name",
             TimeLimitMinutes = 25
         };
 
@@ -67,7 +66,6 @@ public class UpdateQuizCommandHandlerTests
         result.Success.Should().BeTrue();
         result.Message.Should().Be(QuizMessageConsts.UpdateQuizSuccess);
 
-        quiz.DisplayName.Should().Be("New Quiz Name");
         quiz.Name.Should().Be("New Quiz Name");
         quiz.TimeLimitMinutes.Should().Be(25);
 
@@ -85,7 +83,7 @@ public class UpdateQuizCommandHandlerTests
         {
             UserId = Guid.NewGuid(),
             QuizId = quizId,
-            DisplayName = "Any Name"
+            Name = "Any Name"
         };
 
         Func<Task> act = async () => await _sut.Handle(command, CancellationToken.None);
@@ -106,7 +104,6 @@ public class UpdateQuizCommandHandlerTests
             Id = quizId,
             UserId = ownerId,
             Name = "Quiz Name",
-            DisplayName = "Quiz Display Name",
             CourseId = Guid.NewGuid()
         };
 
@@ -116,7 +113,7 @@ public class UpdateQuizCommandHandlerTests
         {
             UserId = otherUserId,
             QuizId = quizId,
-            DisplayName = "Updated Name"
+            Name = "Updated Name"
         };
 
         Func<Task> act = async () => await _sut.Handle(command, CancellationToken.None);

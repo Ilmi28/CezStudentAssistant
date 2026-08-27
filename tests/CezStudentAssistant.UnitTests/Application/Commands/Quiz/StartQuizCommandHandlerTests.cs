@@ -61,7 +61,6 @@ public class StartQuizCommandHandlerTests
             Id = quizId,
             UserId = userId,
             Name = "Quiz 1",
-            DisplayName = "Quiz Display 1",
             CourseId = course.Id,
             Course = course
         };
@@ -93,7 +92,7 @@ public class StartQuizCommandHandlerTests
         result.Message.Should().Be(QuizMessageConsts.StartQuizSuccess);
         result.Data.Should().NotBeNull();
         result.Data!.QuizId.Should().Be(quizId);
-        result.Data.DisplayName.Should().Be("Quiz Display 1");
+        result.Data.Name.Should().Be("Quiz 1");
         result.Data.CourseName.Should().Be("Course 1");
         result.Data.Status.Should().Be(QuizAttemptStatus.InProgress);
         result.Data.IsPending.Should().BeTrue();
@@ -115,7 +114,6 @@ public class StartQuizCommandHandlerTests
             Id = quizId,
             UserId = userId,
             Name = "Quiz 1",
-            DisplayName = "Quiz Display 1",
             CourseId = course.Id,
             Course = course,
             TimeLimitMinutes = 20

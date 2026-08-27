@@ -59,7 +59,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("CezUsers");
+                    b.ToTable("CezUsers", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Course", b =>
@@ -95,7 +95,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Courses");
+                    b.ToTable("Courses", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Job", b =>
@@ -130,7 +130,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Jobs");
+                    b.ToTable("Jobs", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Question", b =>
@@ -170,7 +170,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuizId");
 
-                    b.ToTable("Questions");
+                    b.ToTable("Questions", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.QuestionAnswer", b =>
@@ -200,7 +200,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuizAttemptId");
 
-                    b.ToTable("QuestionAnswers");
+                    b.ToTable("QuestionAnswers", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.QuestionOption", b =>
@@ -232,7 +232,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("QuestionOptions");
+                    b.ToTable("QuestionOptions", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Quiz", b =>
@@ -344,7 +344,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QuizAttempts");
+                    b.ToTable("QuizAttempts", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.RefreshToken", b =>
@@ -376,7 +376,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Resource", b =>
@@ -422,7 +422,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Resources");
+                    b.ToTable("Resources", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.SelectedQuizOption", b =>
@@ -452,7 +452,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("QuestionOptionId");
 
-                    b.ToTable("SelectedQuizOption");
+                    b.ToTable("SelectedQuizOption", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.TokenUsage", b =>
@@ -481,7 +481,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TokenUsages");
+                    b.ToTable("TokenUsages", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.User", b =>
@@ -508,7 +508,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.UserConfiguration", b =>
@@ -540,7 +540,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserConfigurations");
+                    b.ToTable("UserConfigurations", (string)null);
                 });
 
             modelBuilder.Entity("CourseUser", b =>
@@ -555,7 +555,7 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("CourseUser");
+                    b.ToTable("CourseUser", (string)null);
                 });
 
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.CezUser", b =>

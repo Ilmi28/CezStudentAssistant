@@ -60,7 +60,7 @@ public class GetQuizAttemptByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryH
         {
             AttemptId = quizAttempt.Id,
             QuizId = quizAttempt.QuizId,
-            DisplayName = quizAttempt.Quiz.DisplayName,
+            Name = quizAttempt.Quiz.Name,
             CourseName = quizAttempt.Quiz.Course.Name,
             Status = quizAttempt.Status,
             IsPending = isPending,

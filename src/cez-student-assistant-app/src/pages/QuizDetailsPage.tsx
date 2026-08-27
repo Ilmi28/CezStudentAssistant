@@ -18,6 +18,7 @@ import LoadingScreen from "../components/LoadingScreen";
 import EditQuizModal from "../components/EditQuizModal";
 import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
 import { useCountdown, useQuiz } from "../hooks";
+import { getScoreColorClass } from "../utils/scoreUtils";
 
 interface QuizDetailsPageProps {
   setError: (msg: string) => void;
@@ -47,11 +48,7 @@ function AttemptCountdownBadge({
     return (
       <div className="flex flex-col items-end justify-center text-right">
         <span
-          className={`text-base md:text-lg font-bold tabular-nums leading-tight ${
-            attemptPercentage >= 50
-              ? "text-emerald-500 dark:text-emerald-400"
-              : "text-amber-500 dark:text-amber-400"
-          }`}
+          className={`text-base md:text-lg font-bold tabular-nums leading-tight ${getScoreColorClass(attemptPercentage)}`}
         >
           {attemptPercentage}%
         </span>
@@ -163,7 +160,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   };
 
   const handleEditQuizSubmit = async (
-    displayName: string,
+    name: string,
     timeLimitMinutes?: number | null,
     questionCountPerAttempt?: number | null,
     easyCount?: number | null,
@@ -173,7 +170,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     if (!id) return;
     await quizService.updateQuiz(
       id,
-      displayName,
+      name,
       timeLimitMinutes,
       questionCountPerAttempt,
       easyCount,
@@ -271,7 +268,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               </span>
             )}
             <h1 className="text-xl font-bold text-foreground truncate">
-              {quiz.displayName || quiz.name}
+              {quiz.name}
             </h1>
           </div>
         </div>
@@ -492,11 +489,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                       {isCompleted && (
                         <div className="flex flex-col items-end justify-center text-right">
                           <span
-                            className={`text-base md:text-lg font-bold tabular-nums leading-tight ${
-                              attemptPercentage >= 50
-                                ? "text-emerald-500 dark:text-emerald-400"
-                                : "text-amber-500 dark:text-amber-400"
-                            }`}
+                            className={`text-base md:text-lg font-bold tabular-nums leading-tight ${getScoreColorClass(attemptPercentage)}`}
                           >
                             {attemptPercentage}%
                           </span>
@@ -537,7 +530,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={handleEditQuizSubmit}
-        initialDisplayName={quiz.displayName || quiz.name}
+        initialName={quiz.name}
         initialTimeLimitMinutes={quiz.timeLimitMinutes}
         initialQuestionCountPerAttempt={quiz.questionCountPerAttempt}
         initialEasyCount={quiz.easyQuestionCountPerAttempt}

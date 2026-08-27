@@ -66,7 +66,6 @@ public class GenerateQuizCommandHandler(
         {
             UserId = command.UserId,
             Name = quizTitle,
-            DisplayName = quizTitle,
             CourseId = command.CourseId,
             Status = QuizStatusEnum.Generating,
             TimeLimitMinutes = command.TimeLimitMinutes,

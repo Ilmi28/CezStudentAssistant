@@ -5,6 +5,7 @@ import type { QuizDto } from "../types";
 import { QuizStatusEnum, QuizAttemptStatus } from "../enums/quizEnums";
 import Card from "./Card";
 import { useCountdown, useQuiz } from "../hooks";
+import { getScoreColorClass } from "../utils/scoreUtils";
 
 interface QuizCardProps {
   quiz: QuizDto;
@@ -13,52 +14,33 @@ interface QuizCardProps {
   showCourseName?: boolean;
 }
 
-function CardAttemptCountdownBadge({
+function CardInProgressBadge({
   expiresAt,
-  percentage,
   onExpire,
 }: {
-  expiresAt: string;
-  percentage: number | null;
+  expiresAt?: string | null;
   onExpire?: () => void;
 }) {
   const { t } = useTranslation();
-  const { formatted, isExpired, isTimeLow } = useCountdown(expiresAt, onExpire);
+  const { formatted, isExpired, isTimeLow } = useCountdown(expiresAt || null, onExpire);
 
-  if (isExpired) {
-    return (
-      <div className="flex flex-col items-end justify-center text-right">
-        <span
-          className={`text-base font-bold tabular-nums leading-tight ${
-            percentage !== null && percentage >= 50
-              ? "text-emerald-500 dark:text-emerald-400"
-              : "text-amber-500 dark:text-amber-400"
-          }`}
-        >
-          {percentage !== null ? `${percentage}%` : "0%"}
-        </span>
-        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-          {t("quizDetails.status.completed")}
-        </span>
-      </div>
-    );
+  if (expiresAt && isExpired) {
+    return null;
   }
 
   return (
-    <div className="flex flex-col items-end justify-center text-right">
-      <span
-        className={`text-base font-bold tabular-nums leading-tight ${
-          isTimeLow
-            ? "text-rose-500 font-bold animate-pulse"
-            : "text-amber-500 dark:text-amber-400"
-        }`}
-      >
-        {formatted}
-      </span>
-      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-        {t("quizDetails.status.inProgress", "W toku")}
-      </span>
-    </div>
+    <span
+      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0 inline-flex items-center gap-1.5 ${
+        isTimeLow
+          ? "bg-rose-500/15 text-rose-500 border-rose-500/30 animate-pulse"
+          : "bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30"
+      }`}
+    >
+      <span>{t("quizDetails.status.inProgress", "W toku")}</span>
+      {expiresAt && formatted && (
+        <span className="tabular-nums font-mono font-bold">• {formatted}</span>
+      )}
+    </span>
   );
 }
 
@@ -74,16 +56,11 @@ export default function QuizCard({
   const { refreshQuizzes } = useQuiz();
   const isGenerating = quiz.status === QuizStatusEnum.Generating;
 
-  const rawTitle = quiz.displayName || quiz.name;
+  const rawTitle = quiz.name;
   const isGenericTitle = !rawTitle || rawTitle.startsWith("Quiz z") || rawTitle === quiz.courseName;
   const displayTitle = index !== undefined && isGenericTitle ? `Quiz #${index}` : (rawTitle || (index !== undefined ? `Quiz #${index}` : "Quiz"));
 
   const isInProgress = quiz.lastAttemptStatus === QuizAttemptStatus.InProgress;
-
-  const percentage =
-    quiz.maxPoints && quiz.maxPoints > 0 && quiz.lastAttemptPoints !== null && quiz.lastAttemptPoints !== undefined
-      ? Math.round((quiz.lastAttemptPoints / quiz.maxPoints) * 100)
-      : null;
 
   return (
     <Card
@@ -95,12 +72,20 @@ export default function QuizCard({
       }}
       className={`p-4 flex-row items-center justify-between gap-3.5 ${className}`}
     >
-      <div className="min-w-0 flex-1">
-        <h4 className="text-sm md:text-[15px] font-semibold text-foreground leading-snug line-clamp-1">
-          {displayTitle}
-        </h4>
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          <h4 className="text-sm md:text-[15px] font-semibold text-foreground leading-snug truncate">
+            {displayTitle}
+          </h4>
+          {isInProgress && (
+            <CardInProgressBadge
+              expiresAt={quiz.lastAttemptExpiresAt}
+              onExpire={() => refreshQuizzes().catch(() => {})}
+            />
+          )}
+        </div>
         {showCourseName && quiz.courseName && (
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+          <p className="text-xs text-muted-foreground line-clamp-1">
             {quiz.courseName}
           </p>
         )}
@@ -117,45 +102,14 @@ export default function QuizCard({
           </div>
         ) : (
           <>
-            {/* If attempt is in progress */}
-            {isInProgress && (
-              quiz.lastAttemptExpiresAt ? (
-                <CardAttemptCountdownBadge
-                  expiresAt={quiz.lastAttemptExpiresAt}
-                  percentage={percentage}
-                  onExpire={() => refreshQuizzes().catch(() => {})}
-                />
-              ) : (
-                <>
-                  <span className="text-base font-bold text-amber-500 dark:text-amber-400 leading-tight">
-                    {t("quizDetails.status.inProgress", "W toku")}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                    {t("quizDetails.stats.noLimit", "Brak limitu")}
-                  </span>
-                </>
-              )
-            )}
-
-            {/* Display Progress (0% - 100%) */}
-            {!isInProgress && (
-              <>
-                <span
-                  className={`text-base font-bold tabular-nums leading-tight ${
-                    (quiz.progressPercentage ?? 0) >= 50
-                      ? "text-emerald-500 dark:text-emerald-400"
-                      : (quiz.progressPercentage ?? 0) > 0
-                        ? "text-amber-500 dark:text-amber-400"
-                        : "text-muted-foreground/70"
-                  }`}
-                >
-                  {quiz.progressPercentage ?? 0}%
-                </span>
-                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                  {t("quizDetails.stats.masteryIndex", "PROGRES")}
-                </span>
-              </>
-            )}
+            <span
+              className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(quiz.progressPercentage)}`}
+            >
+              {quiz.progressPercentage ?? 0}%
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+              {t("quizDetails.stats.masteryIndex", "PROGRES")}
+            </span>
           </>
         )}
       </div>

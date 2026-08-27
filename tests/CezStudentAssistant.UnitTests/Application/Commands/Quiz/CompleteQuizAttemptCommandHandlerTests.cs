@@ -55,7 +55,7 @@ public class CompleteQuizAttemptCommandHandlerTests
 
         var user = new UserEntity { Id = userId, UserName = "student" };
         var course = new CourseEntity { Id = Guid.NewGuid(), Name = "DB", Users = new List<UserEntity> { user } };
-        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "DB Quiz", DisplayName = "DB Quiz", Course = course };
+        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "DB Quiz", Course = course };
         var question = new Question
         {
             Id = questionId,
@@ -176,7 +176,7 @@ public class CompleteQuizAttemptCommandHandlerTests
         var quizId = Guid.NewGuid();
         var user = new UserEntity { Id = userId, UserName = "student" };
         var course = new CourseEntity { Id = Guid.NewGuid(), Name = "DB", Users = new List<UserEntity> { user } };
-        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "DB Quiz", DisplayName = "DB Quiz", Course = course };
+        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "DB Quiz", Course = course };
 
         var attempt = new QuizAttempt
         {

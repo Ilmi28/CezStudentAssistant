@@ -56,7 +56,6 @@ public class GetQuizAttemptByIdQueryHandlerTests
             Id = quizId,
             UserId = userId,
             Name = "OS Quiz",
-            DisplayName = "OS Processes Quiz",
             CourseId = course.Id,
             Course = course
         };
@@ -118,7 +117,7 @@ public class GetQuizAttemptByIdQueryHandlerTests
         result.Data.Should().NotBeNull();
         result.Data!.AttemptId.Should().Be(attemptId);
         result.Data.QuizId.Should().Be(quizId);
-        result.Data.DisplayName.Should().Be("OS Processes Quiz");
+        result.Data.Name.Should().Be("OS Quiz");
         result.Data.CourseName.Should().Be("Operating Systems");
         result.Data.Status.Should().Be(QuizAttemptStatus.InProgress);
         result.Data.IsPending.Should().BeTrue();

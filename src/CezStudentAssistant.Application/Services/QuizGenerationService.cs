@@ -168,7 +168,6 @@ public class QuizGenerationService(
             {
                 UserId = dto.UserId,
                 Name = finalTitle,
-                DisplayName = finalTitle,
                 CourseId = dto.CourseId,
                 Status = QuizStatusEnum.Ready,
                 TimeLimitMinutes = dto.TimeLimitMinutes,
@@ -182,16 +181,13 @@ public class QuizGenerationService(
         }
         else
         {
-            var quizNumberTitle = !string.IsNullOrWhiteSpace(quiz.DisplayName) && quiz.DisplayName.StartsWith("Quiz #", StringComparison.OrdinalIgnoreCase)
-                ? quiz.DisplayName
-                : (!string.IsNullOrWhiteSpace(quiz.Name) && quiz.Name.StartsWith("Quiz #", StringComparison.OrdinalIgnoreCase)
-                    ? quiz.Name
-                    : $"Quiz #{quizRepo.Find(q => q.CourseId == dto.CourseId).Count()}");
+            var quizNumberTitle = !string.IsNullOrWhiteSpace(quiz.Name) && quiz.Name.StartsWith("Quiz #", StringComparison.OrdinalIgnoreCase)
+                ? quiz.Name
+                : $"Quiz #{quizRepo.Find(q => q.CourseId == dto.CourseId).Count()}";
 
             var finalTitle = BuildQuizTitle(quizNumberTitle, aiQuiz.Title);
 
             quiz.Name = finalTitle;
-            quiz.DisplayName = finalTitle;
             quiz.Status = QuizStatusEnum.Ready;
             foreach (var question in MapQuestions(quiz, aiQuiz.Questions))
             {

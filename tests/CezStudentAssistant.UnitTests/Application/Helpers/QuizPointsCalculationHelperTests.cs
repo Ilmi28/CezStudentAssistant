@@ -31,7 +31,6 @@ public class QuizPointsCalculationHelperTests
         var quiz = new CezStudentAssistant.Domain.Entities.Quiz
         {
             Name = "Quiz",
-            DisplayName = "Quiz",
             Questions = new System.Collections.Generic.List<CezStudentAssistant.Domain.Entities.Question> { question }
         };
 
@@ -103,7 +102,6 @@ public class QuizPointsCalculationHelperTests
         {
             Id = quizId,
             Name = "Sample Quiz",
-            DisplayName = "Sample Quiz",
             Questions = new System.Collections.Generic.List<CezStudentAssistant.Domain.Entities.Question> { question1, question2 }
         };
 
@@ -171,7 +169,6 @@ public class QuizPointsCalculationHelperTests
         var quiz = new CezStudentAssistant.Domain.Entities.Quiz
         {
             Name = "DB Quiz",
-            DisplayName = "DB Quiz",
             Questions = new System.Collections.Generic.List<CezStudentAssistant.Domain.Entities.Question> { question }
         };
 

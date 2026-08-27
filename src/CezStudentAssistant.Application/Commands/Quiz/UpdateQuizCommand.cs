@@ -13,7 +13,7 @@ public class UpdateQuizCommand : ICommand, IUserRequest
 {
     public Guid UserId { get; set; }
     public Guid QuizId { get; set; }
-    public required string DisplayName { get; set; }
+    public required string Name { get; set; }
     public int? TimeLimitMinutes { get; set; }
     public int? QuestionCountPerAttempt { get; set; }
     public int? EasyQuestionCountPerAttempt { get; set; }
@@ -41,8 +41,7 @@ public class UpdateQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandl
             throw new UnauthorizedException(QuizMessageConsts.QuizAccessDenied);
         }
 
-        quiz.DisplayName = command.DisplayName;
-        quiz.Name = command.DisplayName;
+        quiz.Name = command.Name;
         quiz.TimeLimitMinutes = command.TimeLimitMinutes;
         quiz.QuestionCountPerAttempt = command.QuestionCountPerAttempt;
         quiz.EasyQuestionCountPerAttempt = command.EasyQuestionCountPerAttempt;

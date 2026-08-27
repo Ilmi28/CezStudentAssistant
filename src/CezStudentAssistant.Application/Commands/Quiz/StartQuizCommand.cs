@@ -120,7 +120,7 @@ public class StartQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandle
         {
             AttemptId = attempt.Id,
             QuizId = quiz.Id,
-            DisplayName = quiz.DisplayName,
+            Name = quiz.Name,
             CourseName = quiz.Course.Name,
             Status = attempt.Status,
             IsPending = true,

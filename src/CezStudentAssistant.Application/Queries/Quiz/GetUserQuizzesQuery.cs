@@ -50,7 +50,6 @@ public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
                 Id = q.Id,
                 UserId = q.UserId,
                 Name = q.Name,
-                DisplayName = q.DisplayName,
                 CourseId = q.CourseId,
                 CourseName = q.Course?.Name ?? string.Empty,
                 Status = q.Status,

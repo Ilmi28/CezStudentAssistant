@@ -23,7 +23,7 @@ public class UpdateQuizCommandValidatorTests
         var command = new UpdateQuizCommand
         {
             QuizId = Guid.NewGuid(),
-            DisplayName = "Kolokwium 1",
+            Name = "Kolokwium 1",
             TimeLimitMinutes = null
         };
 
@@ -38,7 +38,7 @@ public class UpdateQuizCommandValidatorTests
         var command = new UpdateQuizCommand
         {
             QuizId = Guid.NewGuid(),
-            DisplayName = "Kolokwium 1",
+            Name = "Kolokwium 1",
             TimeLimitMinutes = 45
         };
 
@@ -53,7 +53,7 @@ public class UpdateQuizCommandValidatorTests
         var command = new UpdateQuizCommand
         {
             QuizId = Guid.Empty,
-            DisplayName = "Kolokwium 1"
+            Name = "Kolokwium 1"
         };
 
         var result = _validator.TestValidate(command);
@@ -62,17 +62,17 @@ public class UpdateQuizCommandValidatorTests
     }
 
     [Test]
-    public void Validate_ShouldFail_WhenDisplayNameIsEmpty()
+    public void Validate_ShouldFail_WhenNameIsEmpty()
     {
         var command = new UpdateQuizCommand
         {
             QuizId = Guid.NewGuid(),
-            DisplayName = ""
+            Name = ""
         };
 
         var result = _validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.DisplayName);
+        result.ShouldHaveValidationErrorFor(x => x.Name);
     }
 
     [Test]
@@ -81,7 +81,7 @@ public class UpdateQuizCommandValidatorTests
         var command = new UpdateQuizCommand
         {
             QuizId = Guid.NewGuid(),
-            DisplayName = "Kolokwium 1",
+            Name = "Kolokwium 1",
             TimeLimitMinutes = 0
         };
 

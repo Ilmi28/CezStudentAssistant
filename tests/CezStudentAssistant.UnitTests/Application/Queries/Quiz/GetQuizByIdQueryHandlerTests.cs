@@ -54,7 +54,7 @@ public class GetQuizByIdQueryHandlerTests
         var user = new UserEntity { Id = userId, UserName = "test" };
         var course = new CourseEntity { Id = Guid.NewGuid(), Name = "Course A", Users = new List<UserEntity> { user } };
         var quizId = Guid.NewGuid();
-        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "Math Quiz", DisplayName = "Math Quiz Display", CourseId = course.Id, Course = course, TimeLimitMinutes = 15 };
+        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "Math Quiz", CourseId = course.Id, Course = course, TimeLimitMinutes = 15 };
         
         var question = new Question
         {
@@ -129,7 +129,7 @@ public class GetQuizByIdQueryHandlerTests
         var user = new UserEntity { Id = userId, UserName = "test" };
         var course = new CourseEntity { Id = Guid.NewGuid(), Name = "Course A", Users = new List<UserEntity> { user } };
         var quizId = Guid.NewGuid();
-        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "Math Quiz", DisplayName = "Math Quiz Display", CourseId = course.Id, Course = course };
+        var quiz = new QuizEntity { Id = quizId, UserId = userId, Name = "Math Quiz", CourseId = course.Id, Course = course };
 
         var mockQuizDbSet = new List<QuizEntity> { quiz }.BuildMockDbSet();
         _quizRepository.Find(Arg.Any<Expression<Func<QuizEntity, bool>>>()).Returns(mockQuizDbSet);
