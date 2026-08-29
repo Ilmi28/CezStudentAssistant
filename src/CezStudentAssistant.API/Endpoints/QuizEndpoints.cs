@@ -14,9 +14,9 @@ public static class QuizEndpoints
     {
         var group = app.MapGroup("/quiz").WithTags("Quiz");
 
-        group.MapGet("/", async (IMediator mediator) =>
+        group.MapGet("/", async (Guid? courseId, IMediator mediator) =>
         {
-            var query = new GetUserQuizzesQuery();
+            var query = new GetUserQuizzesQuery { CourseId = courseId };
             var result = await mediator.Send(query);
             return Results.Ok(result);
         }).RequireAuthorization();

@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AuthContext } from "../contexts/AuthContext";
-import { authService, cezService, UnauthorizedError } from "../services";
+import { authService, UnauthorizedError } from "../services";
 import { useUI } from "./useUI";
 
 export function useAuth() {
@@ -19,13 +19,6 @@ export function useAuth() {
     try {
       const storedUser = localStorage.getItem("username") || "Student";
       ctx.setUsername(storedUser);
-      try {
-        const cezStatus = await cezService.getCezStatus();
-        ctx.setIsCezConnected(cezStatus.isConnected);
-        ctx.setLastCezSync(cezStatus.lastSyncAt);
-      } catch (cezErr) {
-        console.debug("[useAuth] CEZ status check fallback:", cezErr);
-      }
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {
         ctx.setUsername(null);
@@ -44,21 +37,7 @@ export function useAuth() {
   const handleLoginSuccess = async (user: string) => {
     localStorage.setItem("username", user);
     ctx.setUsername(user);
-    setLoading(true);
-    try {
-      try {
-        const cezStatus = await cezService.getCezStatus();
-        ctx.setIsCezConnected(cezStatus.isConnected);
-        ctx.setLastCezSync(cezStatus.lastSyncAt);
-      } catch (cezErr) {
-        console.debug("[useAuth] CEZ status fallback on login:", cezErr);
-      }
-      navigate("/home");
-    } catch (err: any) {
-      setError(t("common.errorConnection"));
-    } finally {
-      setLoading(false);
-    }
+    navigate("/home");
   };
 
   const handleLogout = async () => {

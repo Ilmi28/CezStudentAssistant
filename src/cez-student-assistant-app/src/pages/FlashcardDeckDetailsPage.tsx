@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { flashcardService } from "../services/flashcardService";
 import type { FlashcardDeckDetailsDto } from "../types/flashcardTypes";
 import { QuestionDifficulty, QuizAttemptStatus } from "../enums/quizEnums";
 import Card from "../components/Card";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import { Alert } from "../components/Alert";
+import LoadingScreen from "../components/LoadingScreen";
 import { EditFlashcardDeckModal } from "../components/EditFlashcardDeckModal";
 import { StartFlashcardStudyModal } from "../components/StartFlashcardStudyModal";
 import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
@@ -19,7 +21,6 @@ import {
   BookOpen,
   HelpCircle,
   Layers,
-  Award,
   ArrowLeft,
   Clock
 } from "lucide-react";
@@ -28,6 +29,7 @@ export default function FlashcardDeckDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [deck, setDeck] = useState<FlashcardDeckDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,11 +111,7 @@ export default function FlashcardDeckDetailsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex-1 p-6 md:p-8 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message={t("flashcards.loadingDeckDetails")} />;
   }
 
   if (errorMsg || !deck) {
@@ -138,8 +136,7 @@ export default function FlashcardDeckDetailsPage() {
   const easyInDeck = deck.cards.filter((c) => isEasy(c.difficulty)).length;
   const hardInDeck = deck.cards.filter((c) => isHard(c.difficulty)).length;
   const mediumInDeck = deck.cards.filter((c) => !isEasy(c.difficulty) && !isHard(c.difficulty)).length;
-
-
+  const masteredPct = deck.cardCount > 0 ? Math.round((deck.masteredCardCount / deck.cardCount) * 100) : 0;
 
   return (
     <div
@@ -201,7 +198,7 @@ export default function FlashcardDeckDetailsPage() {
 
       {/* Unified Stats Card */}
       <Card className="p-4 sm:p-5">
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
           {/* Questions/Cards Per Session */}
           <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
             <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
@@ -248,7 +245,7 @@ export default function FlashcardDeckDetailsPage() {
           </div>
 
           {/* Learning Cards */}
-          <div className="flex items-center gap-2.5 pt-3 sm:pt-3 xl:pt-0 sm:pl-0 xl:pl-4">
+          <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
             <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
               <BookOpen size={18} strokeWidth={2.25} />
             </div>
@@ -261,21 +258,6 @@ export default function FlashcardDeckDetailsPage() {
               </span>
             </div>
           </div>
-
-          {/* Mastery Percentage */}
-          <div className="flex items-center gap-2.5 pt-3 sm:pt-3 xl:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-              <Award size={18} strokeWidth={2.25} />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
-                PROGRES
-              </span>
-              <span className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
-                {deck.cardCount > 0 ? `${deck.progressPercentage}%` : "-"}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Pool Mastery Progress Bar */}
@@ -284,7 +266,7 @@ export default function FlashcardDeckDetailsPage() {
             <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               <span>PROGRES</span>
               <span className="text-foreground font-bold">
-                {deck.masteredCardCount} / {deck.cardCount} FISZEK ({deck.progressPercentage}%)
+                {deck.masteredCardCount} / {deck.cardCount} FISZEK ({masteredPct}%)
               </span>
             </div>
             <MultiSegmentProgressBar
@@ -293,7 +275,7 @@ export default function FlashcardDeckDetailsPage() {
                   id: "progres",
                   value: deck.masteredCardCount,
                   colorClass: "bg-emerald-500",
-                  customTooltip: `Opanowane: ${deck.masteredCardCount} / ${deck.cardCount} (${deck.progressPercentage}%)`,
+                  customTooltip: `Opanowane: ${deck.masteredCardCount} / ${deck.cardCount} (${masteredPct}%)`,
                 },
               ]}
               totalValue={deck.cardCount}

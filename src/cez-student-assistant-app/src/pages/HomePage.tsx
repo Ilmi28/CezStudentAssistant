@@ -2,22 +2,18 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Layers, Trophy, Zap, Target, Brain, ArrowRight } from "lucide-react";
-import type { CourseDto, QuizDto } from "../services";
 import Card from "../components/Card";
 import QuizCard from "../components/QuizCard";
-import { useQuiz } from "../hooks";
+import { useCourse, useQuiz } from "../hooks";
 
-interface HomePageProps {
-  courses: CourseDto[];
-  quizzes: QuizDto[];
-}
-
-export default function HomePage({ courses, quizzes }: HomePageProps) {
+export default function HomePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { refreshQuizzes } = useQuiz();
+  const { courses, refreshCourses } = useCourse();
+  const { quizzes, refreshQuizzes } = useQuiz();
 
   useEffect(() => {
+    refreshCourses();
     refreshQuizzes();
   }, []);
 

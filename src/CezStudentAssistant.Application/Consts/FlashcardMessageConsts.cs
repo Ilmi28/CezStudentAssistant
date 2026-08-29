@@ -19,5 +19,10 @@ public static class FlashcardMessageConsts
     public const string UpdateFlashcardStateError = "Nie udało się zaktualizować stanu fiszki.";
     public const string ResetFlashcardDeckProgressSuccess = "Pomyślnie zresetowano progres fiszek.";
     public const string ResetFlashcardDeckProgressError = "Nie udało się zresetować progresu fiszek.";
+    public const string StartFlashcardAttemptSuccess = "Pomyślnie rozpoczęto sesję nauki fiszek.";
+    public const string StartFlashcardAttemptError = "Błąd podczas rozpoczynania sesji nauki fiszek.";
+    public const string CompleteFlashcardAttemptSuccess = "Pomyślnie ukończono sesję nauki fiszek.";
+    public const string CompleteFlashcardAttemptError = "Błąd podczas kończenia sesji nauki fiszek.";
+    public const string FlashcardAttemptNotFound = "Nie znaleziono próby nauki fiszek.";
     public const string FlashcardDeckNameRequired = "Nazwa zestawu fiszek jest wymagana.";
 }

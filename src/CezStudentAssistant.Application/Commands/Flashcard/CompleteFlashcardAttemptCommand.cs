@@ -22,14 +22,14 @@ public sealed class CompleteFlashcardAttemptCommand : ICommand<FlashcardAttemptD
 public class CompleteFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
     : BaseCommandHandler<CompleteFlashcardAttemptCommand, FlashcardAttemptDto>
 {
-    protected override string SuccessMessage => "Pomyślnie ukończono sesję nauki fiszek.";
-    protected override string ErrorMessage => "Błąd podczas kończenia sesji nauki fiszek.";
+    protected override string SuccessMessage => FlashcardMessageConsts.CompleteFlashcardAttemptSuccess;
+    protected override string ErrorMessage => FlashcardMessageConsts.CompleteFlashcardAttemptError;
 
     protected override async Task<FlashcardAttemptDto> ExecuteAsync(CompleteFlashcardAttemptCommand command, CancellationToken ct)
     {
         var attemptRepo = unitOfWork.Repository<IFlashcardAttemptRepository>();
         var attempt = await attemptRepo.GetByIdAsync(command.AttemptId, ct)
-            ?? throw new NotFoundException("Nie znaleziono próby nauki fiszek.");
+            ?? throw new NotFoundException(FlashcardMessageConsts.FlashcardAttemptNotFound);
 
         if (attempt.UserId != command.UserId)
         {

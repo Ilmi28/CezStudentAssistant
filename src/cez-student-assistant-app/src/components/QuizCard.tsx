@@ -4,7 +4,6 @@ import { RefreshCw } from "lucide-react";
 import type { QuizDto } from "../types";
 import { QuizStatusEnum, QuizAttemptStatus } from "../enums/quizEnums";
 import Card from "./Card";
-import { useCountdown, useQuiz } from "../hooks";
 import { getScoreColorClass } from "../utils/scoreUtils";
 
 interface QuizCardProps {
@@ -12,36 +11,6 @@ interface QuizCardProps {
   index?: number;
   className?: string;
   showCourseName?: boolean;
-}
-
-function CardInProgressBadge({
-  expiresAt,
-  onExpire,
-}: {
-  expiresAt?: string | null;
-  onExpire?: () => void;
-}) {
-  const { t } = useTranslation();
-  const { formatted, isExpired, isTimeLow } = useCountdown(expiresAt || null, onExpire);
-
-  if (expiresAt && isExpired) {
-    return null;
-  }
-
-  return (
-    <span
-      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0 inline-flex items-center gap-1.5 ${
-        isTimeLow
-          ? "bg-rose-500/15 text-rose-500 border-rose-500/30 animate-pulse"
-          : "bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30"
-      }`}
-    >
-      <span>{t("quizDetails.status.inProgress", "W toku")}</span>
-      {expiresAt && formatted && (
-        <span className="tabular-nums font-mono font-bold">• {formatted}</span>
-      )}
-    </span>
-  );
 }
 
 export default function QuizCard({
@@ -53,7 +22,6 @@ export default function QuizCard({
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { refreshQuizzes } = useQuiz();
   const isGenerating = quiz.status === QuizStatusEnum.Generating;
   const isFailed = quiz.status === QuizStatusEnum.Failed;
 
@@ -79,10 +47,9 @@ export default function QuizCard({
             {displayTitle}
           </h4>
           {isInProgress && (
-            <CardInProgressBadge
-              expiresAt={quiz.lastAttemptExpiresAt}
-              onExpire={() => refreshQuizzes().catch(() => {})}
-            />
+            <span className="text-xs font-bold text-amber-400 shrink-0">
+              {t("quizDetails.status.inProgress", "W toku")}
+            </span>
           )}
           {isFailed && (
             <span className="text-[11px] font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full border border-destructive/20">

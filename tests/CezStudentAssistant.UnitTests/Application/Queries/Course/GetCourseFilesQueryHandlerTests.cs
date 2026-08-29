@@ -20,12 +20,12 @@ using CourseEntity = CezStudentAssistant.Domain.Entities.Course;
 namespace CezStudentAssistant.UnitTests.Application.Queries.Course;
 
 [TestFixture]
-public class GetCourseDetailsQueryHandlerTests
+public class GetCourseFilesQueryHandlerTests
 {
     private IUnitOfWork _unitOfWork = null!;
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _resourceRepository = null!;
-    private GetCourseDetailsQueryHandler _sut = null!;
+    private GetCourseFilesQueryHandler _sut = null!;
 
     [SetUp]
     public void SetUp()
@@ -37,7 +37,7 @@ public class GetCourseDetailsQueryHandlerTests
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
 
-        _sut = new GetCourseDetailsQueryHandler(_unitOfWork);
+        _sut = new GetCourseFilesQueryHandler(_unitOfWork);
     }
 
     [TearDown]
@@ -47,7 +47,7 @@ public class GetCourseDetailsQueryHandlerTests
     }
 
     [Test]
-    public async Task Handle_ShouldReturnCourseDetails_WhenCourseExistsAndBelongsToUser()
+    public async Task Handle_ShouldReturnCourseFiles_WhenCourseExistsAndBelongsToUser()
     {
         var userId = Guid.NewGuid();
         var courseId = Guid.NewGuid();
@@ -56,8 +56,6 @@ public class GetCourseDetailsQueryHandlerTests
         {
             Id = courseId,
             Name = "Operating Systems",
-            Description = "OS Course",
-            Type = CourseType.User,
             Users = new List<UserEntity> { user }
         };
 
@@ -75,15 +73,14 @@ public class GetCourseDetailsQueryHandlerTests
         var mockResources = new List<Resource> { resource }.BuildMockDbSet();
         _resourceRepository.Find(Arg.Any<Expression<Func<Resource, bool>>>(), true).Returns(mockResources);
 
-        var query = new GetCourseDetailsQuery { UserId = userId, CourseId = courseId };
+        var query = new GetCourseFilesQuery { UserId = userId, CourseId = courseId };
 
         var result = await _sut.Handle(query, CancellationToken.None);
 
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
-        result.Data.Should().NotBeNull();
-        result.Data!.Id.Should().Be(courseId);
-        result.Data.Files.Should().BeEmpty();
+        result.Data.Should().HaveCount(1);
+        result.Data![0].DisplayName.Should().Be("syllabus.pdf");
     }
 
     [Test]
@@ -95,7 +92,7 @@ public class GetCourseDetailsQueryHandlerTests
         _courseRepository.GetByIdAsync(courseId, Arg.Any<CancellationToken>(), true, Arg.Any<Expression<Func<CourseEntity, object>>[]>())
             .Returns((CourseEntity?)null);
 
-        var query = new GetCourseDetailsQuery { UserId = userId, CourseId = courseId };
+        var query = new GetCourseFilesQuery { UserId = userId, CourseId = courseId };
 
         Func<Task> act = async () => await _sut.Handle(query, CancellationToken.None);
 
@@ -120,7 +117,7 @@ public class GetCourseDetailsQueryHandlerTests
         _courseRepository.GetByIdAsync(courseId, Arg.Any<CancellationToken>(), true, Arg.Any<Expression<Func<CourseEntity, object>>[]>())
             .Returns(course);
 
-        var query = new GetCourseDetailsQuery { UserId = userId, CourseId = courseId };
+        var query = new GetCourseFilesQuery { UserId = userId, CourseId = courseId };
 
         Func<Task> act = async () => await _sut.Handle(query, CancellationToken.None);
 

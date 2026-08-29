@@ -133,12 +133,6 @@ export default function GenerateQuizModal({
         hardCount,
         activeAttemptCount
       );
-      setAdditionalInstructions("");
-      setTimeLimitMinutes("");
-      setEasyCount(2);
-      setMediumCount(2);
-      setHardCount(1);
-      setQuestionCountPerAttempt(null);
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -153,13 +147,6 @@ export default function GenerateQuizModal({
 
   const handleClose = () => {
     setModalError(null);
-    setAdditionalInstructions("");
-    setTimeLimitMinutes("");
-    setEasyCount(2);
-    setMediumCount(2);
-    setHardCount(1);
-    setQuestionCountPerAttempt(null);
-    setBaseEstimation(null);
     onClose();
   };
 

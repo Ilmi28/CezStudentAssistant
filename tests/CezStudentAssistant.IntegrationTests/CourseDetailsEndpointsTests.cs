@@ -91,13 +91,13 @@ public class CourseDetailsEndpointsTests
         var uploadContent = await uploadResponse.Content.ReadFromJsonAsync<ApiResponse<Guid>>(_jsonOptions);
         var fileId = uploadContent!.Data;
 
-        // Get Details
-        var detailsResponse = await _client.GetAsync($"/course/{courseId}");
-        var detailsContent = await detailsResponse.Content.ReadFromJsonAsync<ApiResponse<CourseDetailsDto>>(_jsonOptions);
+        // Get Files via GET /course/files?courseId={courseId}
+        var filesResponse = await _client.GetAsync($"/course/files?courseId={courseId}");
+        var filesContent = await filesResponse.Content.ReadFromJsonAsync<ApiResponse<List<CourseResourceDto>>>(_jsonOptions);
         
-        detailsContent!.Data!.Files.Should().HaveCount(1);
-        detailsContent.Data.Files[0].DisplayName.Should().Be("testfile.pdf");
-        detailsContent.Data.Files[0].DownloadUrl.Should().Be($"/course/{courseId}/file/{fileId}/download");
+        filesContent!.Data.Should().HaveCount(1);
+        filesContent.Data![0].DisplayName.Should().Be("testfile.pdf");
+        filesContent.Data[0].DownloadUrl.Should().Be($"/course/{courseId}/file/{fileId}/download");
 
         // Download File
         var downloadResponse = await _client.GetAsync($"/course/{courseId}/file/{fileId}/download");
@@ -152,9 +152,9 @@ public class CourseDetailsEndpointsTests
         var deleteResponse = await _client.DeleteAsync($"/course/{courseId}/file/{fileId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify Details has no files
-        var detailsResponse = await _client.GetAsync($"/course/{courseId}");
-        var detailsContent = await detailsResponse.Content.ReadFromJsonAsync<ApiResponse<CourseDetailsDto>>(_jsonOptions);
-        detailsContent!.Data!.Files.Should().BeEmpty();
+        // Verify Files is empty via GET /course/files?courseId={courseId}
+        var filesResponse = await _client.GetAsync($"/course/files?courseId={courseId}");
+        var filesContent = await filesResponse.Content.ReadFromJsonAsync<ApiResponse<List<CourseResourceDto>>>(_jsonOptions);
+        filesContent!.Data.Should().BeEmpty();
     }
 }

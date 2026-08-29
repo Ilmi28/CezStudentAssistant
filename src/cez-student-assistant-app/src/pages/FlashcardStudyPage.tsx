@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { flashcardService } from "../services/flashcardService";
 import type { FlashcardDeckDetailsDto, FlashcardDto } from "../types/flashcardTypes";
 import { FlashcardStateEnum } from "../enums/flashcardEnums";
@@ -7,6 +8,7 @@ import { QuestionDifficulty } from "../enums/quizEnums";
 import Card from "../components/Card";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import { Alert } from "../components/Alert";
+import LoadingScreen from "../components/LoadingScreen";
 import { getScoreColorClass } from "../utils/scoreUtils";
 import { ArrowLeft, RotateCcw, CheckCircle2, BookOpen, ChevronLeft, ChevronRight, FlipHorizontal, Trophy } from "lucide-react";
 
@@ -14,6 +16,7 @@ export default function FlashcardStudyPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [deck, setDeck] = useState<FlashcardDeckDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,11 +166,7 @@ export default function FlashcardStudyPage() {
   }, [handleKeyDown]);
 
   if (loading) {
-    return (
-      <div className="flex-1 p-6 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message={t("flashcards.loadingStudy")} />;
   }
 
   if (errorMsg || !deck || sessionCards.length === 0) {
@@ -192,7 +191,7 @@ export default function FlashcardStudyPage() {
     const scorePct = Math.round(((masteredCount * 1.0 + learningCount * 0.5) / totalCards) * 100);
 
     return (
-      <div className="flex-1 p-6 md:p-8 max-w-2xl mx-auto w-full flex flex-col items-center justify-center space-y-6 text-center">
+      <div className="flex-1 p-6 md:p-8 max-w-2xl mx-auto w-full flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in duration-300">
         <Card borderLeftPrimary className="p-8 space-y-6 w-full flex flex-col items-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
             <Trophy size={32} />
@@ -252,7 +251,7 @@ export default function FlashcardStudyPage() {
   const cardState = cardStates[currentCard.id] || currentCard.state;
 
   return (
-    <div className="flex-1 p-4 md:p-8 max-w-3xl mx-auto w-full flex flex-col justify-between space-y-6">
+    <div className="flex-1 p-4 md:p-8 max-w-3xl mx-auto w-full flex flex-col justify-between space-y-6 animate-in fade-in duration-300">
       {/* Top Header & Progress */}
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-4">
@@ -260,11 +259,11 @@ export default function FlashcardStudyPage() {
             onClick={() => navigate(fromPath)}
             className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
-            <ArrowLeft size={14} /> Wyjdź z nauki
+            <ArrowLeft size={14} /> {t("flashcards.exitStudy")}
           </button>
 
           <div className="text-xs font-bold text-foreground bg-secondary px-3 py-1 rounded-full border border-border">
-            Fiszka {currentIndex + 1} z {sessionCards.length}
+            {t("flashcards.cardProgress", { current: currentIndex + 1, total: sessionCards.length })}
           </div>
         </div>
 
@@ -291,10 +290,10 @@ export default function FlashcardStudyPage() {
           <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-border p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden shadow-2xl group-hover:border-primary/50 transition-colors">
             <div className="flex items-center justify-between w-full">
               <span className="text-[11px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20">
-                Pojęcie / Klucz
+                {t("flashcards.frontLabel")}
               </span>
               <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                <FlipHorizontal size={13} /> Kliknij lub Spacja aby obrócić
+                <FlipHorizontal size={13} /> {t("flashcards.flipHint")}
               </span>
             </div>
 
@@ -313,10 +312,10 @@ export default function FlashcardStudyPage() {
           <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-primary/40 p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden rotate-y-180 shadow-2xl">
             <div className="flex items-center justify-between w-full">
               <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
-                Definicja / Wartość
+                {t("flashcards.backLabel")}
               </span>
               <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                <FlipHorizontal size={13} /> Kliknij aby odwrócić
+                <FlipHorizontal size={13} /> {t("flashcards.flipBackHint")}
               </span>
             </div>
 
@@ -344,7 +343,7 @@ export default function FlashcardStudyPage() {
             }`}
             icon={<BookOpen size={16} className="text-amber-400" />}
           >
-            Uczę się (1)
+            {t("flashcards.learningBtn")}
           </SecondaryButton>
 
           <PrimaryButton
@@ -355,7 +354,7 @@ export default function FlashcardStudyPage() {
             }`}
             icon={<CheckCircle2 size={16} />}
           >
-            Umiem (2)
+            {t("flashcards.masteredBtn")}
           </PrimaryButton>
         </div>
 
@@ -366,18 +365,18 @@ export default function FlashcardStudyPage() {
             disabled={currentIndex === 0}
             className="flex items-center gap-1 hover:text-foreground disabled:opacity-30 cursor-pointer transition-colors"
           >
-            <ChevronLeft size={16} /> Poprzednia (←)
+            <ChevronLeft size={16} /> {t("flashcards.prevCard")}
           </button>
 
           <span className="text-[11px] text-muted-foreground/80 hidden sm:inline">
-            Spacja = obróć | 1 = uczę się | 2 = umiem
+            {t("flashcards.shortcutsHint")}
           </span>
 
           <button
             onClick={handleNext}
             className="flex items-center gap-1 hover:text-foreground cursor-pointer transition-colors"
           >
-            Następna (→) <ChevronRight size={16} />
+            {t("flashcards.nextCard")} <ChevronRight size={16} />
           </button>
         </div>
       </div>

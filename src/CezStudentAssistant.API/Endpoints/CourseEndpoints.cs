@@ -46,6 +46,13 @@ public static class CourseEndpoints
             return Results.Ok(result);
         }).RequireAuthorization();
 
+        group.MapGet("/files", async (Guid courseId, IMediator mediator) =>
+        {
+            var query = new GetCourseFilesQuery { CourseId = courseId };
+            var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
         group.MapPost("/file/upload", async (IFormFile file, Guid courseId, IMediator mediator) =>
         {
             using var stream = file.OpenReadStream();

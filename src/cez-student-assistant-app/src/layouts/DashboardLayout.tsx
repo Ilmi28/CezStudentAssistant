@@ -1,34 +1,19 @@
-import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useQuiz } from "../hooks";
 import Topbar from "../components/Topbar";
 import CezModal from "../components/CezModal";
-import { userService, cezService, UnauthorizedError } from "../services";
-import { UserLanguage } from "../types";
+import { cezService, UnauthorizedError } from "../services";
 
 export default function DashboardLayout() {
   const location = useLocation();
   const { username, handleLogout, handleCezLinkSubmit, setIsCezConnected, setLastCezSync } = useAuth();
-  const { loading, setLoading, applyTheme, showCezModal, setShowCezModal, setError } = useUI();
+  const { loading, setLoading, showCezModal, setShowCezModal, setError } = useUI();
   const { refreshCourses } = useCourse();
   const { refreshQuizzes } = useQuiz();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
-  useEffect(() => {
-    async function loadUserConfiguration() {
-      try {
-        const config = await userService.getUserConfiguration();
-        applyTheme(config.theme);
-        const lang = config.language === UserLanguage.English ? "en" : "pl";
-        i18n.changeLanguage(lang);
-        localStorage.setItem("language", lang);
-      } catch (err) {
-        console.debug("[DashboardLayout] Configuration load fallback:", err);
-      }
-    }
-    loadUserConfiguration();
-  }, []);
+
 
   const handleRefreshLists = async () => {
     setLoading(true);

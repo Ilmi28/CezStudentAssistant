@@ -8,9 +8,12 @@ import type {
 } from "../types";
 
 export const quizService = {
-  async getQuizzes(): Promise<QuizDto[]> {
+  async getQuizzes(courseId?: string): Promise<QuizDto[]> {
+    const url = courseId
+      ? `${API_BASE_URL}/quiz?courseId=${encodeURIComponent(courseId)}`
+      : `${API_BASE_URL}/quiz`;
     const res = await customFetch(
-      `${API_BASE_URL}/quiz`,
+      url,
       { method: "GET" },
       false,
       authService.refreshToken

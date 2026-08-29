@@ -16,7 +16,8 @@
     "nav": {
         "home": "Główna",
         "courses": "Przedmioty",
-        "quizzes": "Quizy"
+        "quizzes": "Quizy",
+        "flashcards": "Fiszki"
     },
     "auth": {
         "loginTitle": "Logowanie",
@@ -308,6 +309,43 @@
         "tokensUsedFormat": "{{used}} / {{limit}} tokenów",
         "securitySection": "Bezpieczeństwo i Sesja",
         "logoutDesc": "Wyloguj się ze swojego konta na tym urządzeniu."
+    },
+    "flashcards": {
+        "title": "Moje fiszki",
+        "loadingDecks": "Wczytywanie zestawów fiszek...",
+        "loadingDeckDetails": "Wczytywanie zestawu fiszek...",
+        "loadingStudy": "Wczytywanie fiszek...",
+        "noDecks": "Brak wygenerowanych fiszek.",
+        "noDecksSubtitle": "Wygeneruj zestaw fiszek z poziomu wybranego przedmiotu.",
+        "noCourseDecks": "Brak wygenerowanych fiszek dla tego przedmiotu.",
+        "noCourseDecksSubtitle": "Kliknij \"+\", aby wygenerować zestaw fiszek przy pomocy AI.",
+        "generateModalTitle": "Generowanie Fiszek",
+        "generateModalDesc": "Algorytm przeanalizuje wgrane zasoby dydaktyczne dla tego przedmiotu i automatycznie wygeneruje zestaw fiszek pojęciowych.",
+        "cardCountLabel": "Liczba fiszek",
+        "cardCountOptions": {
+            "5": "5 fiszek (zestaw szybki)",
+            "10": "10 fiszek (standardowy)",
+            "15": "15 fiszek (obszerny)",
+            "20": "20 fiszek (kompleksowy)"
+        },
+        "generateBtn": "Generuj fiszki",
+        "generateBtnLoading": "Generowanie...",
+        "exitStudy": "Wyjdź z nauki",
+        "cardProgress": "Fiszka {{current}} z {{total}}",
+        "frontLabel": "Pojęcie / Klucz",
+        "backLabel": "Definicja / Wartość",
+        "flipHint": "Kliknij lub Spacja aby obrócić",
+        "flipBackHint": "Kliknij aby odwrócić",
+        "learningBtn": "Uczę się (1)",
+        "masteredBtn": "Umiem (2)",
+        "prevCard": "Poprzednia (←)",
+        "nextCard": "Następna (→)",
+        "shortcutsHint": "Spacja = obróć | 1 = uczę się | 2 = umiem",
+        "finishedTitle": "Sesja nauki zakończona!",
+        "finishedSubtitle": "Świetna robota! Przejrzałeś wszystkie fiszki w tym zestawie.",
+        "restartStudy": "Ucz się ponownie",
+        "backToDeck": "Powrót do zestawu",
+        "startStudy": "Rozpocznij naukę"
     }
 }
 

@@ -13,6 +13,7 @@ export const UserLanguage = {
 
 export interface UserConfigurationDto {
   isCezConnected: boolean;
+  lastCezSync?: string | null;
   theme: UserTheme;
   language: UserLanguage;
 }

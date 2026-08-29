@@ -1,22 +1,68 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Home, Layers, Brain } from "lucide-react";
 import pbEmblem from "../assets/pb-emblem.png";
+
+interface NavItemProps {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function NavItem({ label, isActive, onClick }: NavItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ease-out cursor-pointer ${
+        isActive
+          ? "bg-white/15 text-white shadow-xs scale-[1.04]"
+          : "text-white/70 hover:text-white hover:bg-white/10 hover:scale-[1.02]"
+      }`}
+    >
+      <span>{label}</span>
+    </button>
+  );
+}
 
 export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const isHomeActive = pathname === "/home" || pathname === "/";
-  const isCoursesActive = pathname === "/courses" || pathname.startsWith("/course/");
-  const isQuizzesActive = pathname === "/quizzes" || pathname.startsWith("/quiz/");
+  const navItems = [
+    {
+      path: "/home",
+      label: t("nav.home"),
+      isActive: pathname === "/home" || pathname === "/",
+    },
+    {
+      path: "/courses",
+      label: t("nav.courses"),
+      isActive: pathname === "/courses" || pathname.startsWith("/course/"),
+    },
+    {
+      path: "/quizzes",
+      label: t("nav.quizzes"),
+      isActive: pathname === "/quizzes" || pathname.startsWith("/quiz/"),
+    },
+    {
+      path: "/flashcards",
+      label: t("nav.flashcards", "Fiszki"),
+      isActive: pathname === "/flashcards" || pathname.startsWith("/flashcard"),
+    },
+  ];
 
   return (
     <div className="flex flex-col md:flex-row md:items-center gap-6 lg:gap-10">
       {/* Brand Logo & Name */}
-      <div className="flex items-center gap-3.5 cursor-pointer group" onClick={() => navigate("/home")}>
-        <img src={pbEmblem} alt="Politechnika Białostocka" className="h-11 w-auto object-contain flex-shrink-0 transition-transform group-hover:scale-105" />
+      <div
+        className="flex items-center gap-3.5 cursor-pointer group"
+        onClick={() => navigate("/home")}
+      >
+        <img
+          src={pbEmblem}
+          alt="Politechnika Białostocka"
+          className="h-11 w-auto object-contain flex-shrink-0 transition-transform group-hover:scale-105"
+        />
         <div>
           <div className="text-white font-bold text-lg leading-tight tracking-tight">
             CEZStudentAssistant
@@ -29,39 +75,14 @@ export default function Navbar() {
 
       {/* Horizontal Navigation Links */}
       <nav className="flex items-center gap-2 lg:gap-3 border-t md:border-t-0 border-white/10 pt-3 md:pt-0">
-        <button
-          onClick={() => navigate("/home")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-            isHomeActive
-              ? "bg-white/15 text-white font-semibold shadow-xs"
-              : "text-white/70 hover:text-white hover:bg-white/10"
-          }`}
-        >
-          <Home size={16} />
-          <span>{t("nav.home")}</span>
-        </button>
-        <button
-          onClick={() => navigate("/courses")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-            isCoursesActive
-              ? "bg-white/15 text-white font-semibold shadow-xs"
-              : "text-white/70 hover:text-white hover:bg-white/10"
-          }`}
-        >
-          <Layers size={16} />
-          <span>{t("nav.courses")}</span>
-        </button>
-        <button
-          onClick={() => navigate("/quizzes")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-            isQuizzesActive
-              ? "bg-white/15 text-white font-semibold shadow-xs"
-              : "text-white/70 hover:text-white hover:bg-white/10"
-          }`}
-        >
-          <Brain size={16} />
-          <span>{t("nav.quizzes")}</span>
-        </button>
+        {navItems.map((item) => (
+          <NavItem
+            key={item.path}
+            label={item.label}
+            isActive={item.isActive}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
       </nav>
     </div>
   );

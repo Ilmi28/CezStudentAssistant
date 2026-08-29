@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Brain } from "lucide-react";
-import { courseService, type CourseDetailsDto } from "../services";
+import { courseService, type CourseDetailsDto, type CourseResourceDto } from "../services";
+import { quizService } from "../services/quizService";
 import { flashcardService } from "../services/flashcardService";
+import type { QuizDto } from "../types/quizTypes";
+import type { FlashcardDeckDto } from "../types/flashcardTypes";
 import EditCourseModal from "../components/EditCourseModal";
 import ConfirmModal from "../components/ConfirmModal";
 import UploadFileModal from "../components/UploadFileModal";
@@ -12,11 +15,64 @@ import GenerateFlashcardsModal from "../components/GenerateFlashcardsModal";
 import QuizCard from "../components/QuizCard";
 import { FlashcardDeckCard } from "../components/FlashcardDeckCard";
 import LoadingScreen from "../components/LoadingScreen";
-
-import { useQuiz, useFlashcards } from "../hooks";
+import { SecondaryButton } from "../components/Button";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
+}
+
+interface AccordionHeaderProps {
+  title: string;
+  count: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onAddClick?: () => void;
+  addTitle?: string;
+}
+
+function AccordionHeader({
+  title,
+  count,
+  isExpanded,
+  onToggle,
+  onAddClick,
+  addTitle,
+}: AccordionHeaderProps) {
+  return (
+    <div
+      onClick={onToggle}
+      className="flex items-center justify-between cursor-pointer select-none group"
+    >
+      <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
+        {title} ({count})
+      </h3>
+      <div className="flex items-center gap-1">
+        {onAddClick && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddClick();
+            }}
+            title={addTitle}
+            aria-label={addTitle}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
+          >
+            <Plus size={20} />
+          </button>
+        )}
+        <button
+          type="button"
+          className="text-muted-foreground group-hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted cursor-pointer"
+        >
+          <ChevronDown
+            size={18}
+            className={`transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
+          />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function CourseDetailsPage({
@@ -25,14 +81,15 @@ export default function CourseDetailsPage({
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { refreshQuizzes, quizzes } = useQuiz();
-  const { decks, refreshDecks } = useFlashcards(id);
 
   const [selectedCourse, setSelectedCourse] = useState<CourseDetailsDto | null>(null);
+  const [courseFiles, setCourseFiles] = useState<CourseResourceDto[]>([]);
+  const [courseQuizzes, setCourseQuizzes] = useState<QuizDto[]>([]);
+  const [decks, setDecks] = useState<FlashcardDeckDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFilesExpanded, setIsFilesExpanded] = useState(false);
   const [isQuizzesExpanded, setIsQuizzesExpanded] = useState(false);
-  const [isFlashcardsExpanded, setIsFlashcardsExpanded] = useState(true);
+  const [isFlashcardsExpanded, setIsFlashcardsExpanded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteFileModalOpen, setIsDeleteFileModalOpen] = useState(false);
@@ -42,8 +99,6 @@ export default function CourseDetailsPage({
   const [isGenerateFlashcardsModalOpen, setIsGenerateFlashcardsModalOpen] = useState(false);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
-  const courseQuizzes = quizzes.filter((q) => q.courseId === id);
-
   useEffect(() => {
     loadCourseDetailsAndQuizzes();
   }, [id]);
@@ -52,9 +107,16 @@ export default function CourseDetailsPage({
     if (!id) return;
     setLoading(true);
     try {
-      const details = await courseService.getCourseDetails(id);
+      const [details, filesData, quizzesData, decksData] = await Promise.all([
+        courseService.getCourseDetails(id),
+        courseService.getCourseFiles(id),
+        quizService.getQuizzes(id),
+        flashcardService.getFlashcardDecks(id),
+      ]);
       setSelectedCourse(details);
-      await refreshQuizzes().catch(() => {});
+      setCourseFiles(filesData);
+      setCourseQuizzes(quizzesData);
+      setDecks(decksData);
     } catch (err) {
       console.warn("[CourseDetailsPage] Failed to load details:", err);
       setError(t("common.genericError"));
@@ -88,8 +150,8 @@ export default function CourseDetailsPage({
   const handleFileUploadSubmit = async (file: File) => {
     if (!id) return;
     await courseService.uploadCourseFile(id, file);
-    const details = await courseService.getCourseDetails(id);
-    setSelectedCourse(details);
+    const filesData = await courseService.getCourseFiles(id);
+    setCourseFiles(filesData);
   };
 
   const handleGenerateQuizSubmit = async (
@@ -112,7 +174,8 @@ export default function CourseDetailsPage({
       hardCount,
       questionCountPerAttempt
     );
-    await refreshQuizzes();
+    const quizzesData = await quizService.getQuizzes(id);
+    setCourseQuizzes(quizzesData);
   };
 
   const handleGenerateFlashcardsSubmit = async (
@@ -131,7 +194,8 @@ export default function CourseDetailsPage({
       mediumCount,
       hardCount
     );
-    await refreshDecks();
+    const decksData = await flashcardService.getFlashcardDecks(id);
+    setDecks(decksData);
   };
 
   const handleFileDownload = async (fileId: string, fileName: string) => {
@@ -148,8 +212,8 @@ export default function CourseDetailsPage({
     if (!id || !fileToDelete) return;
     try {
       await courseService.deleteCourseFile(id, fileToDelete.id);
-      const details = await courseService.getCourseDetails(id);
-      setSelectedCourse(details);
+      const filesData = await courseService.getCourseFiles(id);
+      setCourseFiles(filesData);
     } catch (deleteErr) {
       console.warn("[CourseDetailsPage] File deletion failed:", deleteErr);
       setError(t("common.genericError"));
@@ -197,62 +261,36 @@ export default function CourseDetailsPage({
 
         {!selectedCourse.isCez && (
           <div className="flex items-center gap-2.5 shrink-0">
-            <button
+            <SecondaryButton
               type="button"
               onClick={() => setIsEditModalOpen(true)}
-              title={t("courses.editCourseModalTitle")}
-              aria-label={t("courses.editCourseModalTitle")}
-              className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer"
+              icon={<Pencil size={15} strokeWidth={2.25} />}
+              className="py-2.5 px-3.5 text-xs font-semibold"
             >
-              <Pencil size={18} strokeWidth={2.25} className="shrink-0" />
-            </button>
-
-            <button
+              {t("quizDetails.editBtn")}
+            </SecondaryButton>
+            <SecondaryButton
               type="button"
               onClick={() => setIsDeleteModalOpen(true)}
-              title={t("courses.deleteCourseModalTitle")}
-              aria-label={t("courses.deleteCourseModalTitle")}
-              className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-destructive/40 hover:text-destructive transition-colors shadow-xs cursor-pointer"
+              icon={<Trash2 size={15} strokeWidth={2.25} className="text-rose-400" />}
+              className="py-2.5 px-3.5 text-xs font-semibold"
             >
-              <Trash2 size={18} strokeWidth={2.25} className="shrink-0" />
-            </button>
+              {t("courses.deleteCourseBtn")}
+            </SecondaryButton>
           </div>
         )}
       </div>
 
       {/* Files List Section */}
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
-        <div
-          onClick={() => setIsFilesExpanded(!isFilesExpanded)}
-          className="flex items-center justify-between cursor-pointer select-none group"
-        >
-          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
-            {t("courseDetails.filesTitle")} ({selectedCourse.files.length})
-          </h3>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsUploadModalOpen(true);
-              }}
-              title={t("courseDetails.uploadTitle")}
-              aria-label={t("courseDetails.uploadTitle")}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
-            >
-              <Plus size={20} />
-            </button>
-            <button
-              type="button"
-              className="text-muted-foreground group-hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted cursor-pointer"
-            >
-              <ChevronDown
-                size={18}
-                className={`transition-transform duration-300 ${isFilesExpanded ? "rotate-180" : ""}`}
-              />
-            </button>
-          </div>
-        </div>
+        <AccordionHeader
+          title={t("courseDetails.filesTitle")}
+          count={courseFiles.length}
+          isExpanded={isFilesExpanded}
+          onToggle={() => setIsFilesExpanded(!isFilesExpanded)}
+          onAddClick={() => setIsUploadModalOpen(true)}
+          addTitle={t("courseDetails.uploadTitle")}
+        />
 
         <div
           className={`grid transition-all duration-300 ease-in-out ${
@@ -261,14 +299,14 @@ export default function CourseDetailsPage({
         >
           <div className="overflow-hidden">
             <div className="pt-3.5 border-t border-border mt-3.5">
-              {selectedCourse.files.length === 0 ? (
+              {courseFiles.length === 0 ? (
                 <div className="py-8 text-center">
                   <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
                   <p className="text-xs text-muted-foreground">{t("courseDetails.noFiles")}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {selectedCourse.files.map((file) => (
+                  {courseFiles.map((file) => (
                     <div
                       key={file.id}
                       className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border border-border hover:border-primary/30 transition-all"
@@ -318,37 +356,14 @@ export default function CourseDetailsPage({
 
       {/* Quizzes Section */}
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
-        <div
-          onClick={() => setIsQuizzesExpanded(!isQuizzesExpanded)}
-          className="flex items-center justify-between cursor-pointer select-none group"
-        >
-          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
-            {t("courseDetails.quizzesTitle")} ({courseQuizzes.length})
-          </h3>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsGenerateQuizModalOpen(true);
-              }}
-              title={t("courseDetails.generateTitle")}
-              aria-label={t("courseDetails.generateTitle")}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
-            >
-              <Plus size={20} />
-            </button>
-            <button
-              type="button"
-              className="text-muted-foreground group-hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted cursor-pointer"
-            >
-              <ChevronDown
-                size={18}
-                className={`transition-transform duration-300 ${isQuizzesExpanded ? "rotate-180" : ""}`}
-              />
-            </button>
-          </div>
-        </div>
+        <AccordionHeader
+          title={t("courseDetails.quizzesTitle")}
+          count={courseQuizzes.length}
+          isExpanded={isQuizzesExpanded}
+          onToggle={() => setIsQuizzesExpanded(!isQuizzesExpanded)}
+          onAddClick={() => setIsGenerateQuizModalOpen(true)}
+          addTitle={t("courseDetails.generateTitle")}
+        />
 
         <div
           className={`grid transition-all duration-300 ease-in-out ${
@@ -377,37 +392,14 @@ export default function CourseDetailsPage({
 
       {/* Flashcards Section */}
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
-        <div
-          onClick={() => setIsFlashcardsExpanded(!isFlashcardsExpanded)}
-          className="flex items-center justify-between cursor-pointer select-none group"
-        >
-          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
-            Fiszki ({decks.length})
-          </h3>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsGenerateFlashcardsModalOpen(true);
-              }}
-              title="Wygeneruj fiszki"
-              aria-label="Wygeneruj fiszki"
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
-            >
-              <Plus size={20} />
-            </button>
-            <button
-              type="button"
-              className="text-muted-foreground group-hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted cursor-pointer"
-            >
-              <ChevronDown
-                size={18}
-                className={`transition-transform duration-300 ${isFlashcardsExpanded ? "rotate-180" : ""}`}
-              />
-            </button>
-          </div>
-        </div>
+        <AccordionHeader
+          title="Fiszki"
+          count={decks.length}
+          isExpanded={isFlashcardsExpanded}
+          onToggle={() => setIsFlashcardsExpanded(!isFlashcardsExpanded)}
+          onAddClick={() => setIsGenerateFlashcardsModalOpen(true)}
+          addTitle="Wygeneruj fiszki"
+        />
 
         <div
           className={`grid transition-all duration-300 ease-in-out ${
@@ -419,8 +411,8 @@ export default function CourseDetailsPage({
               {decks.length === 0 ? (
                 <div className="py-8 text-center">
                   <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
-                  <p className="text-xs text-muted-foreground">Brak wygenerowanych fiszek dla tego przedmiotu.</p>
-                  <p className="text-[11px] text-muted-foreground/60 mt-1">Kliknij "+", aby wygenerować zestaw fiszek przy pomocy AI.</p>
+                  <p className="text-xs text-muted-foreground">{t("flashcards.noCourseDecks")}</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1">{t("flashcards.noCourseDecksSubtitle")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -475,7 +467,7 @@ export default function CourseDetailsPage({
         isOpen={isGenerateQuizModalOpen}
         onClose={() => setIsGenerateQuizModalOpen(false)}
         onSubmit={handleGenerateQuizSubmit}
-        hasFiles={selectedCourse.files.length > 0}
+        hasFiles={courseFiles.length > 0}
         courseId={id || ""}
       />
 
@@ -483,7 +475,7 @@ export default function CourseDetailsPage({
         isOpen={isGenerateFlashcardsModalOpen}
         onClose={() => setIsGenerateFlashcardsModalOpen(false)}
         onSubmit={handleGenerateFlashcardsSubmit}
-        hasFiles={selectedCourse.files.length > 0}
+        hasFiles={courseFiles.length > 0}
         courseId={id || ""}
       />
     </div>

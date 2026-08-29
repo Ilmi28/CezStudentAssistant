@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { CourseDto } from "../services";
 import SyncBanner from "../components/SyncBanner";
 import CourseList from "../components/CourseList";
 import AddCourseModal from "../components/AddCourseModal";
+import { useCourse } from "../hooks";
 
 interface CoursesPageProps {
   courses: CourseDto[];
@@ -22,6 +23,11 @@ export default function CoursesPage({
   lastCezSync,
 }: CoursesPageProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const { refreshCourses } = useCourse();
+
+  useEffect(() => {
+    refreshCourses();
+  }, []);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">

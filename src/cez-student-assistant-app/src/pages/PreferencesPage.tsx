@@ -12,7 +12,7 @@ export default function PreferencesPage() {
   const [language, setLanguageState] = useState<UserLanguage>(UserLanguage.Polish);
   const [fetchingConfig, setFetchingConfig] = useState(true);
 
-  const { username, isCezConnected, lastCezSync, handleLogout } = useAuth();
+  const { username, isCezConnected, lastCezSync, handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
   const { updateTheme, updateUserLanguage, setShowCezModal, syncing } = useUI();
   const { handleSyncCourses } = useCourse();
   const { usage, loadingUsage } = useUser();
@@ -25,6 +25,10 @@ export default function PreferencesPage() {
         const config = await userService.getUserConfiguration();
         setThemeState(config.theme);
         setLanguageState(config.language);
+        setIsCezConnected(config.isCezConnected);
+        if (config.lastCezSync !== undefined) {
+          setLastCezSync(config.lastCezSync);
+        }
         const code = config.language === UserLanguage.English ? "en" : "pl";
         await i18n.changeLanguage(code);
         localStorage.setItem("language", code);

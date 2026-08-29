@@ -13,11 +13,7 @@ public static class FlashcardProgressCalculationHelper
         if (cardList.Count == 0) return 0;
 
         var masteredCount = cardList.Count(c => c.State == FlashcardStateEnum.Mastered);
-        var learningCount = cardList.Count(c => c.State == FlashcardStateEnum.Learning);
-
-        // Mastered = 100% weight, Learning = 50% weight
-        var weightedScore = (masteredCount * 1.0) + (learningCount * 0.5);
-        var percentage = (weightedScore / cardList.Count) * 100;
+        var percentage = ((double)masteredCount / cardList.Count) * 100;
 
         return (int)System.Math.Round(percentage);
     }

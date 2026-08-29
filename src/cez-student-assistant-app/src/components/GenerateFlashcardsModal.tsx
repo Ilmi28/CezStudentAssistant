@@ -134,12 +134,12 @@ export default function GenerateFlashcardsModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Wygeneruj fiszki z materiałów"
+      title={t("flashcards.generateModalTitle")}
       maxWidth="lg"
     >
       <form onSubmit={handleFormSubmit} className="space-y-4">
         <p className="text-xs text-muted-foreground leading-relaxed -mt-1 mb-2">
-          Algorytm przeanalizuje wgrane zasoby dydaktyczne dla tego przedmiotu i automatycznie wygeneruje zestaw fiszek.
+          {t("flashcards.generateModalDesc")}
         </p>
 
         {modalError && <Alert variant="error" message={modalError} />}
@@ -165,7 +165,7 @@ export default function GenerateFlashcardsModal({
 
         <div>
           <label className="block text-xs font-medium text-foreground mb-1.5">
-            Własne instrukcje
+            {t("courseDetails.generateInstructions")}
           </label>
           <textarea
             value={additionalInstructions}
@@ -179,12 +179,12 @@ export default function GenerateFlashcardsModal({
           hasFiles={hasFiles}
           loading={loadingEstimation}
           estimation={currentEstimation}
-          itemLabel="Te fiszki"
+          itemLabel={t("nav.flashcards")}
         />
 
         <div className="flex justify-end gap-3 pt-3 border-t border-border/60">
           <SecondaryButton type="button" onClick={onClose} disabled={loading}>
-            {t("common.cancel", "Anuluj")}
+            {t("common.cancel")}
           </SecondaryButton>
           <PrimaryButton
             type="submit"
@@ -195,7 +195,7 @@ export default function GenerateFlashcardsModal({
               (currentEstimation !== null && !currentEstimation.canGenerate)
             }
           >
-            {loading ? t("common.saving", "Generowanie...") : t("courseDetails.generate", "Wygeneruj")}
+            {loading ? t("flashcards.generateBtnLoading") : t("flashcards.generateBtn")}
           </PrimaryButton>
         </div>
       </form>

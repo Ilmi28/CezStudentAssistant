@@ -3,6 +3,7 @@ import { authService } from "./authService";
 import type {
   CourseDto,
   CourseDetailsDto,
+  CourseResourceDto,
   UploadCourseFileResponseDto,
   GenerateQuizResponseDto,
   EstimateQuizTokensResponseDto,
@@ -27,6 +28,16 @@ export const courseService = {
       authService.refreshToken
     );
     return handleResponse<CourseDetailsDto>(res);
+  },
+
+  async getCourseFiles(id: string): Promise<CourseResourceDto[]> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course/files?courseId=${id}`,
+      { method: "GET" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<CourseResourceDto[]>(res);
   },
 
   async uploadCourseFile(courseId: string, file: File): Promise<UploadCourseFileResponseDto> {

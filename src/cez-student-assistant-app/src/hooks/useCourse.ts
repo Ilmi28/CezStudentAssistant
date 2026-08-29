@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { CourseContext } from "../contexts/CourseContext";
 import { courseService, cezService, UnauthorizedError } from "../services";
@@ -12,27 +12,10 @@ export function useCourse() {
   }
 
   const { t } = useTranslation();
-  const { isAuthenticated, isAuthChecking, handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
+  const { handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
   const { setError, setSyncing } = useUI();
 
-  const fetchCourses = async () => {
-    try {
-      const courseList = await courseService.getCourses();
-      ctx.setCourses(courseList);
-    } catch (err: any) {
-      if (err instanceof UnauthorizedError) {
-        handleLogout();
-      }
-    }
-  };
 
-  useEffect(() => {
-    if (isAuthenticated && !isAuthChecking) {
-      fetchCourses();
-    } else if (!isAuthenticated) {
-      ctx.setCourses([]);
-    }
-  }, [isAuthenticated, isAuthChecking]);
 
   const refreshCourses = async () => {
     try {

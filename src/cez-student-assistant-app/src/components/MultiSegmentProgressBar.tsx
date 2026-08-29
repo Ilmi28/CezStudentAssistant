@@ -18,6 +18,12 @@ export interface MultiSegmentProgressBarProps {
   remainingSegmentTooltip?: string;
 }
 
+interface ActiveHoverInfo {
+  text: string;
+  x: number;
+  y: number;
+}
+
 export const MultiSegmentProgressBar: React.FC<MultiSegmentProgressBarProps> = ({
   segments,
   totalValue,
@@ -26,28 +32,28 @@ export const MultiSegmentProgressBar: React.FC<MultiSegmentProgressBarProps> = (
   showRemainingSegment = false,
   remainingSegmentTooltip,
 }) => {
-  const [tooltipInfo, setTooltipInfo] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [activeHover, setActiveHover] = useState<ActiveHoverInfo | null>(null);
 
   const calculatedTotal = totalValue ?? segments.reduce((sum, seg) => sum + seg.value, 0);
-
-  const handleHover = (e: React.MouseEvent, infoText: string) => {
-    setTooltipInfo(infoText);
-    setTooltipPos({ x: e.clientX, y: e.clientY });
-  };
-
   const sumSegments = segments.reduce((sum, seg) => sum + seg.value, 0);
   const remainingValue = Math.max(0, calculatedTotal - sumSegments);
   const remainingPct = calculatedTotal > 0 ? Math.max(0, (remainingValue / calculatedTotal) * 100) : 0;
 
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>, text: string) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setActiveHover({
+      text,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 6,
+    });
+  };
+
   return (
     <div
       className={`relative w-full ${className}`}
-      onMouseLeave={() => setTooltipInfo(null)}
+      onMouseLeave={() => setActiveHover(null)}
     >
-      <div
-        className={`w-full bg-secondary ${heightClass} rounded-full flex gap-0.5 p-0.5 border border-border/50 overflow-hidden shadow-xs relative`}
-      >
+      <div className={`w-full bg-secondary ${heightClass} rounded-full flex gap-0.5 p-0.5 border border-border/50 overflow-hidden shadow-xs relative`}>
         {segments.map((seg) => {
           if (seg.value <= 0) return null;
           const pct = calculatedTotal > 0 ? Math.min(100, (seg.value / calculatedTotal) * 100) : 0;
@@ -59,45 +65,44 @@ export const MultiSegmentProgressBar: React.FC<MultiSegmentProgressBarProps> = (
             <div
               key={seg.id}
               style={{ width: `${pct}%` }}
-              className={`h-full ${seg.colorClass} rounded-full cursor-pointer transition-all duration-500 ease-out`}
-              onMouseMove={(e) => handleHover(e, text)}
-              onMouseEnter={(e) => handleHover(e, text)}
-            />
+              className="h-full cursor-pointer"
+              onMouseEnter={(e) => handleMouseEnter(e, text)}
+            >
+              <div className={`w-full h-full ${seg.colorClass} rounded-full transition-all duration-300 hover:brightness-110`} />
+            </div>
           );
         })}
 
         {showRemainingSegment && remainingPct > 0 && (
           <div
             style={{ width: `${remainingPct}%` }}
-            className="h-full bg-transparent cursor-pointer transition-all duration-500 ease-out"
-            onMouseMove={(e) => {
-              const remPctStr = calculatedTotal > 0 ? ((remainingValue / calculatedTotal) * 100).toFixed(1) : "0";
-              const text = remainingSegmentTooltip || `Wolny limit: ${remainingValue.toLocaleString()} (${remPctStr}%)`;
-              handleHover(e, text);
-            }}
+            className="h-full cursor-pointer bg-transparent"
             onMouseEnter={(e) => {
               const remPctStr = calculatedTotal > 0 ? ((remainingValue / calculatedTotal) * 100).toFixed(1) : "0";
               const text = remainingSegmentTooltip || `Wolny limit: ${remainingValue.toLocaleString()} (${remPctStr}%)`;
-              handleHover(e, text);
+              handleMouseEnter(e, text);
             }}
           />
         )}
       </div>
 
-      {tooltipInfo &&
+      {activeHover &&
         createPortal(
           <div
             style={{
               position: "fixed",
-              left: tooltipPos.x,
-              top: tooltipPos.y - 38,
-              transform: "translateX(-50%)",
+              left: activeHover.x,
+              top: activeHover.y,
+              transform: "translate(-50%, -100%)",
               pointerEvents: "none",
               zIndex: 99999,
             }}
-            className="px-2.5 py-1 text-[11px] font-semibold bg-slate-950/95 text-white border border-border/80 shadow-2xl rounded-md whitespace-nowrap"
+            className="flex flex-col items-center animate-in fade-in duration-150"
           >
-            {tooltipInfo}
+            <div className="px-3 py-1.5 text-[11px] font-semibold bg-slate-900 border border-slate-700 text-white shadow-2xl rounded-lg whitespace-nowrap">
+              {activeHover.text}
+            </div>
+            <div className="w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45 -mt-1" />
           </div>,
           document.body
         )}

@@ -18,6 +18,7 @@ namespace CezStudentAssistant.Application.Queries.Quiz;
 public sealed class GetUserQuizzesQuery : IQuery<List<QuizDto>>, IUserRequest
 {
     public Guid UserId { get; set; }
+    public Guid? CourseId { get; set; }
 }
 
 public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<GetUserQuizzesQuery, List<QuizDto>>
@@ -30,7 +31,13 @@ public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
     {
         var quizRepo = unitOfWork.Repository<IQuizRepository>();
 
-        var quizzes = await quizRepo.Find(q => q.UserId == query.UserId)
+        var queryable = quizRepo.Find(q => q.UserId == query.UserId);
+        if (query.CourseId.HasValue)
+        {
+            queryable = queryable.Where(q => q.CourseId == query.CourseId.Value);
+        }
+
+        var quizzes = await queryable
             .Include(q => q.Course)
             .Include(q => q.Questions)
                 .ThenInclude(qn => qn.Options)

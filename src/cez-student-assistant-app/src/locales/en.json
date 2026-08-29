@@ -16,7 +16,8 @@
     "nav": {
         "home": "Home",
         "courses": "Courses",
-        "quizzes": "Quizzes"
+        "quizzes": "Quizzes",
+        "flashcards": "Flashcards"
     },
     "auth": {
         "loginTitle": "Login",
@@ -308,6 +309,43 @@
         "tokensUsedFormat": "{{used}} / {{limit}} tokens",
         "securitySection": "Security & Session",
         "logoutDesc": "Sign out of your account on this device."
+    },
+    "flashcards": {
+        "title": "My Flashcards",
+        "loadingDecks": "Loading flashcard decks...",
+        "loadingDeckDetails": "Loading flashcard deck...",
+        "loadingStudy": "Loading flashcards...",
+        "noDecks": "No flashcards generated yet.",
+        "noDecksSubtitle": "Generate a flashcard deck from your course page.",
+        "noCourseDecks": "No flashcards generated for this course yet.",
+        "noCourseDecksSubtitle": "Click \"+\" to generate a flashcard deck using AI.",
+        "generateModalTitle": "Generate Flashcards",
+        "generateModalDesc": "The algorithm will analyze uploaded learning materials and generate concept flashcards.",
+        "cardCountLabel": "Number of flashcards",
+        "cardCountOptions": {
+            "5": "5 cards (short)",
+            "10": "10 cards (standard)",
+            "15": "15 cards (comprehensive)",
+            "20": "20 cards (full set)"
+        },
+        "generateBtn": "Generate flashcards",
+        "generateBtnLoading": "Generating...",
+        "exitStudy": "Exit study",
+        "cardProgress": "Flashcard {{current}} of {{total}}",
+        "frontLabel": "Term / Key",
+        "backLabel": "Definition / Value",
+        "flipHint": "Click or Space to flip",
+        "flipBackHint": "Click to flip back",
+        "learningBtn": "Learning (1)",
+        "masteredBtn": "Mastered (2)",
+        "prevCard": "Previous (←)",
+        "nextCard": "Next (→)",
+        "shortcutsHint": "Space = flip | 1 = learning | 2 = mastered",
+        "finishedTitle": "Study session complete!",
+        "finishedSubtitle": "Great job! You reviewed all flashcards in this set.",
+        "restartStudy": "Study again",
+        "backToDeck": "Back to deck",
+        "startStudy": "Start studying"
     }
 }
 

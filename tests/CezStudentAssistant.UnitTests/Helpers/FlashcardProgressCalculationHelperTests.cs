@@ -31,17 +31,17 @@ public class FlashcardProgressCalculationHelperTests
     }
 
     [Test]
-    public void CalculateProgressPercentage_WithMixedStates_CalculatesWeightedPercentage()
+    public void CalculateProgressPercentage_WithMixedStates_CalculatesMasteredPercentage()
     {
         var cards = new List<Flashcard>
         {
-            new Flashcard { Front = "A", Back = "B", State = FlashcardStateEnum.Mastered }, // 1.0
-            new Flashcard { Front = "C", Back = "D", State = FlashcardStateEnum.Learning }, // 0.5
-            new Flashcard { Front = "E", Back = "F", State = FlashcardStateEnum.New }       // 0.0
+            new Flashcard { Front = "A", Back = "B", State = FlashcardStateEnum.Mastered },
+            new Flashcard { Front = "C", Back = "D", State = FlashcardStateEnum.Learning },
+            new Flashcard { Front = "E", Back = "F", State = FlashcardStateEnum.New }
         };
 
-        // Total weighted: 1.5 / 3 = 50%
+        // 1 Mastered out of 3 = 33%
         var result = FlashcardProgressCalculationHelper.CalculateProgressPercentage(cards);
-        result.Should().Be(50);
+        result.Should().Be(33);
     }
 }

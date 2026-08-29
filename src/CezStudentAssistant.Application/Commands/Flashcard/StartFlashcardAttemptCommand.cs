@@ -22,8 +22,8 @@ public sealed class StartFlashcardAttemptCommand : ICommand<FlashcardAttemptDto>
 public class StartFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
     : BaseCommandHandler<StartFlashcardAttemptCommand, FlashcardAttemptDto>
 {
-    protected override string SuccessMessage => "Pomyślnie rozpoczęto sesję nauki fiszek.";
-    protected override string ErrorMessage => "Błąd podczas rozpoczynania sesji nauki fiszek.";
+    protected override string SuccessMessage => FlashcardMessageConsts.StartFlashcardAttemptSuccess;
+    protected override string ErrorMessage => FlashcardMessageConsts.StartFlashcardAttemptError;
 
     protected override async Task<FlashcardAttemptDto> ExecuteAsync(StartFlashcardAttemptCommand command, CancellationToken ct)
     {

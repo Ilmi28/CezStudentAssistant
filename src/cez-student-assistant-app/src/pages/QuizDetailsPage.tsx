@@ -8,8 +8,7 @@ import {
   Target,
   HelpCircle,
   Clock,
-  Layers,
-  Award
+  Layers
 } from "lucide-react";
 import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizDetailsDto } from "../services";
 import Card from "../components/Card";
@@ -17,28 +16,24 @@ import { PrimaryButton, SecondaryButton } from "../components/Button";
 import LoadingScreen from "../components/LoadingScreen";
 import EditQuizModal from "../components/EditQuizModal";
 import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
-import { useCountdown, useQuiz } from "../hooks";
 import { getScoreColorClass } from "../utils/scoreUtils";
 
 interface QuizDetailsPageProps {
   setError: (msg: string) => void;
 }
 
-function AttemptCountdownBadge({
-  expiresAt,
+function AttemptBadge({
+  isCompleted,
   earnedPoints,
   totalPointsMax,
-  onExpire,
 }: {
-  expiresAt: string;
+  isCompleted: boolean;
   earnedPoints: number;
   totalPointsMax: number;
-  onExpire?: () => void;
 }) {
   const { t } = useTranslation();
-  const { formatted, isExpired, isTimeLow } = useCountdown(expiresAt, onExpire);
 
-  if (isExpired) {
+  if (isCompleted) {
     const attemptPercentage = totalPointsMax > 0 ? Math.round((earnedPoints / totalPointsMax) * 100) : 0;
     const formatScore = (val: number) => {
       if (Number.isInteger(val)) return val.toString();
@@ -61,16 +56,7 @@ function AttemptCountdownBadge({
 
   return (
     <div className="flex flex-col items-end justify-center text-right">
-      <span
-        className={`text-base md:text-lg font-bold tabular-nums leading-tight ${
-          isTimeLow
-            ? "text-rose-500 font-bold animate-pulse"
-            : "text-amber-500 dark:text-amber-400"
-        }`}
-      >
-        {formatted}
-      </span>
-      <span className="text-[11px] text-muted-foreground font-medium">
+      <span className="text-xs font-bold text-amber-500 dark:text-amber-400">
         {t("quizDetails.status.inProgress", "W toku")}
       </span>
     </div>
@@ -82,7 +68,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { refreshQuizzes } = useQuiz();
 
   const [quiz, setQuiz] = useState<QuizDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,7 +87,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     try {
       const data = await quizService.getQuizDetails(quizId);
       setQuiz(data);
-      refreshQuizzes().catch(() => {});
     } catch (err) {
       console.warn("[QuizDetailsPage] Failed to load quiz details:", err);
       setError(t("common.genericError"));
@@ -136,7 +120,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     setStarting(true);
     try {
       const attempt = await quizService.startQuiz(quiz.id);
-      refreshQuizzes().catch(() => {});
       navigate(`/quiz/attempt/${attempt.attemptId}`, {
         state: {
           initialAttempt: attempt,
@@ -295,7 +278,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
 
       {/* Unified Stats Card */}
       <Card className="p-4 sm:p-5">
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
           {/* Questions Per Attempt */}
           <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
             <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
@@ -342,7 +325,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
           </div>
 
           {/* Max Points */}
-          <div className="flex items-center gap-2.5 pt-3 sm:pt-3 xl:pt-0 sm:pl-0 xl:pl-4">
+          <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
             <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
               <Target size={18} strokeWidth={2.25} />
             </div>
@@ -352,21 +335,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
               </span>
               <span key={String(configuredAttemptMaxPoints)} className="text-lg font-bold text-foreground block whitespace-nowrap truncate animate-in fade-in zoom-in-95 duration-300">
                 {formatScore(configuredAttemptMaxPoints)} {t("quizDetails.stats.pts")}
-              </span>
-            </div>
-          </div>
-
-          {/* Pool Mastery Percentage */}
-          <div className="flex items-center gap-2.5 pt-3 sm:pt-3 xl:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-              <Award size={18} strokeWidth={2.25} />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
-                {t("quizDetails.stats.masteryIndex")}
-              </span>
-              <span key={String(masteryPercentage)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
-                {completedAttempts.length > 0 ? `${masteryPercentage}%` : "-"}
               </span>
             </div>
           </div>
@@ -500,23 +468,11 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                       )}
 
                       {isInProgress && (
-                        attempt.expiresAt ? (
-                          <AttemptCountdownBadge
-                            expiresAt={attempt.expiresAt}
-                            earnedPoints={earnedPoints}
-                            totalPointsMax={attemptMax}
-                            onExpire={() => id && loadQuizDetails(id)}
-                          />
-                        ) : (
-                          <div className="flex flex-col items-end justify-center text-right">
-                            <span className="text-base md:text-lg font-bold text-amber-500 dark:text-amber-400 leading-tight">
-                              {t("quizDetails.status.inProgress", "W toku")}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground font-medium">
-                              {t("quizDetails.stats.noLimit", "Brak limitu")}
-                            </span>
-                          </div>
-                        )
+                        <AttemptBadge
+                          isCompleted={false}
+                          earnedPoints={earnedPoints}
+                          totalPointsMax={attemptMax}
+                        />
                       )}
                     </div>
                   </div>

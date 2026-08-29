@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth, useCourse, useQuiz, useUI } from "./hooks";
+import { useAuth, useCourse, useUI } from "./hooks";
 
 import DashboardLayout from "./layouts/DashboardLayout";
 import LoginPage from "./pages/LoginPage";
@@ -8,6 +8,7 @@ import CezLoginPage from "./pages/CezLoginPage";
 import HomePage from "./pages/HomePage";
 import CoursesPage from "./pages/CoursesPage";
 import QuizzesPage from "./pages/QuizzesPage";
+import FlashcardsPage from "./pages/FlashcardsPage";
 import CourseDetailsPage from "./pages/CourseDetailsPage";
 import QuizDetailsPage from "./pages/QuizDetailsPage";
 import QuizSolverPage from "./pages/QuizSolverPage";
@@ -18,7 +19,6 @@ import FlashcardStudyPage from "./pages/FlashcardStudyPage";
 export default function AppRoutes() {
   const { isAuthenticated, isCezConnected, lastCezSync, handleLoginSuccess } = useAuth();
   const { courses, handleSyncCourses, createCourse } = useCourse();
-  const { quizzes } = useQuiz();
   const { syncing, setError } = useUI();
 
   return (
@@ -30,9 +30,10 @@ export default function AppRoutes() {
 
       {/* Protected */}
       <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" replace />}>
-        <Route path="/home"       element={<HomePage courses={courses} quizzes={quizzes} />} />
+        <Route path="/home"       element={<HomePage />} />
         <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} onCreateCourse={createCourse} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
-        <Route path="/quizzes"    element={<QuizzesPage quizzes={quizzes} />} />
+        <Route path="/quizzes"    element={<QuizzesPage />} />
+        <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/course/:id" element={<CourseDetailsPage setError={setError} />} />
         <Route path="/quiz/:id"   element={<QuizDetailsPage setError={setError} />} />
         <Route path="/quiz/:id/solve" element={<QuizSolverPage setError={setError} />} />
