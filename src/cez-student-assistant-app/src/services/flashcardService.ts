@@ -160,17 +160,30 @@ export const flashcardService = {
     return handleResponse<FlashcardAttemptDto>(res);
   },
 
-  async completeFlashcardAttempt(
+  async submitFlashcardAttemptCardState(
     attemptId: string,
-    masteredCount: number,
-    learningCount: number
-  ): Promise<FlashcardAttemptDto> {
+    cardId: string,
+    state: FlashcardStateEnum
+  ): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/flashcards/attempt/${attemptId}/card/${cardId}/state`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state }),
+      },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<void>(res);
+  },
+
+  async completeFlashcardAttempt(attemptId: string): Promise<FlashcardAttemptDto> {
     const res = await customFetch(
       `${API_BASE_URL}/flashcards/attempt/${attemptId}/complete`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ masteredCount, learningCount }),
       },
       false,
       authService.refreshToken

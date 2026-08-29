@@ -64,4 +64,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<FlashcardDeck> FlashcardDecks { get; set; }
     public DbSet<Flashcard> Flashcards { get; set; }
     public DbSet<FlashcardAttempt> FlashcardAttempts { get; set; }
+    public DbSet<FlashcardAttemptCard> FlashcardAttemptCards { get; set; }
 }

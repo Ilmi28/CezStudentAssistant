@@ -13,6 +13,7 @@ public class FlashcardAttemptDto
     public int MasteredCount { get; set; }
     public int LearningCount { get; set; }
     public int ProgressPercentage { get; set; }
+    public Dictionary<string, FlashcardStateEnum> CardStates { get; set; } = new();
     public DateTime StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 }

@@ -6,8 +6,14 @@ using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
+using MockQueryable.NSubstitute;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CezStudentAssistant.UnitTests.Application.Commands.Flashcard;
 
@@ -65,12 +71,23 @@ public class FlashcardAttemptCommandHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         var attemptId = Guid.NewGuid();
-        var attempt = new FlashcardAttempt { Id = attemptId, UserId = userId, CardCount = 10, Status = QuizAttemptStatus.InProgress };
+        var card1 = new FlashcardAttemptCard { FlashcardAttemptId = attemptId, FlashcardId = Guid.NewGuid(), State = FlashcardStateEnum.Mastered };
+        var card2 = new FlashcardAttemptCard { FlashcardAttemptId = attemptId, FlashcardId = Guid.NewGuid(), State = FlashcardStateEnum.Learning };
 
-        _attemptRepo.GetByIdAsync(attemptId, Arg.Any<CancellationToken>()).Returns(attempt);
+        var attempt = new FlashcardAttempt
+        {
+            Id = attemptId,
+            UserId = userId,
+            CardCount = 2,
+            Status = QuizAttemptStatus.InProgress,
+            Cards = new List<FlashcardAttemptCard> { card1, card2 }
+        };
+
+        var mockAttemptDbSet = new List<FlashcardAttempt> { attempt }.BuildMockDbSet();
+        _attemptRepo.Find(Arg.Any<Expression<Func<FlashcardAttempt, bool>>>(), Arg.Any<bool>()).Returns(mockAttemptDbSet);
 
         var handler = new CompleteFlashcardAttemptCommandHandler(_unitOfWork);
-        var command = new CompleteFlashcardAttemptCommand { UserId = userId, AttemptId = attemptId, MasteredCount = 7, LearningCount = 3 };
+        var command = new CompleteFlashcardAttemptCommand { UserId = userId, AttemptId = attemptId };
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -78,8 +95,8 @@ public class FlashcardAttemptCommandHandlerTests
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
-        result.Data!.MasteredCount.Should().Be(7);
-        result.Data.LearningCount.Should().Be(3);
+        result.Data!.MasteredCount.Should().Be(1);
+        result.Data.LearningCount.Should().Be(1);
         result.Data.Status.Should().Be(QuizAttemptStatus.Completed);
         await _attemptRepo.Received(1).UpdateAsync(Arg.Any<FlashcardAttempt>(), Arg.Any<CancellationToken>());
     }

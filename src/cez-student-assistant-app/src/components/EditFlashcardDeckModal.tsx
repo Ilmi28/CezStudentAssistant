@@ -82,12 +82,12 @@ export function EditFlashcardDeckModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setErrorMsg("Nazwa jest wymagana.");
+      setErrorMsg(t("auth.emptyFields"));
       return;
     }
 
     if (totalSelected <= 0) {
-      setErrorMsg("Wybierz co najmniej 1 fiszkę w podejściu.");
+      setErrorMsg(t("flashcardDetails.atLeastOneCardError"));
       return;
     }
 
@@ -106,7 +106,7 @@ export function EditFlashcardDeckModal({
       onSuccess();
       onClose();
     } catch (err: any) {
-      setErrorMsg(err.message || "Błąd podczas edycji zestawu fiszek.");
+      setErrorMsg(err.message || t("common.genericError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -121,14 +121,14 @@ export function EditFlashcardDeckModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Edytuj zestaw fiszek"
+      title={t("flashcardDetails.editModalTitle")}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {errorMsg && <Alert variant="error" message={errorMsg} />}
 
         <Input
-          label="Nazwa"
+          label={t("quizDetails.quizNameLabel")}
           value={name}
           onChange={(e) => {
             setName(e.target.value);
@@ -141,7 +141,7 @@ export function EditFlashcardDeckModal({
         <div className="space-y-3.5 pt-3 border-t border-border/60">
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-foreground font-medium">
-              Rozkład trudności fiszek w podejściu
+              {t("flashcardDetails.editModalDesc")}
             </span>
             <span className="text-foreground font-bold text-xs bg-secondary px-2.5 py-0.5 rounded-full border border-border">
               {formatCardCount(totalSelected, i18n.language)}
@@ -151,9 +151,9 @@ export function EditFlashcardDeckModal({
           {/* Segmented Live Preview Bar */}
           <MultiSegmentProgressBar
             segments={[
-              { id: "easy", value: easyCount, colorClass: "bg-emerald-500", customTooltip: `Łatwe (${easyCount})` },
-              { id: "medium", value: mediumCount, colorClass: "bg-amber-500", customTooltip: `Średnie (${mediumCount})` },
-              { id: "hard", value: hardCount, colorClass: "bg-rose-500", customTooltip: `Trudne (${hardCount})` },
+              { id: "easy", value: easyCount, colorClass: "bg-emerald-500", customTooltip: `${t("quizSolver.difficulty.easy")} (${easyCount})` },
+              { id: "medium", value: mediumCount, colorClass: "bg-amber-500", customTooltip: `${t("quizSolver.difficulty.medium")} (${mediumCount})` },
+              { id: "hard", value: hardCount, colorClass: "bg-rose-500", customTooltip: `${t("quizSolver.difficulty.hard")} (${hardCount})` },
             ]}
             heightClass="h-3.5"
           />
@@ -164,11 +164,11 @@ export function EditFlashcardDeckModal({
             <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shrink-0" />
-                <span className="text-xs font-semibold text-foreground">Łatwe</span>
+                <span className="text-xs font-semibold text-foreground">{t("quizSolver.difficulty.easy")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
-                  {easyCount} / {easyInPool} w bazie
+                  {easyCount} / {easyInPool} {t("quizDetails.inBank")}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -198,11 +198,11 @@ export function EditFlashcardDeckModal({
             <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shrink-0" />
-                <span className="text-xs font-semibold text-foreground">Średnie</span>
+                <span className="text-xs font-semibold text-foreground">{t("quizSolver.difficulty.medium")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
-                  {mediumCount} / {mediumInPool} w bazie
+                  {mediumCount} / {mediumInPool} {t("quizDetails.inBank")}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -232,11 +232,11 @@ export function EditFlashcardDeckModal({
             <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shrink-0" />
-                <span className="text-xs font-semibold text-foreground">Trudne</span>
+                <span className="text-xs font-semibold text-foreground">{t("quizSolver.difficulty.hard")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
-                  {hardCount} / {hardInPool} w bazie
+                  {hardCount} / {hardInPool} {t("quizDetails.inBank")}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -266,10 +266,10 @@ export function EditFlashcardDeckModal({
 
         <div className="flex justify-end gap-3 pt-2">
           <SecondaryButton type="button" onClick={handleClose} disabled={isSubmitting}>
-            {t("common.cancel", "Anuluj")}
+            {t("common.cancel")}
           </SecondaryButton>
           <PrimaryButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? t("common.saving", "Zapisywanie...") : t("common.save", "Zapisz")}
+            {isSubmitting ? t("common.loading") : t("quizDetails.editSaveBtn")}
           </PrimaryButton>
         </div>
       </form>

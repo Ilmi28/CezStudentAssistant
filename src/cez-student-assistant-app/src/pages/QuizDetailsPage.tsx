@@ -246,7 +246,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
           </button>
           <div className="flex flex-col justify-center min-w-0">
             {quiz.courseName && (
-              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mb-1">
+              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary border border-border text-foreground/90 shadow-2xs mb-1">
                 {quiz.courseName}
               </span>
             )}
@@ -281,7 +281,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
           {/* Questions Per Attempt */}
           <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
               <HelpCircle size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
@@ -296,7 +296,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
 
           {/* Question Bank Pool */}
           <div className="flex items-center gap-2.5 pt-1 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
               <Layers size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
@@ -311,7 +311,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
 
           {/* Time Limit */}
           <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
               <Clock size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
@@ -326,7 +326,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
 
           {/* Max Points */}
           <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
               <Target size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">

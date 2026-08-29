@@ -17,4 +17,26 @@ public static class FlashcardProgressCalculationHelper
 
         return (int)System.Math.Round(percentage);
     }
+
+    public static int DetermineAttemptCardCount(int commandCardCount, int? deckCardCountPerAttempt, int totalDeckCards)
+    {
+        if (commandCardCount > 0)
+        {
+            return commandCardCount;
+        }
+
+        if (deckCardCountPerAttempt.HasValue && deckCardCountPerAttempt.Value > 0)
+        {
+            return deckCardCountPerAttempt.Value;
+        }
+
+        return totalDeckCards;
+    }
+
+    public static int CalculateAttemptProgressPercentage(int masteredCount, int learningCount, int totalCardCount)
+    {
+        var total = totalCardCount > 0 ? totalCardCount : 1;
+        var percentage = ((masteredCount * 1.0 + learningCount * 0.5) / total) * 100;
+        return (int)System.Math.Min(100, System.Math.Round(percentage));
+    }
 }

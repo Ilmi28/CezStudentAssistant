@@ -43,7 +43,10 @@ public class StartFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
             UserId = command.UserId,
             DeckId = command.DeckId,
             Status = QuizAttemptStatus.InProgress,
-            CardCount = command.CardCount > 0 ? command.CardCount : deck.Cards.Count,
+            CardCount = CezStudentAssistant.Application.Helpers.FlashcardProgressCalculationHelper.DetermineAttemptCardCount(
+                command.CardCount,
+                deck.CardCountPerAttempt,
+                deck.Cards.Count),
             StartedAt = DateTime.UtcNow
         };
 

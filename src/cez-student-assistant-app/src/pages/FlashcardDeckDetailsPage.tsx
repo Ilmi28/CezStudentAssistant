@@ -9,7 +9,6 @@ import { PrimaryButton, SecondaryButton } from "../components/Button";
 import { Alert } from "../components/Alert";
 import LoadingScreen from "../components/LoadingScreen";
 import { EditFlashcardDeckModal } from "../components/EditFlashcardDeckModal";
-import { StartFlashcardStudyModal } from "../components/StartFlashcardStudyModal";
 import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
 import { getScoreColorClass } from "../utils/scoreUtils";
 import {
@@ -29,14 +28,13 @@ export default function FlashcardDeckDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [deck, setDeck] = useState<FlashcardDeckDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isStartStudyModalOpen, setIsStartStudyModalOpen] = useState(false);
 
   const fromPath = (location.state as { fromPath?: string })?.fromPath || (deck?.courseId ? `/course/${deck.courseId}` : "/courses");
 
@@ -48,7 +46,7 @@ export default function FlashcardDeckDetailsPage() {
       const data = await flashcardService.getFlashcardDeckDetails(id);
       setDeck(data);
     } catch (err: any) {
-      setErrorMsg(err.message || "Błąd podczas pobierania szczegółów zestawu fiszek.");
+      setErrorMsg(err.message || t("flashcardDetails.fetchError"));
     } finally {
       setLoading(false);
     }
@@ -73,19 +71,23 @@ export default function FlashcardDeckDetailsPage() {
 
   const handleDeleteDeck = async () => {
     if (!id || !deck) return;
-    if (window.confirm("Czy na pewno chcesz usunąć ten zestaw fiszek?")) {
+    if (window.confirm(t("flashcardDetails.deleteConfirm"))) {
       try {
         await flashcardService.deleteFlashcardDeck(id);
         navigate(fromPath);
       } catch (err: any) {
-        setErrorMsg(err.message || "Błąd podczas usuwania zestawu fiszek.");
+        setErrorMsg(err.message || t("flashcardDetails.deleteError"));
       }
     }
   };
 
-  const handleStartStudySession = async (easyCount: number, mediumCount: number, hardCount: number) => {
+  const handleStartStudyDirect = async () => {
     if (!deck) return;
-    const totalSelected = easyCount + mediumCount + hardCount;
+    const easyCount = deck.easyCardCountPerAttempt ?? 0;
+    const mediumCount = deck.mediumCardCountPerAttempt ?? 0;
+    const hardCount = deck.hardCardCountPerAttempt ?? 0;
+    const totalSelected = deck.cardCountPerAttempt || (easyCount + mediumCount + hardCount) || deck.cards.length;
+
     try {
       const attempt = await flashcardService.startFlashcardAttempt(deck.id, totalSelected);
       navigate(`/flashcards/${deck.id}/study`, {
@@ -110,6 +112,16 @@ export default function FlashcardDeckDetailsPage() {
     }
   };
 
+  const handleOpenAttempt = (attemptId: string) => {
+    if (!id || !deck) return;
+    navigate(`/flashcards/${deck.id}/study`, {
+      state: {
+        fromPath: location.pathname,
+        attemptId,
+      },
+    });
+  };
+
   if (loading) {
     return <LoadingScreen message={t("flashcards.loadingDeckDetails")} />;
   }
@@ -121,9 +133,9 @@ export default function FlashcardDeckDetailsPage() {
           onClick={handleGoBack}
           className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
-          <ArrowLeft size={14} /> Powrót
+          <ArrowLeft size={14} /> {t("flashcardDetails.backBtn")}
         </button>
-        <Alert variant="error" message={errorMsg || "Zestaw fiszek nie istnieje."} />
+        <Alert variant="error" message={errorMsg || t("flashcardDetails.notFound")} />
       </div>
     );
   }
@@ -150,14 +162,14 @@ export default function FlashcardDeckDetailsPage() {
           <button
             type="button"
             onClick={handleGoBack}
-            title="Powrót"
+            title={t("flashcardDetails.backBtn")}
             className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
           >
             <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
           </button>
           <div className="flex flex-col justify-center min-w-0">
             {deck.courseName && (
-              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mb-1">
+              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary border border-border text-foreground/90 shadow-2xs mb-1">
                 {deck.courseName}
               </span>
             )}
@@ -174,7 +186,7 @@ export default function FlashcardDeckDetailsPage() {
             icon={<Pencil size={15} strokeWidth={2.25} />}
             className="py-2.5 px-3.5 text-xs font-semibold"
           >
-            Edytuj
+            {t("flashcardDetails.editBtn")}
           </SecondaryButton>
           <SecondaryButton
             type="button"
@@ -182,16 +194,16 @@ export default function FlashcardDeckDetailsPage() {
             icon={<Trash2 size={15} strokeWidth={2.25} className="text-rose-400" />}
             className="py-2.5 px-3.5 text-xs font-semibold"
           >
-            Usuń
+            {t("flashcardDetails.deleteBtn")}
           </SecondaryButton>
           <PrimaryButton
             type="button"
             disabled={deck.cardCount === 0}
-            onClick={() => setIsStartStudyModalOpen(true)}
+            onClick={handleStartStudyDirect}
             icon={<Play size={16} strokeWidth={2.25} />}
             className="py-2.5 px-4 text-xs font-semibold"
           >
-            Rozpocznij naukę
+            {t("flashcardDetails.startStudyBtn")}
           </PrimaryButton>
         </div>
       </div>
@@ -201,12 +213,12 @@ export default function FlashcardDeckDetailsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
           {/* Questions/Cards Per Session */}
           <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
               <HelpCircle size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
-                W PODEJŚCIU
+                {t("flashcardDetails.stats.perAttempt")}
               </span>
               <span className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {deck.cardCountPerAttempt ?? deck.cardCount}
@@ -216,12 +228,12 @@ export default function FlashcardDeckDetailsPage() {
 
           {/* Card Bank Pool */}
           <div className="flex items-center gap-2.5 pt-1 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
               <Layers size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
-                BAZA FISZEK
+                {t("flashcardDetails.stats.cardPool")}
               </span>
               <span className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {deck.cardCount}
@@ -231,12 +243,12 @@ export default function FlashcardDeckDetailsPage() {
 
           {/* Mastered Cards */}
           <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
               <CheckCircle2 size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
-                UMIEM
+                {t("flashcardDetails.stats.mastered")}
               </span>
               <span className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {deck.masteredCardCount}
@@ -246,12 +258,12 @@ export default function FlashcardDeckDetailsPage() {
 
           {/* Learning Cards */}
           <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
               <BookOpen size={18} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
               <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
-                UCZĘ SIĘ
+                {t("flashcardDetails.stats.learning")}
               </span>
               <span className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {deck.learningCardCount}
@@ -264,9 +276,9 @@ export default function FlashcardDeckDetailsPage() {
         {deck.cardCount > 0 && (
           <div className="mt-4 pt-3.5 border-t border-border/50 space-y-2">
             <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>PROGRES</span>
+              <span>{t("flashcardDetails.progress")}</span>
               <span className="text-foreground font-bold">
-                {deck.masteredCardCount} / {deck.cardCount} FISZEK ({masteredPct}%)
+                {t("flashcardDetails.progressText", { mastered: deck.masteredCardCount, total: deck.cardCount, pct: masteredPct })}
               </span>
             </div>
             <MultiSegmentProgressBar
@@ -275,7 +287,7 @@ export default function FlashcardDeckDetailsPage() {
                   id: "progres",
                   value: deck.masteredCardCount,
                   colorClass: "bg-emerald-500",
-                  customTooltip: `Opanowane: ${deck.masteredCardCount} / ${deck.cardCount} (${masteredPct}%)`,
+                  customTooltip: t("flashcardDetails.tooltipMastered", { mastered: deck.masteredCardCount, total: deck.cardCount, pct: masteredPct }),
                 },
               ]}
               totalValue={deck.cardCount}
@@ -288,14 +300,14 @@ export default function FlashcardDeckDetailsPage() {
         {deck.cardCount > 0 && (
           <div className="mt-4 pt-3.5 border-t border-border/50 space-y-3">
             <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>TRUDNOŚĆ</span>
+              <span>{t("flashcardDetails.difficulty")}</span>
             </div>
 
             <MultiSegmentProgressBar
               segments={[
-                { id: "easy", value: easyInDeck, colorClass: "bg-emerald-500", customTooltip: `Łatwe (${easyInDeck})` },
-                { id: "medium", value: mediumInDeck, colorClass: "bg-amber-500", customTooltip: `Średnie (${mediumInDeck})` },
-                { id: "hard", value: hardInDeck, colorClass: "bg-rose-500", customTooltip: `Trudne (${hardInDeck})` },
+                { id: "easy", value: easyInDeck, colorClass: "bg-emerald-500", customTooltip: `${t("quizSolver.difficulty.easy")} (${easyInDeck})` },
+                { id: "medium", value: mediumInDeck, colorClass: "bg-amber-500", customTooltip: `${t("quizSolver.difficulty.medium")} (${mediumInDeck})` },
+                { id: "hard", value: hardInDeck, colorClass: "bg-rose-500", customTooltip: `${t("quizSolver.difficulty.hard")} (${hardInDeck})` },
               ]}
               heightClass="h-3.5"
             />
@@ -307,23 +319,23 @@ export default function FlashcardDeckDetailsPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-foreground">
-            Historia podejść ({deck.attempts.length})
+            {t("flashcardDetails.attemptHistory", { count: deck.attempts.length })}
           </h3>
         </div>
 
         {deck.attempts.length === 0 ? (
           <div className="bg-card rounded-xl border border-border p-10 text-center space-y-3">
             <Clock size={32} className="mx-auto text-muted-foreground/35 mb-2" />
-            <p className="text-sm font-medium text-muted-foreground">Brak wcześniejszych podejść do nauki tego zestawu.</p>
-            <p className="text-xs text-muted-foreground/60">Rozpocznij naukę, aby przećwiczyć i utrwalić wiedzę!</p>
+            <p className="text-sm font-medium text-muted-foreground">{t("flashcardDetails.noAttempts")}</p>
+            <p className="text-xs text-muted-foreground/60">{t("flashcardDetails.noAttemptsSubtitle")}</p>
             <div className="pt-2">
               <PrimaryButton
                 disabled={deck.cardCount === 0}
-                onClick={() => setIsStartStudyModalOpen(true)}
+                onClick={handleStartStudyDirect}
                 icon={<Play size={15} strokeWidth={2.25} />}
                 className="text-xs py-2 px-5"
               >
-                Rozpocznij naukę
+                {t("flashcardDetails.startStudyBtn")}
               </PrimaryButton>
             </div>
           </div>
@@ -343,7 +355,8 @@ export default function FlashcardDeckDetailsPage() {
                 return (
                   <div
                     key={attempt.id}
-                    className="p-4 rounded-xl bg-card border border-border flex items-center justify-between gap-4 transition-colors hover:border-primary/40 hover:bg-muted/30"
+                    onClick={() => handleOpenAttempt(attempt.id)}
+                    className="p-4 rounded-xl bg-card border border-border flex items-center justify-between gap-4 transition-colors hover:border-primary/40 hover:bg-muted/30 cursor-pointer"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div className="w-9 h-9 rounded-lg bg-background border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0">
@@ -352,13 +365,13 @@ export default function FlashcardDeckDetailsPage() {
 
                       <div className="min-w-0">
                         <span className="text-xs font-bold text-foreground block">
-                          Podejście #{attemptNumber}
+                          {t("flashcardDetails.attemptNum", { num: attemptNumber })}
                         </span>
 
                         <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                          <span>Rozpoczęto: {new Date(attempt.startedAt).toLocaleString()}</span>
+                          <span>{t("flashcardDetails.startedAt", { date: new Date(attempt.startedAt).toLocaleString(i18n.language) })}</span>
                           <span>•</span>
-                          <span>{attempt.cardCount} fiszek</span>
+                          <span>{t("flashcardDetails.cardsCount", { count: attempt.cardCount })}</span>
                         </div>
                       </div>
                     </div>
@@ -372,13 +385,13 @@ export default function FlashcardDeckDetailsPage() {
                             {attempt.progressPercentage}%
                           </span>
                           <span className="text-[11px] text-muted-foreground font-medium tabular-nums">
-                            {attempt.masteredCount} opanowanych / {attempt.learningCount} w trakcie
+                            {attempt.masteredCount} / {attempt.cardCount} {t("flashcardDetails.cardsUnit")}
                           </span>
                         </div>
                       ) : (
                         <div className="flex flex-col items-end justify-center text-right">
-                          <span className="text-base md:text-lg font-bold text-amber-500 dark:text-amber-400 leading-tight">
-                            W toku
+                          <span className="text-xs font-bold text-amber-500 dark:text-amber-400">
+                            {t("quizDetails.inProgress", "W toku")}
                           </span>
                         </div>
                       )}
@@ -402,13 +415,6 @@ export default function FlashcardDeckDetailsPage() {
         mediumInPool={mediumInDeck}
         hardInPool={hardInDeck}
         onSuccess={fetchDeckDetails}
-      />
-
-      <StartFlashcardStudyModal
-        isOpen={isStartStudyModalOpen}
-        onClose={() => setIsStartStudyModalOpen(false)}
-        onStart={handleStartStudySession}
-        cards={deck.cards}
       />
     </div>
   );

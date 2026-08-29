@@ -4,13 +4,12 @@ import { useTranslation } from "react-i18next";
 import { flashcardService } from "../services/flashcardService";
 import type { FlashcardDeckDetailsDto, FlashcardDto } from "../types/flashcardTypes";
 import { FlashcardStateEnum } from "../enums/flashcardEnums";
-import { QuestionDifficulty } from "../enums/quizEnums";
-import Card from "../components/Card";
+import { QuestionDifficulty, QuizAttemptStatus } from "../enums/quizEnums";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import { Alert } from "../components/Alert";
 import LoadingScreen from "../components/LoadingScreen";
 import { getScoreColorClass } from "../utils/scoreUtils";
-import { ArrowLeft, RotateCcw, CheckCircle2, BookOpen, ChevronLeft, ChevronRight, FlipHorizontal, Trophy } from "lucide-react";
+import { ArrowLeft, ChevronLeft, FlipHorizontal } from "lucide-react";
 
 export default function FlashcardStudyPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +23,9 @@ export default function FlashcardStudyPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [isReviewOnly, setIsReviewOnly] = useState(false);
   const [cardStates, setCardStates] = useState<Record<string, FlashcardStateEnum>>({});
+  const [sessionRatedCards, setSessionRatedCards] = useState<Record<string, FlashcardStateEnum>>({});
 
   const stateFilter = location.state as {
     fromPath?: string;
@@ -77,6 +78,36 @@ export default function FlashcardStudyPage() {
         initialMap[c.id] = c.state;
       });
       setCardStates(initialMap);
+
+      let savedAttemptMap: Record<string, FlashcardStateEnum> | null = null;
+
+      if (attemptId) {
+        const foundAttempt = data.attempts.find((a) => a.id === attemptId);
+        if (foundAttempt) {
+          if (foundAttempt.cardStates && Object.keys(foundAttempt.cardStates).length > 0) {
+            const savedMap: Record<string, FlashcardStateEnum> = {};
+            Object.entries(foundAttempt.cardStates).forEach(([cId, st]) => {
+              savedMap[cId] = Number(st) as FlashcardStateEnum;
+            });
+            setCardStates(savedMap);
+            setSessionRatedCards(savedMap);
+            savedAttemptMap = savedMap;
+          }
+          if (foundAttempt.status === QuizAttemptStatus.Completed) {
+            setIsReviewOnly(true);
+            setIsFinished(true);
+          }
+        }
+      }
+
+      if (savedAttemptMap) {
+        const firstUnratedIndex = filteredCards.findIndex((c) => savedAttemptMap![c.id] === undefined);
+        if (firstUnratedIndex !== -1) {
+          setCurrentIndex(firstUnratedIndex);
+        } else if (filteredCards.length > 0) {
+          setCurrentIndex(filteredCards.length - 1);
+        }
+      }
     } catch (err: any) {
       setErrorMsg(err.message || "Błąd podczas wczytywania fiszek.");
     } finally {
@@ -91,32 +122,39 @@ export default function FlashcardStudyPage() {
   const currentCard: FlashcardDto | undefined = sessionCards[currentIndex];
 
   const handleSetCardState = async (state: FlashcardStateEnum) => {
-    if (!currentCard) return;
+    if (!currentCard || isReviewOnly) return;
 
+    setSessionRatedCards((prev) => ({ ...prev, [currentCard.id]: state }));
     setCardStates((prev) => ({ ...prev, [currentCard.id]: state }));
 
     try {
-      await flashcardService.updateFlashcardState(currentCard.id, state);
+      if (attemptId) {
+        await flashcardService.submitFlashcardAttemptCardState(attemptId, currentCard.id, state);
+      } else {
+        await flashcardService.updateFlashcardState(currentCard.id, state);
+      }
     } catch (err) {
       console.warn("[FlashcardStudyPage] Failed to update card state:", err);
     }
 
-    // Move to next card or finish
     if (currentIndex < sessionCards.length - 1) {
       setIsFlipped(false);
       setCurrentIndex((prev) => prev + 1);
     } else {
       setIsFinished(true);
-      if (attemptId && !hasCompletedAttempt.current) {
-        hasCompletedAttempt.current = true;
-        const updatedStates = { ...cardStates, [currentCard.id]: state };
-        const masteredCount = Object.values(updatedStates).filter((s) => s === FlashcardStateEnum.Mastered).length;
-        const learningCount = Object.values(updatedStates).filter((s) => s === FlashcardStateEnum.Learning).length;
-        flashcardService.completeFlashcardAttempt(attemptId, masteredCount, learningCount).catch((err) => {
-          console.warn("[FlashcardStudyPage] Failed to complete attempt:", err);
-        });
+    }
+  };
+
+  const handleConfirmCompleteAttempt = async () => {
+    if (attemptId && !hasCompletedAttempt.current) {
+      hasCompletedAttempt.current = true;
+      try {
+        await flashcardService.completeFlashcardAttempt(attemptId);
+      } catch (err) {
+        console.warn("[FlashcardStudyPage] Failed to complete attempt:", err);
       }
     }
+    navigate(fromPath);
   };
 
   const handlePrev = () => {
@@ -135,10 +173,9 @@ export default function FlashcardStudyPage() {
     }
   };
 
-  // Keyboard shortcut handlers
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (isFinished || !currentCard) return;
+      if (isFinished || isReviewOnly || !currentCard) return;
 
       if (e.code === "Space") {
         e.preventDefault();
@@ -157,7 +194,7 @@ export default function FlashcardStudyPage() {
         handleSetCardState(FlashcardStateEnum.Mastered);
       }
     },
-    [isFinished, currentCard, currentIndex, sessionCards]
+    [isFinished, isReviewOnly, currentCard, currentIndex, sessionCards]
   );
 
   useEffect(() => {
@@ -183,201 +220,353 @@ export default function FlashcardStudyPage() {
     );
   }
 
-  // Final Summary Screen
-  if (isFinished) {
+  // Final Summary & Read-Only Attempt Review Screen
+  if (isFinished || isReviewOnly) {
     const totalCards = sessionCards.length;
     const masteredCount = Object.values(cardStates).filter((s) => s === FlashcardStateEnum.Mastered).length;
     const learningCount = Object.values(cardStates).filter((s) => s === FlashcardStateEnum.Learning).length;
-    const scorePct = Math.round(((masteredCount * 1.0 + learningCount * 0.5) / totalCards) * 100);
+    const scorePct = totalCards > 0 ? Math.round(((masteredCount * 1.0 + learningCount * 0.5) / totalCards) * 100) : 0;
 
     return (
-      <div className="flex-1 p-6 md:p-8 max-w-2xl mx-auto w-full flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in duration-300">
-        <Card borderLeftPrimary className="p-8 space-y-6 w-full flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
-            <Trophy size={32} />
+      <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+        {/* Top Header */}
+        <div className="flex items-center gap-3.5 min-w-0">
+          <button
+            type="button"
+            onClick={() => navigate(fromPath)}
+            title={t("flashcardDetails.backBtn")}
+            aria-label={t("flashcardDetails.backBtn")}
+            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
+          >
+            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
+          </button>
+          <div className="flex flex-col justify-center min-w-0">
+            <h1 className="text-xl font-bold text-foreground truncate">
+              {deck.name}
+            </h1>
           </div>
+        </div>
 
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black text-foreground">Koniec nauki w zestawie!</h2>
-            <p className="text-xs text-muted-foreground font-medium">{deck.name}</p>
-          </div>
-
-          <div className="flex flex-col items-center gap-1">
-            <span className={`text-4xl font-black tabular-nums ${getScoreColorClass(scorePct)}`}>
-              {scorePct}%
-            </span>
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Osiągnięty progres
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-border/60">
-            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-              <div className="text-xl font-black text-emerald-400 tabular-nums">{masteredCount}</div>
-              <div className="text-xs font-bold text-emerald-300/80">Opanowane (Umiem)</div>
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          {/* Main Report Card */}
+          <div className="flex-1 w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
+            <div className="flex items-center justify-between gap-3 pb-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <span className="text-base font-bold text-foreground">
+                  {masteredCount} / {totalCards} {t("flashcardDetails.cardsUnit")}
+                </span>
+                <span className={`text-base font-bold tabular-nums ${getScoreColorClass(scorePct)}`}>
+                  {scorePct}%
+                </span>
+              </div>
             </div>
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
-              <div className="text-xl font-black text-amber-400 tabular-nums">{learningCount}</div>
-              <div className="text-xs font-bold text-amber-300/80">Do powtórki (Uczę się)</div>
+
+            {/* Read-Only Flashcards List */}
+            <div className="space-y-4">
+              <div className="space-y-3.5 w-full">
+                {sessionCards.map((card, idx) => {
+                  const state = cardStates[card.id] || card.state;
+                  const isMastered = state === FlashcardStateEnum.Mastered;
+                  const isCardEasy = (diff?: QuestionDifficulty | string | number) =>
+                    diff === QuestionDifficulty.Easy || (diff as any) === 1 || (diff as any) === "Easy" || (diff as any) === "1";
+                  const isCardHard = (diff?: QuestionDifficulty | string | number) =>
+                    diff === QuestionDifficulty.Hard || (diff as any) === 3 || (diff as any) === "Hard" || (diff as any) === "3";
+
+                  const easyCard = isCardEasy(card.difficulty);
+                  const hardCard = isCardHard(card.difficulty);
+                  const diffLabel = easyCard ? t("quizSolver.difficulty.easy") : hardCard ? t("quizSolver.difficulty.hard") : t("quizSolver.difficulty.medium");
+                  const diffTextColor = easyCard ? "text-emerald-400" : hardCard ? "text-rose-400" : "text-amber-400";
+                  const stateTextColor = isMastered ? "text-emerald-400" : "text-amber-400";
+
+                  return (
+                    <div
+                      key={card.id}
+                      id={`report-card-${idx}`}
+                      className="p-4 md:p-5 rounded-xl bg-card border border-border space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-foreground bg-secondary px-2.5 py-0.5 rounded-md border border-border">
+                            #{idx + 1}
+                          </span>
+                          <span className={`text-[11px] font-semibold uppercase tracking-wider ${diffTextColor}`}>
+                            {diffLabel}
+                          </span>
+                        </div>
+                        <span className={`text-xs font-bold ${stateTextColor}`}>
+                          {isMastered ? t("flashcardDetails.stats.mastered") : t("flashcardDetails.stats.learning")}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                        <div className="p-3.5 rounded-xl bg-background border border-border/80 flex items-center">
+                          <p className="text-xs md:text-sm font-bold text-foreground leading-snug">
+                            {card.front}
+                          </p>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-secondary/40 border border-border/80 flex items-center">
+                          <p className="text-xs md:text-sm font-medium text-foreground/90 leading-relaxed">
+                            {card.back}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Bottom Actions for Review Screen - matching QuizSolverPage 1:1 */}
+            {!isReviewOnly && (
+              <div className="pt-5 border-t border-border flex items-center justify-between gap-3">
+                <SecondaryButton
+                  size="sm"
+                  onClick={() => {
+                    setCurrentIndex(sessionCards.length - 1);
+                    setIsFinished(false);
+                  }}
+                >
+                  {t("flashcards.reviewBackToCards")}
+                </SecondaryButton>
+
+                <PrimaryButton
+                  size="sm"
+                  onClick={handleConfirmCompleteAttempt}
+                  className="px-6 font-semibold"
+                >
+                  {t("flashcards.submitAttemptBtn")}
+                </PrimaryButton>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
-            <SecondaryButton
-              fullWidth
-              onClick={() => {
-                setIsFinished(false);
-                setCurrentIndex(0);
-                setIsFlipped(false);
-              }}
-              icon={<RotateCcw size={15} />}
-            >
-              Powtórz od nowa
-            </SecondaryButton>
-            <PrimaryButton
-              fullWidth
-              onClick={() => navigate(fromPath)}
-            >
-              Wróć do zestawu
-            </PrimaryButton>
+          {/* Right sticky card navigator tiles - matching QuizSolverPage 1:1 */}
+          <div className="grid grid-cols-5 gap-2 shrink-0 sticky top-6 self-start">
+            {sessionCards.map((card, idx) => {
+              const state = cardStates[card.id] || card.state;
+              const isMastered = state === FlashcardStateEnum.Mastered;
+              const ringBorder = isMastered
+                ? "border-emerald-500/70 dark:border-emerald-500/60"
+                : "border-amber-500/70 dark:border-amber-500/60";
+
+              return (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById(`report-card-${idx}`);
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                  }}
+                  className={`w-9 h-9 md:w-10 md:h-10 rounded-xl bg-card border ${ringBorder} text-foreground font-bold text-xs md:text-sm flex items-center justify-center transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer select-none shadow-2xs`}
+                  title={`#${idx + 1} - ${isMastered ? t("flashcardDetails.stats.mastered") : t("flashcardDetails.stats.learning")}`}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
 
   if (!currentCard) return null;
 
-  const cardState = cardStates[currentCard.id] || currentCard.state;
+  const sessionState = sessionRatedCards[currentCard.id];
+  const isLearningSelected = sessionState === FlashcardStateEnum.Learning;
+  const isMasteredSelected = sessionState === FlashcardStateEnum.Mastered;
+
+  const isCardEasy = (diff?: QuestionDifficulty | string | number) =>
+    diff === QuestionDifficulty.Easy || (diff as any) === 1 || (diff as any) === "Easy" || (diff as any) === "1";
+  const isCardHard = (diff?: QuestionDifficulty | string | number) =>
+    diff === QuestionDifficulty.Hard || (diff as any) === 3 || (diff as any) === "Hard" || (diff as any) === "3";
+
+  const easyCard = isCardEasy(currentCard.difficulty);
+  const hardCard = isCardHard(currentCard.difficulty);
+  const diffLabel = easyCard ? t("quizSolver.difficulty.easy") : hardCard ? t("quizSolver.difficulty.hard") : t("quizSolver.difficulty.medium");
+  const diffTextColor = easyCard ? "text-emerald-400" : hardCard ? "text-rose-400" : "text-amber-400";
 
   return (
-    <div className="flex-1 p-4 md:p-8 max-w-3xl mx-auto w-full flex flex-col justify-between space-y-6 animate-in fade-in duration-300">
-      {/* Top Header & Progress */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <button
-            onClick={() => navigate(fromPath)}
-            className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          >
-            <ArrowLeft size={14} /> {t("flashcards.exitStudy")}
-          </button>
-
-          <div className="text-xs font-bold text-foreground bg-secondary px-3 py-1 rounded-full border border-border">
-            {t("flashcards.cardProgress", { current: currentIndex + 1, total: sessionCards.length })}
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full h-2 bg-secondary rounded-full overflow-hidden border border-border/60">
-          <div
-            className="h-full bg-primary transition-all duration-300 ease-out"
-            style={{ width: `${((currentIndex + 1) / sessionCards.length) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* 3D Flip Card Container */}
-      <div
-        onClick={() => setIsFlipped((prev) => !prev)}
-        className="w-full h-[320px] md:h-[380px] cursor-pointer perspective-1000 select-none group"
-      >
-        <div
-          className={`relative w-full h-full duration-500 transform-style-3d transition-transform ${
-            isFlipped ? "rotate-y-180" : ""
-          }`}
+    <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+      {/* Top Header */}
+      <div>
+        <button
+          type="button"
+          onClick={() => navigate(fromPath)}
+          title={t("flashcards.exitStudy")}
+          aria-label={t("flashcards.exitStudy")}
+          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
         >
-          {/* FRONT side (Term / Key) */}
-          <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-border p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden shadow-2xl group-hover:border-primary/50 transition-colors">
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[11px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20">
-                {t("flashcards.frontLabel")}
-              </span>
-              <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                <FlipHorizontal size={13} /> {t("flashcards.flipHint")}
-              </span>
-            </div>
-
-            <div className="my-auto px-4">
-              <h2 className="text-xl md:text-2xl font-extrabold text-foreground leading-snug">
-                {currentCard.front}
-              </h2>
-            </div>
-
-            <div className="text-[11px] font-semibold text-muted-foreground">
-              {currentIndex + 1} / {deck.cards.length}
-            </div>
-          </div>
-
-          {/* BACK side (Definition / Value) */}
-          <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-primary/40 p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden rotate-y-180 shadow-2xl">
-            <div className="flex items-center justify-between w-full">
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
-                {t("flashcards.backLabel")}
-              </span>
-              <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                <FlipHorizontal size={13} /> {t("flashcards.flipBackHint")}
-              </span>
-            </div>
-
-            <div className="my-auto px-4 overflow-y-auto max-h-[220px]">
-              <p className="text-sm md:text-base font-semibold text-foreground/90 leading-relaxed">
-                {currentCard.back}
-              </p>
-            </div>
-
-            <div className="text-[11px] font-semibold text-muted-foreground">
-              {currentIndex + 1} / {deck.cards.length}
-            </div>
-          </div>
-        </div>
+          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
+        </button>
       </div>
 
-      {/* Action Controls & Navigation */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
-          <SecondaryButton
-            size="md"
-            onClick={() => handleSetCardState(FlashcardStateEnum.Learning)}
-            className={`!border-amber-500/30 hover:!bg-amber-500/20 ${
-              cardState === FlashcardStateEnum.Learning ? "bg-amber-500/20 border-amber-500 text-amber-400 font-bold" : ""
-            }`}
-            icon={<BookOpen size={16} className="text-amber-400" />}
-          >
-            {t("flashcards.learningBtn")}
-          </SecondaryButton>
+      <div className="flex flex-col md:flex-row gap-4 items-start">
+        {/* Main Card Column */}
+        <div className="flex-1 w-full space-y-4">
+          {/* Progress Bar - matching exact question card width */}
+          <div className="w-full h-2 bg-secondary rounded-full overflow-hidden border border-border/60">
+            <div
+              className="h-full bg-primary transition-all duration-300 ease-out"
+              style={{ width: `${((currentIndex + 1) / sessionCards.length) * 100}%` }}
+            />
+          </div>
 
-          <PrimaryButton
-            size="md"
-            onClick={() => handleSetCardState(FlashcardStateEnum.Mastered)}
-            className={`!bg-emerald-600 hover:!bg-emerald-500 ${
-              cardState === FlashcardStateEnum.Mastered ? "ring-2 ring-emerald-400 font-bold" : ""
-            }`}
-            icon={<CheckCircle2 size={16} />}
+          {/* 3D Flip Card Container */}
+          <div
+            onClick={() => setIsFlipped((prev) => !prev)}
+            className="w-full h-[320px] md:h-[380px] cursor-pointer perspective-1000 select-none group"
           >
-            {t("flashcards.masteredBtn")}
-          </PrimaryButton>
+            <div
+              className={`relative w-full h-full duration-500 transform-style-3d transition-transform ${
+                isFlipped ? "rotate-y-180" : ""
+              }`}
+            >
+              {/* FRONT side (Term / Key) */}
+              <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-border p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden shadow-2xl group-hover:border-primary/50 transition-colors">
+                <div className="flex items-center justify-between w-full">
+                  <span className={`text-[11px] font-extrabold uppercase tracking-wider ${diffTextColor}`}>
+                    {diffLabel}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <FlipHorizontal size={13} /> {t("flashcards.flipHint")}
+                  </span>
+                </div>
+
+                <div className="my-auto px-4">
+                  <h2 className="text-xl md:text-2xl font-extrabold text-foreground leading-snug">
+                    {currentCard.front}
+                  </h2>
+                </div>
+
+                <div className="text-[11px] font-semibold text-muted-foreground">
+                  {currentIndex + 1} / {deck.cards.length}
+                </div>
+              </div>
+
+              {/* BACK side (Definition / Value) */}
+              <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-primary/40 p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden rotate-y-180 shadow-2xl">
+                <div className="flex items-center justify-between w-full">
+                  <span className={`text-[11px] font-extrabold uppercase tracking-wider ${diffTextColor}`}>
+                    {diffLabel}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <FlipHorizontal size={13} /> {t("flashcards.flipBackHint")}
+                  </span>
+                </div>
+
+                <div className="my-auto px-4 overflow-y-auto max-h-[220px]">
+                  <p className="text-sm md:text-base font-semibold text-foreground/90 leading-relaxed">
+                    {currentCard.back}
+                  </p>
+                </div>
+
+                <div className="text-[11px] font-semibold text-muted-foreground">
+                  {currentIndex + 1} / {deck.cards.length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Controls & Navigation */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3.5 w-full">
+              <button
+                type="button"
+                onClick={() => handleSetCardState(FlashcardStateEnum.Learning)}
+                className={`w-full py-3.5 px-4 rounded-xl text-sm font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer bg-card border ${
+                  isLearningSelected
+                    ? "border-amber-500 text-amber-400 opacity-100 shadow-xs"
+                    : isMasteredSelected
+                      ? "border-border text-amber-400/50 opacity-40 hover:opacity-70"
+                      : "border-border text-amber-400 hover:bg-muted/60 opacity-100"
+                }`}
+              >
+                {t("flashcards.learningBtn")}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSetCardState(FlashcardStateEnum.Mastered)}
+                className={`w-full py-3.5 px-4 rounded-xl text-sm font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer bg-card border ${
+                  isMasteredSelected
+                    ? "border-emerald-500 text-emerald-400 opacity-100 shadow-xs"
+                    : isLearningSelected
+                      ? "border-border text-emerald-400/50 opacity-40 hover:opacity-70"
+                      : "border-border text-emerald-400 hover:bg-muted/60 opacity-100"
+                }`}
+              >
+                {t("flashcards.masteredBtn")}
+              </button>
+            </div>
+
+            {/* Prev / Next controls - matching QuizSolverPage 1:1 */}
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <SecondaryButton
+                size="sm"
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+              >
+                {t("quizSolver.prevBtn")}
+              </SecondaryButton>
+
+              {currentIndex < sessionCards.length - 1 ? (
+                <PrimaryButton
+                  size="sm"
+                  onClick={handleNext}
+                  className="px-5 font-semibold"
+                >
+                  {t("quizSolver.nextBtn")}
+                </PrimaryButton>
+              ) : (
+                <PrimaryButton
+                  size="sm"
+                  onClick={() => setIsFinished(true)}
+                  className="px-5 font-semibold"
+                >
+                  {t("quizSolver.goToReviewBtn")}
+                </PrimaryButton>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Prev / Next controls */}
-        <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground pt-2">
-          <button
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            className="flex items-center gap-1 hover:text-foreground disabled:opacity-30 cursor-pointer transition-colors"
-          >
-            <ChevronLeft size={16} /> {t("flashcards.prevCard")}
-          </button>
+        {/* Right Sticky Card Navigator Tiles - matching QuizSolverPage 1:1 */}
+        <div className="shrink-0 sticky top-6 self-start pt-6">
+          <div className="grid grid-cols-5 gap-2">
+            {sessionCards.map((c, idx) => {
+              const isCurrent = idx === currentIndex;
+              const ratedState = sessionRatedCards[c.id];
+              const isMastered = ratedState === FlashcardStateEnum.Mastered;
+              const isLearning = ratedState === FlashcardStateEnum.Learning;
 
-          <span className="text-[11px] text-muted-foreground/80 hidden sm:inline">
-            {t("flashcards.shortcutsHint")}
-          </span>
+              let ringBorder = "border-border text-muted-foreground/60 font-medium hover:border-border/80 hover:text-foreground";
+              if (isCurrent) {
+                ringBorder = "border-2 border-primary text-primary font-bold shadow-xs";
+              } else if (isMastered) {
+                ringBorder = "border border-emerald-500/70 text-emerald-400 font-bold hover:border-emerald-500";
+              } else if (isLearning) {
+                ringBorder = "border border-amber-500/70 text-amber-400 font-bold hover:border-amber-500";
+              }
 
-          <button
-            onClick={handleNext}
-            className="flex items-center gap-1 hover:text-foreground cursor-pointer transition-colors"
-          >
-            {t("flashcards.nextCard")} <ChevronRight size={16} />
-          </button>
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setCurrentIndex(idx);
+                    setIsFlipped(false);
+                  }}
+                  className={`w-9 h-9 md:w-10 md:h-10 rounded-xl bg-card ${ringBorder} text-xs md:text-sm flex items-center justify-center transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer select-none shadow-2xs`}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

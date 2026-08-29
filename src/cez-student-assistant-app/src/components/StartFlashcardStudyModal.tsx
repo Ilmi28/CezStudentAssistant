@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 import { PrimaryButton, SecondaryButton } from "./Button";
 import DifficultyControlsGroup from "./DifficultyControlsGroup";
@@ -18,6 +19,8 @@ export function StartFlashcardStudyModal({
   onStart,
   cards,
 }: StartFlashcardStudyModalProps) {
+  const { t } = useTranslation();
+
   const isEasy = (diff?: QuestionDifficulty | string | number) =>
     diff === QuestionDifficulty.Easy || diff === 1 || diff === "Easy" || diff === "1";
   const isHard = (diff?: QuestionDifficulty | string | number) =>
@@ -49,10 +52,10 @@ export function StartFlashcardStudyModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Rozpocznij naukę fiszek" maxWidth="md">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("flashcardDetails.startModalTitle")} maxWidth="md">
       <form onSubmit={handleSubmit} className="space-y-5">
         <p className="text-xs text-muted-foreground">
-          Wybierz liczbę fiszek poszczególnych poziomów trudności, które mają wejść w skład tej sesji nauki.
+          {t("flashcardDetails.startModalDesc")}
         </p>
 
         <DifficultyControlsGroup
@@ -63,16 +66,16 @@ export function StartFlashcardStudyModal({
           setMediumCount={setMediumCount}
           setHardCount={setHardCount}
           totalSelected={totalSelected}
-          itemUnitLabel="fiszek"
+          itemUnitLabel={t("flashcardDetails.cardsUnit")}
           maxPerCategory={Math.max(easyInDeck, mediumInDeck, hardInDeck, 100)}
         />
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <SecondaryButton type="button" onClick={onClose}>
-            Anuluj
+            {t("common.cancel")}
           </SecondaryButton>
           <PrimaryButton type="submit" disabled={totalSelected === 0}>
-            Rozpocznij naukę ({totalSelected})
+            {t("flashcardDetails.startModalSubmit", { count: totalSelected })}
           </PrimaryButton>
         </div>
       </form>

@@ -249,7 +249,7 @@ export default function CourseDetailsPage({
           </button>
           <div className="flex flex-col justify-center min-w-0">
             {selectedCourse.isCez && (
-              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mb-1">
+              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary border border-border text-foreground/90 shadow-2xs mb-1">
                 {t("courses.tagCez")}
               </span>
             )}

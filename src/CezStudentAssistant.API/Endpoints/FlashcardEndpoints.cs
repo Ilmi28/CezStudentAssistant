@@ -76,9 +76,17 @@ public static class FlashcardEndpoints
             return Results.Ok(result);
         }).RequireAuthorization();
 
-        group.MapPost("/attempt/{attemptId:guid}/complete", async (Guid attemptId, CompleteFlashcardAttemptCommand command, IMediator mediator) =>
+        group.MapPost("/attempt/{attemptId:guid}/card/{cardId:guid}/state", async (Guid attemptId, Guid cardId, SubmitFlashcardAttemptCardStateCommand command, IMediator mediator) =>
         {
             command.AttemptId = attemptId;
+            command.CardId = cardId;
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPost("/attempt/{attemptId:guid}/complete", async (Guid attemptId, IMediator mediator) =>
+        {
+            var command = new CompleteFlashcardAttemptCommand { AttemptId = attemptId };
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();

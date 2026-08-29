@@ -33,7 +33,7 @@ public class GetFlashcardDeckByIdQueryHandler(IUnitOfWork unitOfWork)
         var deck = await deckRepo.Find(d => d.Id == query.DeckId)
             .Include(d => d.Course)
             .Include(d => d.Cards)
-            .Include(d => d.Attempts)
+            .Include(d => d.Attempts).ThenInclude(a => a.Cards)
             .FirstOrDefaultAsync(ct);
 
         if (deck == null)
@@ -77,18 +77,26 @@ public class GetFlashcardDeckByIdQueryHandler(IUnitOfWork unitOfWork)
                 State = c.State,
                 DeckId = c.DeckId
             }).ToList(),
-            Attempts = deck.Attempts.OrderByDescending(a => a.StartedAt).Select(a => new FlashcardAttemptDto
+            Attempts = deck.Attempts.OrderByDescending(a => a.StartedAt).Select(a =>
             {
-                Id = a.Id,
-                UserId = a.UserId,
-                DeckId = a.DeckId,
-                Status = a.Status,
-                CardCount = a.CardCount,
-                MasteredCount = a.MasteredCount,
-                LearningCount = a.LearningCount,
-                ProgressPercentage = a.ProgressPercentage,
-                StartedAt = a.StartedAt,
-                CompletedAt = a.CompletedAt
+                var masteredCount = a.Cards.Count(c => c.State == FlashcardStateEnum.Mastered);
+                var learningCount = a.Cards.Count(c => c.State == FlashcardStateEnum.Learning);
+                var progressPercentage = FlashcardProgressCalculationHelper.CalculateAttemptProgressPercentage(masteredCount, learningCount, a.CardCount);
+
+                return new FlashcardAttemptDto
+                {
+                    Id = a.Id,
+                    UserId = a.UserId,
+                    DeckId = a.DeckId,
+                    Status = a.Status,
+                    CardCount = a.CardCount,
+                    MasteredCount = masteredCount,
+                    LearningCount = learningCount,
+                    ProgressPercentage = progressPercentage,
+                    CardStates = a.Cards.ToDictionary(c => c.FlashcardId.ToString(), c => c.State),
+                    StartedAt = a.StartedAt,
+                    CompletedAt = a.CompletedAt
+                };
             }).ToList()
         };
     }

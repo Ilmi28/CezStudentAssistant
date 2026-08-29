@@ -65,10 +65,10 @@ export const MultiSegmentProgressBar: React.FC<MultiSegmentProgressBarProps> = (
             <div
               key={seg.id}
               style={{ width: `${pct}%` }}
-              className="h-full cursor-pointer"
+              className="h-full cursor-pointer transition-[width] duration-500 ease-out"
               onMouseEnter={(e) => handleMouseEnter(e, text)}
             >
-              <div className={`w-full h-full ${seg.colorClass} rounded-full transition-all duration-300 hover:brightness-110`} />
+              <div className={`w-full h-full ${seg.colorClass} rounded-full transition-all duration-500 ease-out hover:brightness-110`} />
             </div>
           );
         })}

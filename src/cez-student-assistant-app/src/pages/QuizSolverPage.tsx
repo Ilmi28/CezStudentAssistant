@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ChevronLeft, Clock } from "lucide-react";
 import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
 import ConfirmModal from "../components/ConfirmModal";
@@ -101,7 +101,9 @@ export default function QuizSolverPage({
         const firstUnansweredIndex = details.questions.findIndex(
           q => !initialAnswers[q.id] || initialAnswers[q.id].length === 0
         );
-        setCurrentQuestionIndex(firstUnansweredIndex !== -1 ? firstUnansweredIndex : 0);
+        setCurrentQuestionIndex(
+          firstUnansweredIndex !== -1 ? firstUnansweredIndex : Math.max(0, details.questions.length - 1)
+        );
         setIsReviewMode(false);
         setFinished(false);
       }
@@ -409,8 +411,8 @@ export default function QuizSolverPage({
 
   return (
     <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
-      {/* Top Header: Back btn + Title */}
-      <div className="flex items-center gap-3.5 min-w-0">
+      {/* Top Header */}
+      <div>
         <button
           type="button"
           onClick={handleCancel}
@@ -420,11 +422,6 @@ export default function QuizSolverPage({
         >
           <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
         </button>
-        <div className="flex flex-col justify-center min-w-0">
-          <h1 className="text-xl font-bold text-foreground truncate">
-            {attemptDetails.name}
-          </h1>
-        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -486,7 +483,6 @@ export default function QuizSolverPage({
                     setCurrentQuestionIndex(qCount - 1);
                     setIsReviewMode(false);
                   }}
-                  icon={<ChevronLeft size={15} />}
                 >
                   {t("quizSolver.reviewBackToQuestions")}
                 </SecondaryButton>
@@ -502,81 +498,81 @@ export default function QuizSolverPage({
             </div>
           ) : (
             /* Main Question Card */
-            <div className="w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-              <div className="bg-muted/60 px-6 py-3 border-b border-border flex justify-between items-center">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {t("quizSolver.questionProgress", { current: currentQuestionIndex + 1, total: qCount })}
-                </span>
-                <div className="flex items-center gap-2">
-                  {getTypeBadge(question.type)}
-                  {getDifficultyBadge(question.difficulty)}
-                </div>
-              </div>
-
-              <div className="h-1 bg-muted/40 w-full overflow-hidden">
+            <div className="w-full space-y-4">
+              {/* Progress Bar - matching flashcards 1:1 */}
+              <div className="w-full h-2 bg-secondary rounded-full overflow-hidden border border-border/60">
                 <div
-                  className="h-full bg-primary transition-all duration-500 ease-out rounded-r-full"
+                  className="h-full bg-primary transition-all duration-300 ease-out"
                   style={{ width: `${((currentQuestionIndex + 1) / qCount) * 100}%` }}
                 />
               </div>
 
-              <div key={currentQuestionIndex} className="p-6 md:p-8 space-y-6 animate-in fade-in-50 slide-in-from-right-3 duration-300 ease-out">
-                <h3 className="text-base font-bold text-foreground leading-relaxed">
-                  {question.content}
-                </h3>
-
-                {/* Options */}
-                <div className="space-y-2.5">
-                  {question.options.map((opt) => {
-                    const isSelected = currentQuestionSelected.includes(opt.id);
-
-                    let optionStyle = "border-border/70 bg-card/40 hover:bg-card hover:border-border text-foreground/80";
-                    if (isSelected) {
-                      optionStyle = "bg-primary/10 border-primary/60 text-foreground font-semibold shadow-xs";
-                    }
-
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => handleToggleOption(question.id, opt.id, isMultiple)}
-                        className={`w-full p-3.5 md:p-4 rounded-xl text-left text-xs md:text-[13px] border transition-colors duration-200 ease-out cursor-pointer ${optionStyle}`}
-                      >
-                        <span className="leading-relaxed block">{opt.content}</span>
-                      </button>
-                    );
-                  })}
+              <div className="w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+                <div className="bg-muted/60 px-6 py-3 border-b border-border flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    {getTypeBadge(question.type)}
+                  </div>
+                  <div>
+                    {getDifficultyBadge(question.difficulty)}
+                  </div>
                 </div>
 
-                {/* Bottom Navigation */}
-                <div className="pt-5 border-t border-border flex items-center justify-between gap-3">
-                  <SecondaryButton
-                    size="sm"
-                    onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
-                    disabled={currentQuestionIndex === 0}
-                    icon={<ChevronLeft size={15} />}
-                  >
-                    {t("quizSolver.prevBtn")}
-                  </SecondaryButton>
+                <div key={currentQuestionIndex} className="p-6 md:p-8 space-y-6 animate-in fade-in-50 slide-in-from-right-3 duration-300 ease-out">
+                  <h3 className="text-base font-bold text-foreground leading-relaxed">
+                    {question.content}
+                  </h3>
 
-                  {currentQuestionIndex < qCount - 1 ? (
+                  {/* Options */}
+                  <div className="space-y-2.5">
+                    {question.options.map((opt) => {
+                      const isSelected = currentQuestionSelected.includes(opt.id);
+
+                      let optionStyle = "border-border/70 bg-card/40 hover:bg-card hover:border-border text-foreground/80";
+                      if (isSelected) {
+                        optionStyle = "bg-primary/10 border-primary/60 text-foreground font-semibold shadow-xs";
+                      }
+
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => handleToggleOption(question.id, opt.id, isMultiple)}
+                          className={`w-full p-3.5 md:p-4 rounded-xl text-left text-xs md:text-[13px] border transition-colors duration-200 ease-out cursor-pointer ${optionStyle}`}
+                        >
+                          <span className="leading-relaxed block">{opt.content}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Bottom Navigation */}
+                  <div className="pt-2 flex items-center justify-between gap-3">
                     <SecondaryButton
                       size="sm"
-                      onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                      icon={<ChevronRight size={15} />}
+                      onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+                      disabled={currentQuestionIndex === 0}
                     >
-                      {t("quizSolver.nextBtn")}
+                      {t("quizSolver.prevBtn")}
                     </SecondaryButton>
-                  ) : (
-                    <PrimaryButton
-                      size="sm"
-                      onClick={() => setIsReviewMode(true)}
-                      icon={<ChevronRight size={15} />}
-                      className="px-5 font-semibold"
-                    >
-                      {t("quizSolver.goToReviewBtn")}
-                    </PrimaryButton>
-                  )}
+
+                    {currentQuestionIndex < qCount - 1 ? (
+                      <PrimaryButton
+                        size="sm"
+                        onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+                        className="px-5 font-semibold"
+                      >
+                        {t("quizSolver.nextBtn")}
+                      </PrimaryButton>
+                    ) : (
+                      <PrimaryButton
+                        size="sm"
+                        onClick={() => setIsReviewMode(true)}
+                        className="px-5 font-semibold"
+                      >
+                        {t("quizSolver.goToReviewBtn")}
+                      </PrimaryButton>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -584,7 +580,7 @@ export default function QuizSolverPage({
         </div>
 
         {/* Right Sidebar: Timer + Question Selector Tiles */}
-        <div className="shrink-0 sticky top-6 self-start space-y-3">
+        <div className="shrink-0 sticky top-6 self-start pt-6 space-y-3">
           {attemptDetails.timeLimitMinutes != null && attemptDetails.timeLimitMinutes > 0 && !finished && (
             <div className="px-3 py-2 rounded-xl border flex items-center justify-center gap-2 shadow-xs bg-card border-border text-foreground font-semibold">
               <Clock size={15} strokeWidth={2.25} className="text-primary" />

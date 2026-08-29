@@ -27,7 +27,7 @@ export default function DifficultyControlsGroup({
     <div className="space-y-3.5 pt-2 border-t border-border/60">
       <div className="flex items-center justify-between text-xs font-semibold">
         <span className="text-foreground font-medium">Trudność</span>
-        <span className="text-foreground font-bold text-xs bg-secondary px-2.5 py-0.5 rounded-full border border-border">
+        <span key={totalSelected} className="text-foreground font-bold text-xs bg-secondary px-2.5 py-0.5 rounded-full border border-border transition-all duration-300 animate-in fade-in duration-200">
           {totalSelected} {itemUnitLabel}
         </span>
       </div>
@@ -53,18 +53,18 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setEasyCount((prev) => Math.max(0, prev - 1))}
               disabled={easyCount <= 0}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
             >
               -
             </button>
-            <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
+            <span key={easyCount} className="w-6 text-center text-xs font-bold tabular-nums text-foreground animate-in fade-in zoom-in-95 duration-200">
               {easyCount}
             </span>
             <button
               type="button"
               onClick={() => setEasyCount((prev) => Math.min(maxPerCategory, prev + 1))}
               disabled={easyCount >= maxPerCategory}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
             >
               +
             </button>
@@ -82,18 +82,18 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setMediumCount((prev) => Math.max(0, prev - 1))}
               disabled={mediumCount <= 0}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
             >
               -
             </button>
-            <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
+            <span key={mediumCount} className="w-6 text-center text-xs font-bold tabular-nums text-foreground animate-in fade-in zoom-in-95 duration-200">
               {mediumCount}
             </span>
             <button
               type="button"
               onClick={() => setMediumCount((prev) => Math.min(maxPerCategory, prev + 1))}
               disabled={mediumCount >= maxPerCategory}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
             >
               +
             </button>
@@ -111,18 +111,18 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setHardCount((prev) => Math.max(0, prev - 1))}
               disabled={hardCount <= 0}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
             >
               -
             </button>
-            <span className="w-6 text-center text-xs font-bold tabular-nums text-foreground">
+            <span key={hardCount} className="w-6 text-center text-xs font-bold tabular-nums text-foreground animate-in fade-in zoom-in-95 duration-200">
               {hardCount}
             </span>
             <button
               type="button"
               onClick={() => setHardCount((prev) => Math.min(maxPerCategory, prev + 1))}
               disabled={hardCount >= maxPerCategory}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all"
+              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
             >
               +
             </button>

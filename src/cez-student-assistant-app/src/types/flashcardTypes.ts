@@ -19,6 +19,7 @@ export interface FlashcardAttemptDto {
   masteredCount: number;
   learningCount: number;
   progressPercentage: number;
+  cardStates?: Record<string, FlashcardStateEnum>;
   startedAt: string;
   completedAt?: string | null;
 }

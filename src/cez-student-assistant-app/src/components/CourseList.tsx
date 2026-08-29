@@ -54,7 +54,7 @@ export default function CourseList({ courses, onOpenAddModal }: CourseListProps)
                 </div>
               </div>
               {c.isCez && (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary border border-border text-foreground/90 shrink-0 shadow-2xs">
                   {t("courses.tagCez")}
                 </span>
               )}

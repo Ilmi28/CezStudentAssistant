@@ -5,7 +5,9 @@ using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Enums;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,8 +17,6 @@ public sealed class CompleteFlashcardAttemptCommand : ICommand<FlashcardAttemptD
 {
     public Guid UserId { get; set; }
     public Guid AttemptId { get; set; }
-    public int MasteredCount { get; set; }
-    public int LearningCount { get; set; }
 }
 
 public class CompleteFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
@@ -28,7 +28,9 @@ public class CompleteFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
     protected override async Task<FlashcardAttemptDto> ExecuteAsync(CompleteFlashcardAttemptCommand command, CancellationToken ct)
     {
         var attemptRepo = unitOfWork.Repository<IFlashcardAttemptRepository>();
-        var attempt = await attemptRepo.GetByIdAsync(command.AttemptId, ct)
+        var attempt = await attemptRepo.Find(a => a.Id == command.AttemptId)
+            .Include(a => a.Cards)
+            .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException(FlashcardMessageConsts.FlashcardAttemptNotFound);
 
         if (attempt.UserId != command.UserId)
@@ -36,16 +38,16 @@ public class CompleteFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
             throw new ForbiddenException(FlashcardMessageConsts.FlashcardAccessDenied);
         }
 
-        attempt.MasteredCount = command.MasteredCount;
-        attempt.LearningCount = command.LearningCount;
         attempt.Status = QuizAttemptStatus.Completed;
         attempt.CompletedAt = DateTime.UtcNow;
 
-        var total = attempt.CardCount > 0 ? attempt.CardCount : 1;
-        attempt.ProgressPercentage = (int)Math.Min(100, Math.Round(((command.MasteredCount * 1.0 + command.LearningCount * 0.5) / total) * 100));
-
         await attemptRepo.UpdateAsync(attempt, ct);
         await unitOfWork.SaveChangesAsync(ct);
+
+        var cardStatesMap = attempt.Cards.ToDictionary(c => c.FlashcardId.ToString(), c => c.State);
+        var masteredCount = attempt.Cards.Count(c => c.State == FlashcardStateEnum.Mastered);
+        var learningCount = attempt.Cards.Count(c => c.State == FlashcardStateEnum.Learning);
+        var progressPercentage = CezStudentAssistant.Application.Helpers.FlashcardProgressCalculationHelper.CalculateAttemptProgressPercentage(masteredCount, learningCount, attempt.CardCount);
 
         return new FlashcardAttemptDto
         {
@@ -54,9 +56,10 @@ public class CompleteFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
             DeckId = attempt.DeckId,
             Status = attempt.Status,
             CardCount = attempt.CardCount,
-            MasteredCount = attempt.MasteredCount,
-            LearningCount = attempt.LearningCount,
-            ProgressPercentage = attempt.ProgressPercentage,
+            MasteredCount = masteredCount,
+            LearningCount = learningCount,
+            ProgressPercentage = progressPercentage,
+            CardStates = cardStatesMap,
             StartedAt = attempt.StartedAt,
             CompletedAt = attempt.CompletedAt
         };
