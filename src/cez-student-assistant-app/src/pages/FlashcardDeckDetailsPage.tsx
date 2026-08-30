@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { flashcardService } from "../services/flashcardService";
 import type { FlashcardDeckDetailsDto } from "../types/flashcardTypes";
+import { FlashcardStateEnum } from "../enums/flashcardEnums";
 import { QuestionDifficulty, QuizAttemptStatus } from "../enums/quizEnums";
 import Card from "../components/Card";
 import { PrimaryButton, SecondaryButton } from "../components/Button";
@@ -10,6 +11,7 @@ import { Alert } from "../components/Alert";
 import LoadingScreen from "../components/LoadingScreen";
 import { EditFlashcardDeckModal } from "../components/EditFlashcardDeckModal";
 import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
+import Tooltip from "../components/Tooltip";
 import { getScoreColorClass } from "../utils/scoreUtils";
 import {
   ChevronLeft,
@@ -83,10 +85,20 @@ export default function FlashcardDeckDetailsPage() {
 
   const handleStartStudyDirect = async () => {
     if (!deck) return;
-    const easyCount = deck.easyCardCountPerAttempt ?? 0;
-    const mediumCount = deck.mediumCardCountPerAttempt ?? 0;
-    const hardCount = deck.hardCardCountPerAttempt ?? 0;
-    const totalSelected = deck.cardCountPerAttempt || (easyCount + mediumCount + hardCount) || deck.cards.length;
+    const hasSpecificDifficultyConfig =
+      deck.easyCardCountPerAttempt != null ||
+      deck.mediumCardCountPerAttempt != null ||
+      deck.hardCardCountPerAttempt != null;
+
+    const easyCount = hasSpecificDifficultyConfig ? (deck.easyCardCountPerAttempt ?? undefined) : undefined;
+    const mediumCount = hasSpecificDifficultyConfig ? (deck.mediumCardCountPerAttempt ?? undefined) : undefined;
+    const hardCount = hasSpecificDifficultyConfig ? (deck.hardCardCountPerAttempt ?? undefined) : undefined;
+
+    const totalSelected =
+      deck.cardCountPerAttempt ||
+      (hasSpecificDifficultyConfig
+        ? (deck.easyCardCountPerAttempt ?? 0) + (deck.mediumCardCountPerAttempt ?? 0) + (deck.hardCardCountPerAttempt ?? 0)
+        : deck.cards.length);
 
     try {
       const attempt = await flashcardService.startFlashcardAttempt(deck.id, totalSelected);
@@ -148,7 +160,28 @@ export default function FlashcardDeckDetailsPage() {
   const easyInDeck = deck.cards.filter((c) => isEasy(c.difficulty)).length;
   const hardInDeck = deck.cards.filter((c) => isHard(c.difficulty)).length;
   const mediumInDeck = deck.cards.filter((c) => !isEasy(c.difficulty) && !isHard(c.difficulty)).length;
-  const masteredPct = deck.cardCount > 0 ? Math.round((deck.masteredCardCount / deck.cardCount) * 100) : 0;
+  const getCardPoints = (diff?: QuestionDifficulty | string | number) => {
+    if (isEasy(diff)) return 1;
+    if (isHard(diff)) return 3;
+    return 2;
+  };
+
+  const isCardMastered = (card: { id: string; state: FlashcardStateEnum }) => {
+    if (card.state === FlashcardStateEnum.Mastered) return true;
+    return deck.attempts.some((a) =>
+      a.cardStates && Number(a.cardStates[card.id]) === FlashcardStateEnum.Mastered
+    );
+  };
+
+  const masteredInDeck = deck.cards.filter(isCardMastered).length;
+  const learningInDeck = deck.cards.filter((c) => !isCardMastered(c) && c.state === FlashcardStateEnum.Learning).length;
+
+  const totalDeckMaxPoints = deck.cards.reduce((sum, c) => sum + getCardPoints(c.difficulty), 0);
+  const totalDeckEarnedPoints = deck.cards.reduce(
+    (sum, c) => (isCardMastered(c) ? sum + getCardPoints(c.difficulty) : sum),
+    0
+  );
+  const masteredPct = totalDeckMaxPoints > 0 ? Math.round((totalDeckEarnedPoints / totalDeckMaxPoints) * 100) : deck.progressPercentage;
 
   return (
     <div
@@ -251,7 +284,7 @@ export default function FlashcardDeckDetailsPage() {
                 {t("flashcardDetails.stats.mastered")}
               </span>
               <span className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
-                {deck.masteredCardCount}
+                {masteredInDeck}
               </span>
             </div>
           </div>
@@ -266,7 +299,7 @@ export default function FlashcardDeckDetailsPage() {
                 {t("flashcardDetails.stats.learning")}
               </span>
               <span className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
-                {deck.learningCardCount}
+                {learningInDeck}
               </span>
             </div>
           </div>
@@ -276,18 +309,25 @@ export default function FlashcardDeckDetailsPage() {
         {deck.cardCount > 0 && (
           <div className="mt-4 pt-3.5 border-t border-border/50 space-y-2">
             <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>{t("flashcardDetails.progress")}</span>
+              <div className="flex items-center gap-1.5">
+                <span>{t("flashcardDetails.progress")}</span>
+                <Tooltip content={t("flashcardDetails.difficultyWeightTooltip")}>
+                  <div className="inline-flex items-center cursor-help text-muted-foreground/70 hover:text-foreground transition-colors">
+                    <HelpCircle size={13} strokeWidth={2} />
+                  </div>
+                </Tooltip>
+              </div>
               <span className="text-foreground font-bold">
-                {t("flashcardDetails.progressText", { mastered: deck.masteredCardCount, total: deck.cardCount, pct: masteredPct })}
+                {t("flashcardDetails.progressText", { mastered: masteredInDeck, total: deck.cardCount, pct: masteredPct })}
               </span>
             </div>
             <MultiSegmentProgressBar
               segments={[
                 {
                   id: "progres",
-                  value: deck.masteredCardCount,
+                  value: masteredInDeck,
                   colorClass: "bg-emerald-500",
-                  customTooltip: t("flashcardDetails.tooltipMastered", { mastered: deck.masteredCardCount, total: deck.cardCount, pct: masteredPct }),
+                  customTooltip: t("flashcardDetails.tooltipMastered", { mastered: masteredInDeck, total: deck.cardCount, pct: masteredPct }),
                 },
               ]}
               totalValue={deck.cardCount}

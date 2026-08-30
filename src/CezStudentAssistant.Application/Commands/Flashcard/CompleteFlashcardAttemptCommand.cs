@@ -30,6 +30,7 @@ public class CompleteFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
         var attemptRepo = unitOfWork.Repository<IFlashcardAttemptRepository>();
         var attempt = await attemptRepo.Find(a => a.Id == command.AttemptId)
             .Include(a => a.Cards)
+                .ThenInclude(c => c.Flashcard)
             .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException(FlashcardMessageConsts.FlashcardAttemptNotFound);
 
@@ -47,7 +48,8 @@ public class CompleteFlashcardAttemptCommandHandler(IUnitOfWork unitOfWork)
         var cardStatesMap = attempt.Cards.ToDictionary(c => c.FlashcardId.ToString(), c => c.State);
         var masteredCount = attempt.Cards.Count(c => c.State == FlashcardStateEnum.Mastered);
         var learningCount = attempt.Cards.Count(c => c.State == FlashcardStateEnum.Learning);
-        var progressPercentage = CezStudentAssistant.Application.Helpers.FlashcardProgressCalculationHelper.CalculateAttemptProgressPercentage(masteredCount, learningCount, attempt.CardCount);
+        var progressPercentage = CezStudentAssistant.Application.Helpers.FlashcardProgressCalculationHelper.CalculateAttemptProgressPercentage(
+            attempt.Cards.Select(c => (c.Flashcard?.Difficulty ?? Domain.Enums.QuestionDifficulty.Medium, c.State)));
 
         return new FlashcardAttemptDto
         {

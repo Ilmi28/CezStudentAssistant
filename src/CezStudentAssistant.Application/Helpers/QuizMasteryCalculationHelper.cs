@@ -20,6 +20,17 @@ public static class QuizMasteryCalculationHelper
         int masteredCount = 0;
         int totalPoolCount = questionList.Count;
 
+        int getPoints(QuestionDifficulty diff) => diff switch
+        {
+            QuestionDifficulty.Easy => 1,
+            QuestionDifficulty.Medium => 2,
+            QuestionDifficulty.Hard => 3,
+            _ => 2
+        };
+
+        var totalMaxPoints = questionList.Sum(q => getPoints(q.Difficulty));
+        int earnedMasteredPoints = 0;
+
         if (totalPoolCount > 0 && completedAttempts.Count > 0)
         {
             foreach (var question in questionList)
@@ -51,12 +62,13 @@ public static class QuizMasteryCalculationHelper
                 if (isAnsweredCorrectly)
                 {
                     masteredCount++;
+                    earnedMasteredPoints += getPoints(question.Difficulty);
                 }
             }
         }
 
-        int percentage = totalPoolCount > 0
-            ? (int)Math.Round((double)masteredCount / totalPoolCount * 100)
+        int percentage = totalMaxPoints > 0
+            ? (int)Math.Round((double)earnedMasteredPoints / totalMaxPoints * 100)
             : 0;
 
         return new QuizMasteryResult(masteredCount, totalPoolCount, percentage);

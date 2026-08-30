@@ -162,6 +162,7 @@
         "backBtn": "Back",
         "tag": "Quiz",
         "typeTag": "QUIZ",
+        "difficultyWeightTooltip": "Progress considers question difficulty weights: Easy (1 pt), Medium (2 pts), Hard (3 pts).",
         "loading": "Loading quiz details...",
         "loadingDetails": "Loading quiz details...",
         "questionCountPerAttemptLabel": "Questions per attempt",
@@ -353,7 +354,8 @@
         "backDef": "Back (Answer / Definition)",
         "startNewSession": "Practice again",
         "submitAttemptBtn": "Submit",
-        "reviewBackToCards": "Back"
+        "reviewBackToCards": "Back",
+        "noCardsInSession": "No flashcards in this study session."
     },
     "flashcardDetails": {
         "backBtn": "Back",
@@ -373,6 +375,9 @@
         },
         "progress": "PROGRESS",
         "progressText": "{{mastered}} / {{total}} CARDS ({{pct}}%)",
+        "tooltipMastered": "Mastered {{mastered}} of {{total}} cards ({{pct}}%)",
+        "difficultyWeightTooltip": "Progress considers card difficulty weights: Easy (1 pt), Medium (2 pts), Hard (3 pts).",
+        "pointsProgressText": "({{earned}} / {{total}} pts)",
         "difficulty": "DIFFICULTY",
         "attemptHistory": "Attempt History ({{count}})",
         "noAttempts": "No previous study attempts for this deck.",

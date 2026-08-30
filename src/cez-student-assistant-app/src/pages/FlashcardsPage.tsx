@@ -4,6 +4,7 @@ import { BookOpen } from "lucide-react";
 import Card from "../components/Card";
 import { FlashcardDeckCard } from "../components/FlashcardDeckCard";
 import { useFlashcards } from "../hooks";
+import { signalRService } from "../services/signalRService";
 
 export default function FlashcardsPage() {
   const { t } = useTranslation();
@@ -11,6 +12,17 @@ export default function FlashcardsPage() {
 
   useEffect(() => {
     refreshDecks();
+
+    signalRService.startConnection();
+    const unsubscribe = signalRService.subscribeJobStatus((_jobId, status) => {
+      if (status === "Succeeded" || status === "Failed") {
+        refreshDecks();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return (

@@ -44,4 +44,11 @@ public class FlashcardProgressCalculationHelperTests
         var result = FlashcardProgressCalculationHelper.CalculateProgressPercentage(cards);
         result.Should().Be(33);
     }
+
+    [Test]
+    public void CalculateAttemptProgressPercentage_WithOneMasteredAndThreeLearning_Returns25()
+    {
+        var result = FlashcardProgressCalculationHelper.CalculateAttemptProgressPercentage(1, 3, 4);
+        result.Should().Be(25);
+    }
 }

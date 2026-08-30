@@ -33,11 +33,15 @@ public class GetUserFlashcardDecksQueryHandler(IUnitOfWork unitOfWork)
 
         var queryable = deckRepo.Find(d => d.UserId == query.UserId)
             .Include(d => d.Course)
-            .Include(d => d.Cards);
+            .Include(d => d.Cards)
+            .Include(d => d.Attempts).ThenInclude(a => a.Cards);
 
         if (query.CourseId.HasValue)
         {
-            queryable = queryable.Where(d => d.CourseId == query.CourseId.Value).Include(d => d.Course).Include(d => d.Cards);
+            queryable = queryable.Where(d => d.CourseId == query.CourseId.Value)
+                .Include(d => d.Course)
+                .Include(d => d.Cards)
+                .Include(d => d.Attempts).ThenInclude(a => a.Cards);
         }
 
         var decks = await queryable.OrderByDescending(d => d.CreatedAt).ToListAsync(ct);
@@ -45,9 +49,10 @@ public class GetUserFlashcardDecksQueryHandler(IUnitOfWork unitOfWork)
         return decks.Select(d =>
         {
             var cardList = d.Cards.ToList();
-            var mastered = cardList.Count(c => c.State == FlashcardStateEnum.Mastered);
-            var learning = cardList.Count(c => c.State == FlashcardStateEnum.Learning);
-            var newCards = cardList.Count(c => c.State == FlashcardStateEnum.New);
+            var attemptsList = d.Attempts.ToList();
+            var mastered = cardList.Count(c => FlashcardProgressCalculationHelper.IsCardMastered(c, attemptsList));
+            var learning = cardList.Count(c => !FlashcardProgressCalculationHelper.IsCardMastered(c, attemptsList) && c.State == FlashcardStateEnum.Learning);
+            var newCards = cardList.Count(c => !FlashcardProgressCalculationHelper.IsCardMastered(c, attemptsList) && c.State == FlashcardStateEnum.New);
 
             return new FlashcardDeckDto
             {
@@ -61,7 +66,7 @@ public class GetUserFlashcardDecksQueryHandler(IUnitOfWork unitOfWork)
                 MasteredCardCount = mastered,
                 LearningCardCount = learning,
                 NewCardCount = newCards,
-                ProgressPercentage = FlashcardProgressCalculationHelper.CalculateProgressPercentage(cardList)
+                ProgressPercentage = FlashcardProgressCalculationHelper.CalculateDeckProgressPercentage(cardList, attemptsList)
             };
         }).ToList();
     }

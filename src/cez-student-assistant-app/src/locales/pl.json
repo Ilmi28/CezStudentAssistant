@@ -162,6 +162,7 @@
         "backBtn": "Powrót",
         "tag": "Quiz",
         "typeTag": "QUIZ",
+        "difficultyWeightTooltip": "Progres uwzględnia wagi trudności pytań: Łatwe (1 pkt), Średnie (2 pkt), Trudne (3 pkt).",
         "loading": "Ładowanie szczegółów quizu...",
         "loadingDetails": "Ładowanie szczegółów quizu...",
         "questionCountPerAttemptLabel": "Liczba pytań w podejściu",
@@ -353,7 +354,8 @@
         "backDef": "Tył (Odpowiedź / Definicja)",
         "startNewSession": "Przećwicz ponownie",
         "submitAttemptBtn": "Zatwierdź",
-        "reviewBackToCards": "Powrót"
+        "reviewBackToCards": "Powrót",
+        "noCardsInSession": "Brak fiszek w tej sesji nauki."
     },
     "flashcardDetails": {
         "backBtn": "Powrót",
@@ -373,6 +375,9 @@
         },
         "progress": "PROGRES",
         "progressText": "{{mastered}} / {{total}} FISZEK ({{pct}}%)",
+        "tooltipMastered": "Opanowano {{mastered}} z {{total}} fiszek ({{pct}}%)",
+        "difficultyWeightTooltip": "Progres uwzględnia wagi trudności fiszek: Łatwa (1 pkt), Średnia (2 pkt), Trudna (3 pkt).",
+        "pointsProgressText": "({{earned}} / {{total}} pkt)",
         "difficulty": "TRUDNOŚĆ",
         "attemptHistory": "Historia podejść ({{count}})",
         "noAttempts": "Brak wcześniejszych podejść do nauki tego zestawu.",

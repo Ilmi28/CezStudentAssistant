@@ -56,20 +56,31 @@ export default function FlashcardStudyPage() {
         diff === QuestionDifficulty.Hard || diff === 3 || diff === "Hard" || diff === "3";
 
       let filteredCards = [...data.cards];
-      if (
+      const hasDifficultyFilterInState =
         stateFilter?.easyCount !== undefined ||
         stateFilter?.mediumCount !== undefined ||
-        stateFilter?.hardCount !== undefined
-      ) {
-        const easyLimit = stateFilter.easyCount ?? 999;
-        const mediumLimit = stateFilter.mediumCount ?? 999;
-        const hardLimit = stateFilter.hardCount ?? 999;
+        stateFilter?.hardCount !== undefined;
+
+      const hasDifficultyFilterInDeck =
+        data.easyCardCountPerAttempt != null ||
+        data.mediumCardCountPerAttempt != null ||
+        data.hardCardCountPerAttempt != null;
+
+      if (hasDifficultyFilterInState || hasDifficultyFilterInDeck) {
+        const easyLimit = stateFilter?.easyCount ?? data.easyCardCountPerAttempt ?? 999;
+        const mediumLimit = stateFilter?.mediumCount ?? data.mediumCardCountPerAttempt ?? 999;
+        const hardLimit = stateFilter?.hardCount ?? data.hardCardCountPerAttempt ?? 999;
 
         const easyCards = data.cards.filter((c) => isEasy(c.difficulty)).slice(0, easyLimit);
         const hardCards = data.cards.filter((c) => isHard(c.difficulty)).slice(0, hardLimit);
         const mediumCards = data.cards.filter((c) => !isEasy(c.difficulty) && !isHard(c.difficulty)).slice(0, mediumLimit);
 
         filteredCards = [...easyCards, ...mediumCards, ...hardCards];
+      } else {
+        const targetCount = data.cardCountPerAttempt && data.cardCountPerAttempt > 0
+          ? data.cardCountPerAttempt
+          : data.cards.length;
+        filteredCards = data.cards.slice(0, targetCount);
       }
       setSessionCards(filteredCards);
 
@@ -213,19 +224,35 @@ export default function FlashcardStudyPage() {
           onClick={() => navigate(fromPath)}
           className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
-          <ArrowLeft size={14} /> Powrót
+          <ArrowLeft size={14} /> {t("flashcardDetails.backBtn")}
         </button>
-        <Alert variant="error" message={errorMsg || "Brak fiszek w tej sesji nauki."} />
+        <Alert variant="error" message={errorMsg || t("flashcards.noCardsInSession")} />
       </div>
     );
   }
 
   // Final Summary & Read-Only Attempt Review Screen
   if (isFinished || isReviewOnly) {
+    const isCardEasy = (diff?: QuestionDifficulty | string | number) =>
+      diff === QuestionDifficulty.Easy || (diff as any) === 1 || (diff as any) === "Easy" || (diff as any) === "1";
+    const isCardHard = (diff?: QuestionDifficulty | string | number) =>
+      diff === QuestionDifficulty.Hard || (diff as any) === 3 || (diff as any) === "Hard" || (diff as any) === "3";
+
+    const getCardPoints = (diff?: QuestionDifficulty | string | number) => {
+      if (isCardEasy(diff)) return 1;
+      if (isCardHard(diff)) return 3;
+      return 2;
+    };
+
     const totalCards = sessionCards.length;
     const masteredCount = Object.values(cardStates).filter((s) => s === FlashcardStateEnum.Mastered).length;
-    const learningCount = Object.values(cardStates).filter((s) => s === FlashcardStateEnum.Learning).length;
-    const scorePct = totalCards > 0 ? Math.round(((masteredCount * 1.0 + learningCount * 0.5) / totalCards) * 100) : 0;
+    const maxAttemptPoints = sessionCards.reduce((sum, card) => sum + getCardPoints(card.difficulty), 0);
+    const earnedAttemptPoints = sessionCards.reduce((sum, card) => {
+      const state = cardStates[card.id] || card.state;
+      return state === FlashcardStateEnum.Mastered ? sum + getCardPoints(card.difficulty) : sum;
+    }, 0);
+
+    const scorePct = maxAttemptPoints > 0 ? Math.round((earnedAttemptPoints / maxAttemptPoints) * 100) : 0;
 
     return (
       <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">

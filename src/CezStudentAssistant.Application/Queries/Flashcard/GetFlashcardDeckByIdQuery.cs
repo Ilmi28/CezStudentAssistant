@@ -47,9 +47,10 @@ public class GetFlashcardDeckByIdQueryHandler(IUnitOfWork unitOfWork)
         }
 
         var cardList = deck.Cards.OrderBy(c => c.CreatedAt).ToList();
-        var mastered = cardList.Count(c => c.State == FlashcardStateEnum.Mastered);
-        var learning = cardList.Count(c => c.State == FlashcardStateEnum.Learning);
-        var newCards = cardList.Count(c => c.State == FlashcardStateEnum.New);
+        var attemptsList = deck.Attempts.ToList();
+        var mastered = cardList.Count(c => FlashcardProgressCalculationHelper.IsCardMastered(c, attemptsList));
+        var learning = cardList.Count(c => !FlashcardProgressCalculationHelper.IsCardMastered(c, attemptsList) && c.State == FlashcardStateEnum.Learning);
+        var newCards = cardList.Count(c => !FlashcardProgressCalculationHelper.IsCardMastered(c, attemptsList) && c.State == FlashcardStateEnum.New);
 
         return new FlashcardDeckDetailsDto
         {
@@ -67,7 +68,7 @@ public class GetFlashcardDeckByIdQueryHandler(IUnitOfWork unitOfWork)
             MasteredCardCount = mastered,
             LearningCardCount = learning,
             NewCardCount = newCards,
-            ProgressPercentage = FlashcardProgressCalculationHelper.CalculateProgressPercentage(cardList),
+            ProgressPercentage = FlashcardProgressCalculationHelper.CalculateDeckProgressPercentage(cardList, attemptsList),
             Cards = cardList.Select(c => new FlashcardDto
             {
                 Id = c.Id,
@@ -81,7 +82,8 @@ public class GetFlashcardDeckByIdQueryHandler(IUnitOfWork unitOfWork)
             {
                 var masteredCount = a.Cards.Count(c => c.State == FlashcardStateEnum.Mastered);
                 var learningCount = a.Cards.Count(c => c.State == FlashcardStateEnum.Learning);
-                var progressPercentage = FlashcardProgressCalculationHelper.CalculateAttemptProgressPercentage(masteredCount, learningCount, a.CardCount);
+                var progressPercentage = FlashcardProgressCalculationHelper.CalculateAttemptProgressPercentage(
+                    a.Cards.Select(c => (c.Flashcard?.Difficulty ?? QuestionDifficulty.Medium, c.State)));
 
                 return new FlashcardAttemptDto
                 {

@@ -63,8 +63,11 @@ public class SubmitFlashcardAttemptCardStateCommandHandler(IUnitOfWork unitOfWor
         var card = await cardRepo.GetByIdAsync(command.CardId, ct);
         if (card != null && card.DeckId == attempt.DeckId)
         {
-            card.State = command.State;
-            await cardRepo.UpdateAsync(card, ct);
+            if (command.State == FlashcardStateEnum.Mastered || card.State != FlashcardStateEnum.Mastered)
+            {
+                card.State = command.State;
+                await cardRepo.UpdateAsync(card, ct);
+            }
         }
 
         await unitOfWork.SaveChangesAsync(ct);

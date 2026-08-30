@@ -16,6 +16,7 @@ import { PrimaryButton, SecondaryButton } from "../components/Button";
 import LoadingScreen from "../components/LoadingScreen";
 import EditQuizModal from "../components/EditQuizModal";
 import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
+import Tooltip from "../components/Tooltip";
 import { getScoreColorClass } from "../utils/scoreUtils";
 
 interface QuizDetailsPageProps {
@@ -344,7 +345,14 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
         {quiz.questions.length > 0 && (
           <div className="mt-4 pt-3.5 border-t border-border/50 space-y-2">
             <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>{t("quizDetails.stats.masteredQuestions")}</span>
+              <div className="flex items-center gap-1.5">
+                <span>{t("quizDetails.stats.masteredQuestions")}</span>
+                <Tooltip content={t("quizDetails.difficultyWeightTooltip")}>
+                  <div className="inline-flex items-center cursor-help text-muted-foreground/70 hover:text-foreground transition-colors">
+                    <HelpCircle size={13} strokeWidth={2} />
+                  </div>
+                </Tooltip>
+              </div>
               <span className="text-foreground font-bold">
                 {masteredCount} / {poolTotalCount} {t("quizDetails.stats.questionsSuffix")} ({masteryPercentage}%)
               </span>

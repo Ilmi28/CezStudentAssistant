@@ -5,6 +5,7 @@ import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Bra
 import { courseService, type CourseDetailsDto, type CourseResourceDto } from "../services";
 import { quizService } from "../services/quizService";
 import { flashcardService } from "../services/flashcardService";
+import { signalRService } from "../services/signalRService";
 import type { QuizDto } from "../types/quizTypes";
 import type { FlashcardDeckDto } from "../types/flashcardTypes";
 import EditCourseModal from "../components/EditCourseModal";
@@ -101,6 +102,20 @@ export default function CourseDetailsPage({
 
   useEffect(() => {
     loadCourseDetailsAndQuizzes();
+
+    signalRService.startConnection();
+    const unsubscribe = signalRService.subscribeJobStatus((_jobId, status) => {
+      if (status === "Succeeded" || status === "Failed") {
+        if (id) {
+          quizService.getQuizzes(id).then(setCourseQuizzes).catch(console.warn);
+          flashcardService.getFlashcardDecks(id).then(setDecks).catch(console.warn);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [id]);
 
   const loadCourseDetailsAndQuizzes = async () => {
