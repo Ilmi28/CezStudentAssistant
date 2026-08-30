@@ -30,3 +30,26 @@ export interface UserUsageDto {
   dailyUsagePercentage: number;
 }
 
+export interface DashboardStatsDto {
+  courseCount: number;
+  quizCount: number;
+  flashcardDeckCount: number;
+  flashcardCount: number;
+}
+
+export interface RecentActivityDto {
+  id: string;
+  entityId: string;
+  type: "Quiz" | "Flashcard";
+  title: string;
+  courseName: string;
+  scorePercentage?: number | null;
+  earnedPoints?: number | null;
+  maxPoints?: number | null;
+  masteredCount?: number | null;
+  totalCount?: number | null;
+  attemptDate: string;
+  status: string;
+}
+
+

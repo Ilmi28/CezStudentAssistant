@@ -31,6 +31,7 @@ export function Select<T extends string | number>({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
+  const hasScroll = options.length > 5;
 
   useEffect(() => {
     if (isOpen) {
@@ -74,19 +75,15 @@ export function Select<T extends string | number>({
   };
 
   return (
-    <div className={`relative inline-block w-full ${className}`} ref={containerRef}>
+    <div className={`relative w-full ${className}`} ref={containerRef}>
       <button
         id={id}
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between px-4 py-3 bg-card border text-foreground text-sm font-medium cursor-pointer transition-colors duration-150 focus:outline-none ${
-          disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-muted"
-        } ${
-          isOpen
-            ? "rounded-t-xl rounded-b-none border-border relative z-20 bg-muted/40"
-            : "rounded-xl border-border"
-        }`}
+        className={`w-full flex items-center justify-between px-4 py-2.5 bg-card border border-border rounded-xl text-foreground text-sm font-medium cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ${
+          disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary/50 hover:bg-muted/30"
+        } ${isOpen ? "ring-2 ring-primary/40 border-primary bg-card" : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
@@ -95,8 +92,8 @@ export function Select<T extends string | number>({
         </span>
         <ChevronDown
           size={16}
-          className={`text-muted-foreground transition-transform duration-200 flex-shrink-0 ml-2 ${
-            isOpen ? "rotate-180" : ""
+          className={`text-muted-foreground transition-transform duration-200 shrink-0 ml-2 ${
+            isOpen ? "rotate-180 text-primary" : ""
           }`}
         />
       </button>
@@ -104,9 +101,9 @@ export function Select<T extends string | number>({
       {shouldRender && (
         <div
           role="listbox"
-          className={`absolute left-0 right-0 top-full -mt-px rounded-b-xl bg-card text-card-foreground border-x border-b border-border shadow-2xl overflow-hidden z-50 max-h-60 overflow-y-auto border-t border-t-border/50 ${
-            isClosing ? "animate-dropdown-exit" : "animate-dropdown-enter"
-          }`}
+          className={`absolute left-0 right-0 w-full top-full mt-1.5 rounded-xl bg-card border border-border shadow-xl p-1 z-50 ${
+            hasScroll ? "max-h-60 overflow-y-auto" : "overflow-hidden"
+          } ${isClosing ? "animate-dropdown-exit" : "animate-dropdown-enter"}`}
         >
           {options.map((option) => {
             const isSelected = option.value === value;
@@ -116,14 +113,14 @@ export function Select<T extends string | number>({
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => handleSelect(option.value)}
-                className={`w-full px-4 py-3 text-sm font-medium cursor-pointer transition-colors flex items-center justify-between last:rounded-b-xl ${
+                className={`w-full px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors flex items-center justify-between ${
                   isSelected
-                    ? "bg-primary/15 text-primary font-semibold"
+                    ? "bg-primary/10 text-primary font-semibold"
                     : "text-foreground hover:bg-muted"
                 }`}
               >
                 <span className="truncate">{option.label}</span>
-                {isSelected && <Check size={15} className="text-primary flex-shrink-0 ml-2" />}
+                {isSelected && <Check size={16} className="text-primary shrink-0 ml-2" />}
               </div>
             );
           })}

@@ -53,23 +53,25 @@
     },
     "home": {
         "stats": {
-            "courses": "Your Courses",
+            "courses": "Courses Count",
             "coursesNote": "loaded from CEZ",
-            "quizzes": "Generated Quizzes",
-            "quizzesNote": "prepared by AI",
-            "status": "CEZ Status",
-            "statusNote": "Ready to synchronize",
-            "statusValue": "Integrated",
-            "average": "GPA (estimate)",
-            "averageNote": "BUT average grade"
+            "quizzes": "Quizzes Count",
+            "quizzesNote": "AI question sets",
+            "flashcards": "Flashcards Count",
+            "flashcardsNote": "all study cards"
         },
-        "latestQuizzes": "Recently Generated Quizzes (AI Quizzes)",
-        "latestQuizzesTag": "LATEST",
-        "noQuizzes": "No generated quizzes yet.",
-        "noQuizzesSubtitle": "Go to the Courses tab, upload your resources, and generate your first quiz!",
+        "recentActivity": "Recent Activity",
+        "recentActivityTag": "LATEST ATTEMPTS",
+        "noActivity": "No recorded activity yet.",
+        "noActivitySubtitle": "Solve a quiz or start studying flashcards to view your attempts!",
+        "badgeQuiz": "QUIZ",
+        "badgeFlashcard": "FLASHCARDS",
+        "scoreLabel": "Score",
+        "inProgressTag": "In Progress",
         "viewAllQuizzes": "View all quizzes ({{count}})",
         "startQuiz": "Start Quiz"
     },
+
     "courses": {
         "syncTitle": "CEZ Synchronization",
         "syncSubtitleDate": "Last synchronized: {{date}}",

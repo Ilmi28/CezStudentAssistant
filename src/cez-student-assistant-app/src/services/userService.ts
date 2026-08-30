@@ -1,6 +1,6 @@
 import { API_BASE_URL, customFetch, handleResponse } from "./baseClient";
 import { authService } from "./authService";
-import type { UserConfigurationDto, UpdateUserConfigurationPayload, UserUsageDto } from "../types";
+import type { UserConfigurationDto, UpdateUserConfigurationPayload, UserUsageDto, DashboardStatsDto, RecentActivityDto } from "../types";
 
 export const userService = {
   async getUserConfiguration(): Promise<UserConfigurationDto> {
@@ -36,5 +36,26 @@ export const userService = {
     );
     return handleResponse<UserUsageDto>(res);
   },
+
+  async getDashboardStats(): Promise<DashboardStatsDto> {
+    const res = await customFetch(
+      `${API_BASE_URL}/user/dashboard-stats`,
+      { method: "GET" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<DashboardStatsDto>(res);
+  },
+
+  async getRecentActivity(limit: number = 6): Promise<RecentActivityDto[]> {
+    const res = await customFetch(
+      `${API_BASE_URL}/user/recent-activity?limit=${limit}`,
+      { method: "GET" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<RecentActivityDto[]>(res);
+  },
 };
+
 

@@ -32,6 +32,21 @@ public static class UserEndpoints
             var result = await mediator.Send(query);
             return Results.Ok(result);
         }).RequireAuthorization();
+
+        group.MapGet("/dashboard-stats", async (IMediator mediator) =>
+        {
+            var query = new GetDashboardStatsQuery();
+            var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapGet("/recent-activity", async (int? limit, IMediator mediator) =>
+        {
+            var query = new GetRecentActivityQuery { Limit = limit ?? 6 };
+            var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
     }
 }
+
 

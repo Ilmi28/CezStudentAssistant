@@ -53,23 +53,25 @@
     },
     "home": {
         "stats": {
-            "courses": "Twoje przedmioty",
+            "courses": "Liczba przedmiotów",
             "coursesNote": "wczytane z CEZ",
-            "quizzes": "Wygenerowane quizy",
-            "quizzesNote": "przygotowane przez AI",
-            "status": "Status CEZ",
-            "statusNote": "Gotowy do synchronizacji",
-            "statusValue": "Zintegrowano",
-            "average": "Średnia (szacunek)",
-            "averageNote": "PB średnia ocen"
+            "quizzes": "Liczba quizów",
+            "quizzesNote": "zestawy pytań AI",
+            "flashcards": "Liczba fiszek",
+            "flashcardsNote": "wszystkie karty"
         },
-        "latestQuizzes": "Ostatnie quizy",
-        "latestQuizzesTag": "NAJNOWSZE",
-        "noQuizzes": "Brak wygenerowanych quizów.",
-        "noQuizzesSubtitle": "Przejdź do zakładki Kursy, wgraj zasoby i stwórz pierwszy quiz!",
+        "recentActivity": "Ostatnia aktywność",
+        "recentActivityTag": "OSTATNIE PRÓBY",
+        "noActivity": "Brak zarejestrowanej aktywności.",
+        "noActivitySubtitle": "Rozwiąż quiz lub uruchom naukę fiszek, aby zobaczyć swoje próby!",
+        "badgeQuiz": "QUIZ",
+        "badgeFlashcard": "FISZKI",
+        "scoreLabel": "Wynik",
+        "inProgressTag": "W toku",
         "viewAllQuizzes": "Zobacz wszystkie quizy ({{count}})",
         "startQuiz": "Rozpocznij quiz"
     },
+
     "courses": {
         "syncTitle": "Synchronizacja z CEZ",
         "syncSubtitleDate": "Ostatnia synchronizacja: {{date}}",
