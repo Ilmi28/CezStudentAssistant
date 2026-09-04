@@ -13,7 +13,7 @@ interface TokenEstimationWidgetProps {
   hasFiles: boolean;
   loading: boolean;
   estimation: TokenEstimationData | null;
-  itemLabel?: string; // e.g. "Ten quiz" or "Te fiszki"
+  itemLabel?: string;
 }
 
 export default function TokenEstimationWidget({

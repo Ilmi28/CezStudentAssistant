@@ -38,7 +38,6 @@ public class FlashcardGenerationService(
 
         await jobService.UpdateJobAsync(job, JobStatus.Processing, ct: ct);
 
-        // Ensure deck is in Generating status during processing / retries
         if (dto.DeckId != Guid.Empty)
         {
             var deckRepo = unitOfWork.Repository<IFlashcardDeckRepository>();
@@ -158,19 +157,12 @@ public class FlashcardGenerationService(
     private async Task ReleaseTokenReservationAsync(Guid reservationId, CancellationToken ct)
     {
         if (reservationId == Guid.Empty) return;
-        try
+        var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
+        var reservation = await tokenUsageRepo.GetByIdAsync(reservationId, ct);
+        if (reservation != null)
         {
-            var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
-            var reservation = await tokenUsageRepo.GetByIdAsync(reservationId, ct);
-            if (reservation != null)
-            {
-                await tokenUsageRepo.DeleteAsync(reservation, ct);
-                await unitOfWork.SaveChangesAsync(ct);
-            }
-        }
-        catch
-        {
-            // Ignore failure during reservation release
+            await tokenUsageRepo.DeleteAsync(reservation, ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
     }
 
@@ -261,20 +253,13 @@ public class FlashcardGenerationService(
     {
         if (deckId == Guid.Empty) return;
 
-        try
+        var deckRepo = unitOfWork.Repository<IFlashcardDeckRepository>();
+        var deck = await deckRepo.GetByIdAsync(deckId, ct);
+        if (deck != null)
         {
-            var deckRepo = unitOfWork.Repository<IFlashcardDeckRepository>();
-            var deck = await deckRepo.GetByIdAsync(deckId, ct);
-            if (deck != null)
-            {
-                deck.Status = FlashcardDeckStatusEnum.Failed;
-                await deckRepo.UpdateAsync(deck, ct);
-                await unitOfWork.SaveChangesAsync(ct);
-            }
-        }
-        catch
-        {
-            // Ignore failure on error path
+            deck.Status = FlashcardDeckStatusEnum.Failed;
+            await deckRepo.UpdateAsync(deck, ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
     }
 
@@ -282,7 +267,7 @@ public class FlashcardGenerationService(
     {
         foreach (var file in files)
         {
-            try { file.Stream?.Dispose(); } catch { }
+            file.Stream?.Dispose();
         }
     }
 }

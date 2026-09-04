@@ -114,27 +114,20 @@ public class GenerateQuizCommandHandler(
         {
             if (resource.EstimatedTokens <= 0 && fileService != null && aiClient != null && !string.IsNullOrWhiteSpace(containerName))
             {
-                try
+                await using var stream = await fileService.DownloadAsync($"{courseId}/{resource.Name}", containerName, ct);
+                if (stream != null)
                 {
-                    await using var stream = await fileService.DownloadAsync($"{courseId}/{resource.Name}", containerName, ct);
-                    if (stream != null)
+                    var tokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
                     {
-                        var tokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
-                        {
-                            QuestionCount = 0,
-                            Files = [new AIFile { Stream = stream, MimeType = resource.MimeType }]
-                        });
+                        QuestionCount = 0,
+                        Files = [new AIFile { Stream = stream, MimeType = resource.MimeType }]
+                    });
 
-                        if (tokens > 0)
-                        {
-                            resource.EstimatedTokens = tokens;
-                            updatedAny = true;
-                        }
+                    if (tokens > 0)
+                    {
+                        resource.EstimatedTokens = tokens;
+                        updatedAny = true;
                     }
-                }
-                catch
-                {
-                    // Ignore estimation failures during reservation fallback
                 }
             }
 
@@ -143,14 +136,7 @@ public class GenerateQuizCommandHandler(
 
         if (updatedAny)
         {
-            try
-            {
-                await unitOfWork.SaveChangesAsync(ct);
-            }
-            catch
-            {
-                // Ignore save errors for updated resource estimation
-            }
+            await unitOfWork.SaveChangesAsync(ct);
         }
 
         var total = inputTokens + outputTokens;

@@ -26,12 +26,8 @@ public class AuthEndpointsTests
         _factory = new CustomWebApplicationFactory();
         _client = _factory.CreateClient(new WebApplicationFactoryClientOptions
         {
-            HandleCookies = true // This should handle them, but let's be explicit if needed
+            HandleCookies = true
         });
-
-        // Actually, WebApplicationFactoryClientOptions.HandleCookies is true by default.
-        // The problem might be the base address or something else.
-        // Let's use a DelegatingHandler or just manually manage it for reliability if it fails.
     }
 
     [SetUp]
@@ -127,14 +123,11 @@ public class AuthEndpointsTests
     [Test]
     public async Task LoginCez_ShouldCreateNewUser_WhenUserDoesNotExist()
     {
-        // Arrange
         var command = new LoginWithCezCommand("newcezuser", "password");
         SetupCezMock("newcezuser", "New CEZ User", 123);
 
-        // Act
         var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
@@ -146,16 +139,13 @@ public class AuthEndpointsTests
     [Test]
     public async Task LoginCez_ShouldLinkToExistingUser_WhenUserExistsByUsername()
     {
-        // Arrange
         var username = "existinguser";
         await SeedUser(username);
         var command = new LoginWithCezCommand(username, "password");
         SetupCezMock(username, "Existing User Full Name", 456);
 
-        // Act
         var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();
@@ -166,20 +156,15 @@ public class AuthEndpointsTests
     [Test]
     public async Task LoginCez_ShouldUpdateCezUser_WhenCezUserAlreadyLinked()
     {
-        // Arrange
         var username = "returningcezuser";
-        // First login to create both User and CezUser
         var command = new LoginWithCezCommand(username, "password");
         SetupCezMock(username, "Returning User", 789, "token1", "ptoken1");
         await _client.PostAsJsonAsync("/auth/login-cez", command);
 
-        // Setup mock for second login with new tokens
         SetupCezMock(username, "Returning User", 789, "token2", "ptoken2");
 
-        // Act
         var response = await _client.PostAsJsonAsync("/auth/login-cez", command);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
         content!.Success.Should().BeTrue();

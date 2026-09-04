@@ -231,7 +231,6 @@ export default function FlashcardStudyPage() {
     );
   }
 
-  // Final Summary & Read-Only Attempt Review Screen
   if (isFinished || isReviewOnly) {
     const isCardEasy = (diff?: QuestionDifficulty | string | number) =>
       diff === QuestionDifficulty.Easy || (diff as any) === 1 || (diff as any) === "Easy" || (diff as any) === "1";

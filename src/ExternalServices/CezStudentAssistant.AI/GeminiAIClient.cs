@@ -30,104 +30,76 @@ public class GeminiAIClient(
 
     public async Task<AIQuizResponse> GenerateQuizAsync(AIQuizRequest request)
     {
-        try
+        var prompt = quizService.BuildPrompt(request);
+        var schema = quizService.BuildSchema();
+
+        var content = await BuildContentAsync(prompt, request.Files);
+
+        var config = new GenerateContentConfig
         {
-            var prompt = quizService.BuildPrompt(request);
-            var schema = quizService.BuildSchema();
+            ResponseMimeType = AIModelSettings.ResponseMimeTypeJson,
+            ResponseSchema = schema
+        };
 
-            var content = await BuildContentAsync(prompt, request.Files);
+        var response = await GenerateContentWithRetryAsync(content, config);
 
-            var config = new GenerateContentConfig
-            {
-                ResponseMimeType = AIModelSettings.ResponseMimeTypeJson,
-                ResponseSchema = schema
-            };
-
-            var response = await GenerateContentWithRetryAsync(content, config);
-
-            var jsonText = response.Text;
-            if (string.IsNullOrWhiteSpace(jsonText))
-            {
-                logger.LogWarning("[GEMINI] AI returned an empty response text.");
-                return new AIQuizResponse
-                {
-                    Success = false,
-                    Message = AIErrorMessages.EmptyResponseErrorMessage
-                };
-            }
-
-            var quizResponse = quizService.ParseResponse(jsonText);
-            if (response.UsageMetadata?.TotalTokenCount.HasValue == true)
-            {
-                quizResponse.TotalTokens = response.UsageMetadata.TotalTokenCount.Value;
-            }
-            return quizResponse;
-        }
-        catch (Exception ex)
+        var jsonText = response.Text;
+        if (string.IsNullOrWhiteSpace(jsonText))
         {
-            logger.LogError(ex, "[GEMINI] GenerateQuizAsync failed: {Message}", ex.Message);
+            logger.LogWarning("[GEMINI] AI returned an empty response text.");
             return new AIQuizResponse
             {
                 Success = false,
-                Message = string.Format(AIErrorMessages.GeneralErrorMessageFormat, ex.Message)
+                Message = AIErrorMessages.EmptyResponseErrorMessage
             };
         }
+
+        var quizResponse = quizService.ParseResponse(jsonText);
+        if (response.UsageMetadata?.TotalTokenCount.HasValue == true)
+        {
+            quizResponse.TotalTokens = response.UsageMetadata.TotalTokenCount.Value;
+        }
+        return quizResponse;
     }
 
     public async Task<AIFlashcardDeck> GenerateFlashcardsAsync(AIFlashcardRequest request)
     {
-        try
+        var prompt = flashcardService.BuildPrompt(request);
+        var schema = flashcardService.BuildSchema();
+
+        var content = await BuildContentAsync(prompt, request.Files);
+
+        var config = new GenerateContentConfig
         {
-            var prompt = flashcardService.BuildPrompt(request);
-            var schema = flashcardService.BuildSchema();
+            ResponseMimeType = AIModelSettings.ResponseMimeTypeJson,
+            ResponseSchema = schema
+        };
 
-            var content = await BuildContentAsync(prompt, request.Files);
+        var response = await GenerateContentWithRetryAsync(content, config);
 
-            var config = new GenerateContentConfig
-            {
-                ResponseMimeType = AIModelSettings.ResponseMimeTypeJson,
-                ResponseSchema = schema
-            };
-
-            var response = await GenerateContentWithRetryAsync(content, config);
-
-            var jsonText = response.Text;
-            if (string.IsNullOrWhiteSpace(jsonText))
-            {
-                logger.LogWarning("[GEMINI] AI returned an empty response text for flashcards.");
-                throw new InvalidOperationException(AIErrorMessages.EmptyResponseErrorMessage);
-            }
-
-            var parsedDeck = flashcardService.ParseResponse(jsonText);
-            if (parsedDeck == null || !parsedDeck.Cards.Any())
-            {
-                throw new InvalidOperationException("AI generated empty flashcards structure.");
-            }
-
-            return parsedDeck;
-        }
-        catch (Exception ex)
+        var jsonText = response.Text;
+        if (string.IsNullOrWhiteSpace(jsonText))
         {
-            logger.LogError(ex, "[GEMINI] GenerateFlashcardsAsync failed: {Message}", ex.Message);
-            throw;
+            logger.LogWarning("[GEMINI] AI returned an empty response text for flashcards.");
+            throw new InvalidOperationException(AIErrorMessages.EmptyResponseErrorMessage);
         }
+
+        var parsedDeck = flashcardService.ParseResponse(jsonText);
+        if (parsedDeck == null || !parsedDeck.Cards.Any())
+        {
+            throw new InvalidOperationException("AI generated empty flashcards structure.");
+        }
+
+        return parsedDeck;
     }
 
     public async Task<int> EstimateTokenUsageAsync(AIQuizRequest request)
     {
-        try
-        {
-            var prompt = quizService.BuildPrompt(request);
-            var content = await BuildContentAsync(prompt, request.Files);
+        var prompt = quizService.BuildPrompt(request);
+        var content = await BuildContentAsync(prompt, request.Files);
 
-            var response = await client.Models.CountTokensAsync(_model, content);
-            return response.TotalTokens ?? 0;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "[GEMINI] EstimateTokenUsageAsync failed: {Message}", ex.Message);
-            return 0;
-        }
+        var response = await client.Models.CountTokensAsync(_model, content);
+        return response.TotalTokens ?? 0;
     }
 
     private async Task<GenerateContentResponse> GenerateContentWithRetryAsync(Content content, GenerateContentConfig config)

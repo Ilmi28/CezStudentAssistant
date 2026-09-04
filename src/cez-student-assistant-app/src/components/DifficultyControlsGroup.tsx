@@ -8,7 +8,7 @@ interface DifficultyControlsGroupProps {
   setMediumCount: (val: number | ((prev: number) => number)) => void;
   setHardCount: (val: number | ((prev: number) => number)) => void;
   totalSelected: number;
-  itemUnitLabel: string; // e.g. "pytań" or "fiszek"
+  itemUnitLabel: string;
   maxPerCategory?: number;
 }
 
@@ -42,7 +42,6 @@ export default function DifficultyControlsGroup({
       />
 
       <div className="space-y-2 pt-1">
-        {/* Łatwe */}
         <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shrink-0" />
@@ -71,7 +70,6 @@ export default function DifficultyControlsGroup({
           </div>
         </div>
 
-        {/* Średnie */}
         <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shrink-0" />
@@ -100,7 +98,6 @@ export default function DifficultyControlsGroup({
           </div>
         </div>
 
-        {/* Trudne */}
         <div className="p-2.5 px-3 rounded-xl bg-card border border-border flex items-center justify-between hover:border-border/80 transition-colors">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shrink-0" />

@@ -33,7 +33,6 @@ public class QuizGenerationService(
 
         await jobService.UpdateJobAsync(job, JobStatus.Processing, ct: ct);
 
-        // Ensure quiz is in Generating status during processing / retries
         if (dto.QuizId != Guid.Empty)
         {
             var quizRepo = unitOfWork.Repository<IQuizRepository>();
@@ -149,19 +148,12 @@ public class QuizGenerationService(
     private async Task ReleaseTokenReservationAsync(Guid reservationId, CancellationToken ct)
     {
         if (reservationId == Guid.Empty) return;
-        try
+        var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
+        var reservation = await tokenUsageRepo.GetByIdAsync(reservationId, ct);
+        if (reservation != null)
         {
-            var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
-            var reservation = await tokenUsageRepo.GetByIdAsync(reservationId, ct);
-            if (reservation != null)
-            {
-                await tokenUsageRepo.DeleteAsync(reservation, ct);
-                await unitOfWork.SaveChangesAsync(ct);
-            }
-        }
-        catch
-        {
-            // Ignore failure during reservation release
+            await tokenUsageRepo.DeleteAsync(reservation, ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
     }
 
@@ -268,20 +260,13 @@ public class QuizGenerationService(
     {
         if (quizId == Guid.Empty) return;
 
-        try
+        var quizRepo = unitOfWork.Repository<IQuizRepository>();
+        var quiz = await quizRepo.GetByIdAsync(quizId, ct);
+        if (quiz != null)
         {
-            var quizRepo = unitOfWork.Repository<IQuizRepository>();
-            var quiz = await quizRepo.GetByIdAsync(quizId, ct);
-            if (quiz != null)
-            {
-                quiz.Status = QuizStatusEnum.Failed;
-                await quizRepo.UpdateAsync(quiz, ct);
-                await unitOfWork.SaveChangesAsync(ct);
-            }
-        }
-        catch
-        {
-            // Ignore failure on error path
+            quiz.Status = QuizStatusEnum.Failed;
+            await quizRepo.UpdateAsync(quiz, ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
     }
 
@@ -289,7 +274,7 @@ public class QuizGenerationService(
     {
         foreach (var file in files)
         {
-            try { file.Stream?.Dispose(); } catch { }
+            file.Stream?.Dispose();
         }
     }
 }

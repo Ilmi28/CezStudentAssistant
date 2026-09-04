@@ -94,32 +94,25 @@ public class EstimateFlashcardTokensQueryHandler(
         {
             if (resource.EstimatedTokens <= 0)
             {
-                try
+                await using var stream = await fileService.DownloadAsync($"{courseId}/{resource.Name}", _containerName, ct);
+
+                var aiFile = new AIFile
                 {
-                    await using var stream = await fileService.DownloadAsync($"{courseId}/{resource.Name}", _containerName, ct);
+                    Stream = stream,
+                    MimeType = resource.MimeType
+                };
 
-                    var aiFile = new AIFile
-                    {
-                        Stream = stream,
-                        MimeType = resource.MimeType
-                    };
-
-                    var tokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
-                    {
-                        QuestionCount = 1,
-                        Files = new[] { aiFile }
-                    });
-
-                    if (tokens > 0)
-                    {
-                        resource.EstimatedTokens = tokens;
-                        await resourceRepo.UpdateAsync(resource, ct);
-                        await unitOfWork.SaveChangesAsync(ct);
-                    }
-                }
-                catch
+                var tokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
                 {
-                    // Fallback token estimation if file read fails
+                    QuestionCount = 1,
+                    Files = new[] { aiFile }
+                });
+
+                if (tokens > 0)
+                {
+                    resource.EstimatedTokens = tokens;
+                    await resourceRepo.UpdateAsync(resource, ct);
+                    await unitOfWork.SaveChangesAsync(ct);
                 }
             }
 

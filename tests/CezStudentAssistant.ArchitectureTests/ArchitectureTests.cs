@@ -423,19 +423,16 @@ public class ArchitectureTests
     [Test]
     public void CustomExceptions_ShouldNotUseStringLiteralsDirectly()
     {
-        // Arrange
         var solutionRoot = FindSolutionRoot();
         var srcDir = Path.Combine(solutionRoot, "src");
 
         var csFiles = Directory.GetFiles(srcDir, "*.cs", SearchOption.AllDirectories);
         var failingFiles = new List<string>();
 
-        // Regex to match instantiation of our custom exceptions with a string literal ("...", $"...", @"...", etc.)
         var literalRegex = new System.Text.RegularExpressions.Regex(
             @"\bnew\s+(NotFound|Conflict|BadRequest|Forbidden|Unauthorized|BadGateway|App|ApiValidation)Exception\s*\(\s*[\$@]*""",
             System.Text.RegularExpressions.RegexOptions.Compiled);
 
-        // Act
         foreach (var file in csFiles)
         {
             if (file.Contains(@"\obj\") || file.Contains(@"\bin\"))
@@ -450,7 +447,6 @@ public class ArchitectureTests
             }
         }
 
-        // Assert
         failingFiles.Should().BeEmpty(
             "Custom exceptions (AppException, NotFoundException, etc.) must not use hardcoded string literals directly. " +
             "Instead, define them in a constant class (e.g. CourseMessageConsts or GeneralMessageConsts) and reference the constant.");
@@ -459,19 +455,16 @@ public class ArchitectureTests
     [Test]
     public void Handlers_ShouldNotUseStringLiteralsForSuccessAndErrorMessages()
     {
-        // Arrange
         var solutionRoot = FindSolutionRoot();
         var srcDir = Path.Combine(solutionRoot, "src");
 
         var csFiles = Directory.GetFiles(srcDir, "*.cs", SearchOption.AllDirectories);
         var failingFiles = new List<string>();
 
-        // Regex to match property overrides of SuccessMessage or ErrorMessage returning a string literal directly
         var literalRegex = new System.Text.RegularExpressions.Regex(
             @"\bprotected\s+override\s+string\s+(Success|Error)Message\s*=>\s*[\$@]*""",
             System.Text.RegularExpressions.RegexOptions.Compiled);
 
-        // Act
         foreach (var file in csFiles)
         {
             if (file.Contains(@"\obj\") || file.Contains(@"\bin\"))
@@ -486,7 +479,6 @@ public class ArchitectureTests
             }
         }
 
-        // Assert
         failingFiles.Should().BeEmpty(
             "Command and Query Handlers must not use hardcoded string literals directly for SuccessMessage or ErrorMessage. " +
             "Instead, reference a constant (e.g. QuizMessageConsts.AnswerSubmittedSuccess).");

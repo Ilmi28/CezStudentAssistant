@@ -36,7 +36,6 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
             throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
-        // Fetch Quizzes with Questions, Options, and Attempts with Answers for difficulty-weighted calculation
         var quizRepo = unitOfWork.Repository<IQuizRepository>();
         var quizzes = await quizRepo.Find(
             q => q.CourseId == query.CourseId && q.UserId == query.UserId,
@@ -58,7 +57,6 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
             quiz.Attempts = quizAttempts;
         }
 
-        // Fetch Flashcard Decks with Cards and Attempts
         var deckRepo = unitOfWork.Repository<IFlashcardDeckRepository>();
         var decks = await deckRepo.Find(
             d => d.CourseId == query.CourseId && d.UserId == query.UserId,

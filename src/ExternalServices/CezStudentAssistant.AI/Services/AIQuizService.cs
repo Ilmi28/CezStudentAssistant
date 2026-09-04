@@ -103,39 +103,27 @@ public class AIQuizService(IMapper mapper, ILogger<AIQuizService> logger) : IAIQ
 
     public AIQuizResponse ParseResponse(string jsonText)
     {
-        try
+        var externalQuiz = JsonSerializer.Deserialize<ExternalAIQuiz>(jsonText, new JsonSerializerOptions
         {
-            var externalQuiz = JsonSerializer.Deserialize<ExternalAIQuiz>(jsonText, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            PropertyNameCaseInsensitive = true
+        });
 
-            if (externalQuiz == null)
-            {
-                logger.LogWarning("[AI] Failed to deserialize the JSON returned by AI: {JsonText}", jsonText);
-                return new AIQuizResponse
-                {
-                    Success = false,
-                    Message = "Failed to deserialize the quiz structure returned by AI."
-                };
-            }
-
-            var quiz = mapper.Map<AIQuiz>(externalQuiz);
-
-            return new AIQuizResponse
-            {
-                Success = true,
-                Data = quiz
-            };
-        }
-        catch (Exception ex)
+        if (externalQuiz == null)
         {
-            logger.LogError(ex, "[AI] ParseResponse failed: {Message}", ex.Message);
+            logger.LogWarning("[AI] Failed to deserialize the JSON returned by AI: {JsonText}", jsonText);
             return new AIQuizResponse
             {
                 Success = false,
-                Message = $"Failed to parse response: {ex.Message}"
+                Message = "Failed to deserialize the quiz structure returned by AI."
             };
         }
+
+        var quiz = mapper.Map<AIQuiz>(externalQuiz);
+
+        return new AIQuizResponse
+        {
+            Success = true,
+            Data = quiz
+        };
     }
 }

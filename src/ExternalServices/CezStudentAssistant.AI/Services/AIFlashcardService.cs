@@ -82,32 +82,19 @@ public class AIFlashcardService(ILogger<AIFlashcardService> logger) : IAIFlashca
 
     public AIFlashcardDeck ParseResponse(string jsonText)
     {
-        try
+        var options = new JsonSerializerOptions
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
 
-            var deck = JsonSerializer.Deserialize<AIFlashcardDeck>(jsonText, options);
+        var deck = JsonSerializer.Deserialize<AIFlashcardDeck>(jsonText, options);
 
-            return deck ?? new AIFlashcardDeck
-            {
-                Title = "Zestaw fiszek",
-                Description = "Wygenerowano fiszki z materiałów",
-                Cards = new List<AIFlashcard>()
-            };
-        }
-        catch (Exception ex)
+        return deck ?? new AIFlashcardDeck
         {
-            logger.LogError(ex, "[AI] ParseResponse for flashcards failed: {Message}. Raw JSON: {JsonText}", ex.Message, jsonText);
-            return new AIFlashcardDeck
-            {
-                Title = "Zestaw fiszek",
-                Description = "Wygenerowano fiszki z materiałów",
-                Cards = new List<AIFlashcard>()
-            };
-        }
+            Title = "Zestaw fiszek",
+            Description = "Wygenerowano fiszki z materiałów",
+            Cards = new List<AIFlashcard>()
+        };
     }
 }

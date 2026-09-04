@@ -13,14 +13,12 @@ export default function AppSplashLoader({ message }: AppSplashLoaderProps) {
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-background text-foreground antialiased selection:bg-primary/30 relative">
       <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300 max-w-xs text-center px-4">
-        {/* Emblem logo */}
         <img
           src={pbEmblem}
           alt="Politechnika Białostocka"
           className="h-12 w-auto object-contain mb-1"
         />
 
-        {/* Title and subtitle */}
         <div className="space-y-0.5">
           <h1 className="text-base font-bold text-foreground tracking-tight">
             CEZ Student Assistant
@@ -30,7 +28,6 @@ export default function AppSplashLoader({ message }: AppSplashLoaderProps) {
           </p>
         </div>
 
-        {/* Spinner & status message */}
         <div className="flex items-center gap-2.5 pt-3">
           <Spinner size="sm" />
           <span className="text-xs font-medium text-muted-foreground">

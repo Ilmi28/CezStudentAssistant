@@ -23,12 +23,10 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public */}
       <Route path="/login"     element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage     onLoginSuccess={handleLoginSuccess} setError={setError} />} />
       <Route path="/register"  element={isAuthenticated ? <Navigate to="/home" replace /> : <RegisterPage  setError={setError} />} />
       <Route path="/login-cez" element={isAuthenticated ? <Navigate to="/home" replace /> : <CezLoginPage  onLoginSuccess={handleLoginSuccess} setError={setError} />} />
 
-      {/* Protected */}
       <Route element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" replace />}>
         <Route path="/home"       element={<HomePage />} />
         <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} onCreateCourse={createCourse} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
@@ -43,7 +41,6 @@ export default function AppRoutes() {
         <Route path="/preferences" element={<PreferencesPage />} />
       </Route>
 
-      {/* Catch-all */}
       <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
       <Route path="*" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
     </Routes>

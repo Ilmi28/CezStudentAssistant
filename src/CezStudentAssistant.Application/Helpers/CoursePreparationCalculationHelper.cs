@@ -21,7 +21,6 @@ public static class CoursePreparationCalculationHelper
         var quizList = quizzes?.ToList() ?? new List<Quiz>();
         var deckList = decks?.ToList() ?? new List<FlashcardDeck>();
 
-        // 1. Quizzes Progress Calculation (Difficulty-weighted: Easy=1, Medium=2, Hard=3)
         int? quizProgressPercentage = null;
         var quizzesWithAttempts = quizList
             .Where(q => q.Questions.Count > 0 && q.Attempts.Any(a => a.Status == QuizAttemptStatus.Completed))
@@ -38,7 +37,6 @@ public static class CoursePreparationCalculationHelper
             quizProgressPercentage = (int)Math.Round(quizPercentages.Average());
         }
 
-        // 2. Flashcards Progress Calculation (Difficulty-weighted: Easy=1, Medium=2, Hard=3)
         int? flashcardProgressPercentage = null;
         var allCards = deckList.SelectMany(d => d.Cards).ToList();
         var allAttempts = deckList.SelectMany(d => d.Attempts).ToList();
@@ -48,7 +46,6 @@ public static class CoursePreparationCalculationHelper
             flashcardProgressPercentage = FlashcardProgressCalculationHelper.CalculateDeckProgressPercentage(allCards, allAttempts);
         }
 
-        // 3. Overall Preparation Percentage
         int? preparationPercentage = null;
         if (quizProgressPercentage.HasValue && flashcardProgressPercentage.HasValue)
         {

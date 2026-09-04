@@ -171,7 +171,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const totalPointsMax = quiz.maxPoints ?? 0;
   const completedAttempts = quiz.attempts.filter(a => a.status === QuizAttemptStatus.Completed);
 
-  // Stopień opanowania bazy pytań
   const masteredQuestionIds = new Set<string>();
   if (quiz.questions.length > 0 && completedAttempts.length > 0) {
     quiz.questions.forEach((q) => {
