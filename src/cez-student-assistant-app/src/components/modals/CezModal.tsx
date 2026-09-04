@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Input } from "./Input";
-import { Alert } from "./Alert";
-import { PrimaryButton, SecondaryButton } from "./Button";
-import Modal from "./Modal";
-import cezLogo from "../assets/cez-logo.png";
+import { Input } from "../ui/Input";
+import { Alert } from "../ui/Alert";
+import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import Modal from "../ui/Modal";
+import cezLogo from "../../assets/cez-logo.png";
 
 interface CezModalProps {
   isOpen: boolean;

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Modal from "./Modal";
-import { PrimaryButton, SecondaryButton } from "./Button";
-import DifficultyControlsGroup from "./DifficultyControlsGroup";
-import type { FlashcardDto } from "../types/flashcardTypes";
-import { QuestionDifficulty } from "../enums/quizEnums";
+import Modal from "../ui/Modal";
+import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import DifficultyControlsGroup from "../ui/DifficultyControlsGroup";
+import type { FlashcardDto } from "../../types/flashcardTypes";
+import { QuestionDifficulty } from "../../enums/quizEnums";
 
 interface StartFlashcardStudyModalProps {
   isOpen: boolean;
@@ -82,3 +82,5 @@ export function StartFlashcardStudyModal({
     </Modal>
   );
 }
+
+export default StartFlashcardStudyModal;

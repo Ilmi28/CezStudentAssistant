@@ -2,10 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authService } from "../services";
-import { AuthLayout } from "../components/AuthLayout";
-import { Input } from "../components/Input";
-import { Alert } from "../components/Alert";
-import { PrimaryButton } from "../components/Button";
+import { AuthLayout, Input, Alert, PrimaryButton, Heading, Text, Flex } from "../components";
 
 interface RegisterPageProps {
   setError: (msg: string) => void;
@@ -40,9 +37,9 @@ export default function RegisterPage({}: RegisterPageProps) {
   return (
     <AuthLayout>
       <form onSubmit={handleRegister} className="space-y-5">
-        <h2 className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
+        <Heading level={2} size="sm" uppercase className="mb-2 border-b border-border pb-2">
           {t("auth.registerTitle")}
-        </h2>
+        </Heading>
 
         <Alert message={formError} />
 
@@ -69,16 +66,16 @@ export default function RegisterPage({}: RegisterPageProps) {
           {t("auth.registerBtn")}
         </PrimaryButton>
 
-        <div className="text-center pt-2">
-          <span className="text-[12px] text-muted-foreground">{t("auth.haveAccount")}</span>
+        <Flex align="center" justify="center" gap={1} className="pt-2">
+          <Text size="xs" variant="muted">{t("auth.haveAccount")}</Text>
           <button
             type="button"
             onClick={() => navigate("/login")}
-            className="text-[12px] text-primary font-medium hover:underline focus:outline-none cursor-pointer"
+            className="text-xs text-primary font-medium hover:underline focus:outline-none cursor-pointer transition-colors"
           >
             {t("auth.loginLink")}
           </button>
-        </div>
+        </Flex>
       </form>
     </AuthLayout>
   );

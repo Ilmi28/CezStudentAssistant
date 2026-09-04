@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import pbEmblem from "../assets/pb-emblem.png";
+import pbEmblem from "../../assets/pb-emblem.png";
 
 interface NavItemProps {
   label: string;

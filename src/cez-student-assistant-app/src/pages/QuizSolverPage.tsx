@@ -3,9 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, Clock } from "lucide-react";
 import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizAttemptDetailsDto, type QuestionDto } from "../services";
-import { PrimaryButton, SecondaryButton } from "../components/Button";
-import ConfirmModal from "../components/ConfirmModal";
-import LoadingScreen from "../components/LoadingScreen";
+import { PrimaryButton, SecondaryButton, Badge, ConfirmModal, LoadingScreen } from "../components";
 import { getScoreColorClass } from "../utils/scoreUtils";
 
 interface QuizSolverPageProps {
@@ -229,16 +227,19 @@ export default function QuizSolverPage({
       <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
         {/* Top Header */}
         <div className="flex items-center gap-3.5 min-w-0">
-          <button
+          <SecondaryButton
             type="button"
             onClick={handleCancel}
-            title={t("quizDetails.backBtn")}
             aria-label={t("quizDetails.backBtn")}
-            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-          >
-            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-          </button>
+            icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          />
           <div className="flex flex-col justify-center min-w-0">
+            {attemptDetails.courseName && (
+              <Badge variant="secondary" className="self-start mb-1">
+                {attemptDetails.courseName}
+              </Badge>
+            )}
             <h1 className="text-xl font-bold text-foreground truncate">
               {attemptDetails.name}
             </h1>
@@ -413,15 +414,13 @@ export default function QuizSolverPage({
     <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
       {/* Top Header */}
       <div>
-        <button
+        <SecondaryButton
           type="button"
           onClick={handleCancel}
-          title={t("quizDetails.backBtn")}
           aria-label={t("quizDetails.backBtn")}
-          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-        >
-          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-        </button>
+          icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+          className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+        />
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">

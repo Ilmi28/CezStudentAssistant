@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import pbEmblem from "../assets/pb-emblem.png";
-import Spinner from "./Spinner";
+import pbEmblem from "../../assets/pb-emblem.png";
+import Spinner from "../ui/Spinner";
 
 interface AppSplashLoaderProps {
   message?: string;

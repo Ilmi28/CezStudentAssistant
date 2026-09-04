@@ -6,7 +6,7 @@ export interface BaseButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
   loading?: boolean;
   fullWidth?: boolean;
   icon?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const sizeStyles = {
@@ -21,9 +21,6 @@ const spinnerSizes = {
   lg: 20,
 };
 
-/**
- * Główny zielony przycisk akcji (Główny przycisk aplikacji)
- */
 export const PrimaryButton: React.FC<BaseButtonProps> = ({
   size = "md",
   loading = false,
@@ -39,14 +36,14 @@ export const PrimaryButton: React.FC<BaseButtonProps> = ({
       disabled={disabled || loading}
       className={`
         font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
-        bg-primary hover:bg-primary/90 active:scale-[0.98] text-white shadow-sm hover:shadow-md
+        bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground shadow-sm shadow-primary/20
         focus:outline-none
         inline-flex items-center justify-center gap-2
         disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
         ${sizeStyles[size]}
         ${fullWidth ? "w-full" : ""}
         ${className}
-      `.trim()}
+      `.replace(/\s+/g, ' ').trim()}
       {...props}
     >
       {loading ? (
@@ -54,14 +51,11 @@ export const PrimaryButton: React.FC<BaseButtonProps> = ({
       ) : (
         icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
       )}
-      <span>{children}</span>
+      {children && <span>{children}</span>}
     </button>
   );
 };
 
-/**
- * Drugorzędny/ramkowy przycisk (np. "Zaloguj przez CEZ", anulowanie)
- */
 export const SecondaryButton: React.FC<BaseButtonProps> = ({
   size = "md",
   loading = false,
@@ -77,14 +71,14 @@ export const SecondaryButton: React.FC<BaseButtonProps> = ({
       disabled={disabled || loading}
       className={`
         font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
-        bg-card border border-border hover:border-muted-foreground/30 hover:bg-muted/80 active:scale-[0.98] text-foreground shadow-xs
+        bg-secondary/80 border border-border/80 hover:border-primary/45 hover:bg-secondary active:scale-[0.98] text-foreground shadow-xs
         focus:outline-none
         inline-flex items-center justify-center gap-2
         disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
         ${sizeStyles[size]}
         ${fullWidth ? "w-full" : ""}
         ${className}
-      `.trim()}
+      `.replace(/\s+/g, ' ').trim()}
       {...props}
     >
       {loading ? (
@@ -92,7 +86,67 @@ export const SecondaryButton: React.FC<BaseButtonProps> = ({
       ) : (
         icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
       )}
-      <span>{children}</span>
+      {children && <span>{children}</span>}
+    </button>
+  );
+};
+
+export const OutlineButton: React.FC<BaseButtonProps> = ({
+  size = "md",
+  loading = false,
+  fullWidth = false,
+  icon,
+  children,
+  className = "",
+  disabled,
+  ...props
+}) => {
+  return (
+    <SecondaryButton
+      size={size}
+      loading={loading}
+      fullWidth={fullWidth}
+      icon={icon}
+      className={`bg-transparent hover:bg-secondary ${className}`}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </SecondaryButton>
+  );
+};
+
+export const DangerButton: React.FC<BaseButtonProps> = ({
+  size = "md",
+  loading = false,
+  fullWidth = false,
+  icon,
+  children,
+  className = "",
+  disabled,
+  ...props
+}) => {
+  return (
+    <button
+      disabled={disabled || loading}
+      className={`
+        font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
+        bg-destructive hover:bg-destructive/90 active:scale-[0.98] text-destructive-foreground shadow-xs
+        focus:outline-none
+        inline-flex items-center justify-center gap-2
+        disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
+        ${sizeStyles[size]}
+        ${fullWidth ? "w-full" : ""}
+        ${className}
+      `.replace(/\s+/g, ' ').trim()}
+      {...props}
+    >
+      {loading ? (
+        <Loader2 size={spinnerSizes[size]} className="animate-spin shrink-0" />
+      ) : (
+        icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
+      )}
+      {children && <span>{children}</span>}
     </button>
   );
 };

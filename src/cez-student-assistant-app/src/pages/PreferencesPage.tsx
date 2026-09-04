@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useUser } from "../hooks";
-import { PrimaryButton, SecondaryButton } from "../components/Button";
-import { Select } from "../components/Select";
-import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
+import {
+  PrimaryButton,
+  SecondaryButton,
+  Select,
+  MultiSegmentProgressBar,
+  Heading,
+  Text,
+  Flex,
+  Grid,
+  Badge,
+} from "../components";
 import { userService } from "../services";
 import { UserTheme, UserLanguage } from "../types";
 
@@ -17,7 +25,6 @@ export default function PreferencesPage() {
   const { handleSyncCourses } = useCourse();
   const { usage, loadingUsage } = useUser();
   const { t, i18n } = useTranslation();
-
 
   useEffect(() => {
     async function loadConfig() {
@@ -54,8 +61,6 @@ export default function PreferencesPage() {
     await updateUserLanguage(newLang);
   };
 
-
-
   const formattedSyncDate = lastCezSync
     ? new Date(lastCezSync).toLocaleString(i18n.language === "pl" ? "pl-PL" : "en-US", {
         dateStyle: "medium",
@@ -66,58 +71,53 @@ export default function PreferencesPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-2xl font-black text-foreground tracking-tight">
+        <Heading level={1} size="2xl" className="font-black tracking-tight">
           {t("preferences.title")}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5 font-normal">
+        </Heading>
+        <Text size="sm" variant="muted" className="mt-0.5 font-normal">
           {t("preferences.subtitle")}
-        </p>
+        </Text>
       </div>
 
       {/* Section 1: User Profile */}
-
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground tracking-wide">
+          <Heading level={2} size="base" className="font-bold tracking-wide">
             {t("preferences.profileSection")}
-          </h2>
+          </Heading>
         </div>
 
-        <div className="flex items-center gap-4 py-1">
+        <Flex align="center" gap={4} className="py-1">
           <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg">
             {username ? username.charAt(0).toUpperCase() : "U"}
           </div>
           <div>
-            <div className="text-sm font-bold text-foreground">
+            <Text size="sm" variant="default" className="font-bold">
               {username || t("preferences.defaultUsername")}
-            </div>
-            <div className="text-xs text-muted-foreground">
+            </Text>
+            <Text size="xs" variant="muted">
               {t("preferences.userRole")}
-            </div>
+            </Text>
           </div>
-        </div>
+        </Flex>
       </section>
 
       {/* Section 2: App Preferences */}
-
       <section className="space-y-4">
-
         <div className="border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground tracking-wide">
+          <Heading level={2} size="base" className="font-bold tracking-wide">
             {t("preferences.appSection")}
-          </h2>
+          </Heading>
         </div>
 
         {fetchingConfig ? (
           <div className="h-10 animate-pulse bg-muted rounded-xl" />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
+          <Grid cols={1} smCols={2} gap={4}>
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
+              <Text size="xs" variant="default" className="font-semibold mb-1.5 block">
                 {t("preferences.themeLabel")}
-              </label>
-
+              </Text>
               <Select
                 value={theme}
                 onChange={(val) => handleThemeSelect(val as UserTheme)}
@@ -129,10 +129,9 @@ export default function PreferencesPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
+              <Text size="xs" variant="default" className="font-semibold mb-1.5 block">
                 {t("preferences.languageLabel")}
-              </label>
-
+              </Text>
               <Select
                 value={language}
                 onChange={(val) => handleLanguageSelect(val as UserLanguage)}
@@ -142,18 +141,16 @@ export default function PreferencesPage() {
                 ]}
               />
             </div>
-
-          </div>
+          </Grid>
         )}
-
       </section>
 
       {/* Section 3: Limit Dzienny */}
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground tracking-wide">
+          <Heading level={2} size="base" className="font-bold tracking-wide">
             {t("preferences.usageSection")}
-          </h2>
+          </Heading>
         </div>
         <div className="space-y-2 py-1">
           {loadingUsage ? (
@@ -189,11 +186,11 @@ export default function PreferencesPage() {
 
                 return (
                   <div className="space-y-2">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-base font-bold text-primary">
+                    <Flex justify="between" align="baseline">
+                      <Text size="lg" variant="primary" className="font-bold">
                         {totalPct}%
-                      </span>
-                    </div>
+                      </Text>
+                    </Flex>
 
                     <MultiSegmentProgressBar
                       segments={segments}
@@ -210,26 +207,20 @@ export default function PreferencesPage() {
         </div>
       </section>
 
-
       {/* Section 4: CEZ Integration */}
-
       <section className="space-y-4">
-        <div className="flex items-center justify-between border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground tracking-wide">
+        <Flex align="center" justify="between" className="border-b border-border pb-2.5">
+          <Heading level={2} size="base" className="font-bold tracking-wide">
             {t("preferences.cezSection")}
-          </h2>
-          <span className={`text-[11px] font-bold uppercase tracking-wider ${
-            isCezConnected
-              ? "text-emerald-600 dark:text-emerald-400"
-              : "text-amber-600 dark:text-amber-400"
-          }`}>
+          </Heading>
+          <Badge variant={isCezConnected ? "success" : "warning"} uppercase>
             {isCezConnected ? t("preferences.connected") : t("preferences.notConnected")}
-          </span>
-        </div>
-        <div className="space-y-3.5 text-sm">
-          <p className="text-muted-foreground">
+          </Badge>
+        </Flex>
+        <div className="space-y-3.5">
+          <Text size="sm" variant="muted">
             {t("courses.syncSubtitleDate", { date: formattedSyncDate })}
-          </p>
+          </Text>
           <div>
             <SecondaryButton
               onClick={() => (isCezConnected ? handleSyncCourses() : setShowCezModal(true))}
@@ -241,17 +232,17 @@ export default function PreferencesPage() {
         </div>
       </section>
 
-      {/* Section 4: Security & Session */}
+      {/* Section 5: Security & Session */}
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
-          <h2 className="text-base font-bold text-foreground tracking-wide">
+          <Heading level={2} size="base" className="font-bold tracking-wide">
             {t("preferences.securitySection")}
-          </h2>
+          </Heading>
         </div>
-        <div className="space-y-3.5 text-sm">
-          <p className="text-muted-foreground">
+        <div className="space-y-3.5">
+          <Text size="sm" variant="muted">
             {t("preferences.logoutDesc")}
-          </p>
+          </Text>
           <div>
             <PrimaryButton
               onClick={handleLogout}

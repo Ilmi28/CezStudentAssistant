@@ -1,8 +1,7 @@
 import { AppProvider } from "./contexts";
 import { useAuth, useUI } from "./hooks";
 import AppRoutes from "./AppRoutes";
-import Toast from "./components/Toast";
-import AppSplashLoader from "./components/AppSplashLoader";
+import { Toast, AppSplashLoader } from "./components";
 
 function AppShell() {
   const { isAuthChecking } = useAuth();

@@ -67,7 +67,7 @@
         "badgeQuiz": "QUIZ",
         "badgeFlashcard": "FLASHCARDS",
         "scoreLabel": "Score",
-        "inProgressTag": "In Progress",
+        "inProgressTag": "IN PROGRESS",
         "viewAllQuizzes": "View all quizzes ({{count}})",
         "startQuiz": "Start Quiz"
     },
@@ -208,7 +208,7 @@
         "attemptNumber": "Attempt #{{number}}",
         "status": {
             "notStarted": "Not Started",
-            "inProgress": "In Progress",
+            "inProgress": "IN PROGRESS",
             "completed": "Completed"
         },
         "score": "Score",
@@ -396,7 +396,7 @@
         "cardsCount_one": "1 card",
         "cardsCount_other": "{{count}} cards",
         "masteredAndLearning": "{{mastered}}/{{total}}",
-        "inProgress": "In progress",
+        "inProgress": "IN PROGRESS",
         "editModalTitle": "Edit Flashcard Deck",
         "editModalDesc": "Difficulty distribution per session",
         "atLeastOneCardError": "Select at least 1 flashcard per attempt.",

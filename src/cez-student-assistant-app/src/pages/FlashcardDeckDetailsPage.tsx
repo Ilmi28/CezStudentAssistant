@@ -5,13 +5,17 @@ import { flashcardService } from "../services/flashcardService";
 import type { FlashcardDeckDetailsDto } from "../types/flashcardTypes";
 import { FlashcardStateEnum } from "../enums/flashcardEnums";
 import { QuestionDifficulty, QuizAttemptStatus } from "../enums/quizEnums";
-import Card from "../components/Card";
-import { PrimaryButton, SecondaryButton } from "../components/Button";
-import { Alert } from "../components/Alert";
-import LoadingScreen from "../components/LoadingScreen";
-import { EditFlashcardDeckModal } from "../components/EditFlashcardDeckModal";
-import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
-import Tooltip from "../components/Tooltip";
+import {
+  Card,
+  Badge,
+  PrimaryButton,
+  SecondaryButton,
+  Alert,
+  LoadingScreen,
+  EditFlashcardDeckModal,
+  MultiSegmentProgressBar,
+  Tooltip,
+} from "../components";
 import { getScoreColorClass } from "../utils/scoreUtils";
 import {
   ChevronLeft,
@@ -141,12 +145,13 @@ export default function FlashcardDeckDetailsPage() {
   if (errorMsg || !deck) {
     return (
       <div className="flex-1 p-6 md:p-8 max-w-4xl mx-auto space-y-4">
-        <button
+        <SecondaryButton
           onClick={handleGoBack}
-          className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          icon={<ArrowLeft size={14} />}
+          size="sm"
         >
-          <ArrowLeft size={14} /> {t("flashcardDetails.backBtn")}
-        </button>
+          {t("flashcardDetails.backBtn")}
+        </SecondaryButton>
         <Alert variant="error" message={errorMsg || t("flashcardDetails.notFound")} />
       </div>
     );
@@ -192,19 +197,18 @@ export default function FlashcardDeckDetailsPage() {
       {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
-          <button
+          <SecondaryButton
             type="button"
             onClick={handleGoBack}
-            title={t("flashcardDetails.backBtn")}
-            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-          >
-            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-          </button>
+            aria-label={t("flashcardDetails.backBtn")}
+            icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          />
           <div className="flex flex-col justify-center min-w-0">
             {deck.courseName && (
-              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary border border-border text-foreground/90 shadow-2xs mb-1">
+              <Badge variant="secondary" className="self-start mb-1">
                 {deck.courseName}
-              </span>
+              </Badge>
             )}
             <h1 className="text-xl font-bold text-foreground truncate">
               {deck.name}
@@ -430,8 +434,8 @@ export default function FlashcardDeckDetailsPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col items-end justify-center text-right">
-                          <span className="text-xs font-bold text-amber-500 dark:text-amber-400">
-                            {t("quizDetails.inProgress", "W toku")}
+                          <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+                            {t("quizDetails.inProgress", "W TOKU")}
                           </span>
                         </div>
                       )}

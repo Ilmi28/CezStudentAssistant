@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import pbLogo from "../assets/pb-logo.png";
+import pbLogo from "../../assets/pb-logo.png";
 
 export interface AuthLayoutProps {
   children: React.ReactNode;

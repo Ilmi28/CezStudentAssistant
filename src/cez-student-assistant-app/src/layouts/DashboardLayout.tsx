@@ -1,8 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useQuiz } from "../hooks";
-import Topbar from "../components/Topbar";
-import CezModal from "../components/CezModal";
+import { Topbar, CezModal } from "../components";
 import { cezService, UnauthorizedError } from "../services";
 
 export default function DashboardLayout() {

@@ -1,10 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
-import type { FlashcardDeckDto } from "../types/flashcardTypes";
-import { FlashcardDeckStatusEnum } from "../enums/flashcardEnums";
-import Card from "./Card";
-import { getScoreColorClass } from "../utils/scoreUtils";
+import type { FlashcardDeckDto } from "../../../types/flashcardTypes";
+import { FlashcardDeckStatusEnum } from "../../../enums/flashcardEnums";
+import { Card, Badge, Heading, Text, Flex, Tooltip } from "../../index";
+import { getScoreColorClass } from "../../../utils/scoreUtils";
 
 interface FlashcardDeckCardProps {
   deck: FlashcardDeckDto;
@@ -40,38 +40,38 @@ export function FlashcardDeckCard({
       className={`p-4 flex-row items-center justify-between gap-3.5 ${className}`}
     >
       <div className="min-w-0 flex-1 space-y-0.5">
-        <div className="flex items-center gap-2 min-w-0 flex-wrap">
-          <h4 className="text-sm md:text-[15px] font-semibold text-foreground leading-snug truncate">
+        <Flex align="center" gap={2} wrap className="min-w-0">
+          <Heading level={4} size="sm" className="leading-snug truncate">
             {displayTitle}
-          </h4>
+          </Heading>
           {isFailed && (
-            <span className="text-[11px] font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full border border-destructive/20">
-              Błąd generowania (Ponawianie...)
-            </span>
+            <Badge variant="error">Błąd generowania (Ponawianie...)</Badge>
           )}
-        </div>
+        </Flex>
         {showCourseName && deck.courseName && (
-          <p className="text-xs text-muted-foreground line-clamp-1">
+          <Text size="xs" variant="muted" className="line-clamp-1">
             {deck.courseName}
-          </p>
+          </Text>
         )}
       </div>
 
-      <div className="flex flex-col items-end justify-center gap-0.5 shrink-0 text-right">
+      <Flex direction="col" align="end" justify="center" gap={0.5} className="shrink-0 text-right">
         {isGenerating ? (
-          <div
-            title="Generowanie fiszek..."
-            className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
-          >
-            <RefreshCw size={15} className="animate-spin" />
-          </div>
+          <Tooltip content="Generowanie fiszek...">
+            <div
+              className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
+            >
+              <RefreshCw size={15} className="animate-spin" />
+            </div>
+          </Tooltip>
         ) : isFailed ? (
-          <div
-            title="Błąd generowania. Zadanie oczekuje na ponowienie..."
-            className="w-8 h-8 rounded-full bg-destructive/15 text-destructive flex items-center justify-center shrink-0 border border-destructive/25"
-          >
-            <RefreshCw size={15} className="animate-spin" />
-          </div>
+          <Tooltip content="Błąd generowania. Zadanie oczekuje na ponowienie...">
+            <div
+              className="w-8 h-8 rounded-full bg-destructive/15 text-destructive flex items-center justify-center shrink-0 border border-destructive/25"
+            >
+              <RefreshCw size={15} className="animate-spin" />
+            </div>
+          </Tooltip>
         ) : (
           <>
             <span
@@ -79,12 +79,14 @@ export function FlashcardDeckCard({
             >
               {deck.progressPercentage ?? 0}%
             </span>
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+            <Text size="xs" variant="subtitle">
               {t("quizDetails.stats.masteryIndex", "PROGRES")}
-            </span>
+            </Text>
           </>
         )}
-      </div>
+      </Flex>
     </Card>
   );
 }
+
+export default FlashcardDeckCard;

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Modal from "./Modal";
-import Input from "./Input";
-import { PrimaryButton, SecondaryButton } from "./Button";
-import { Alert } from "./Alert";
-import MultiSegmentProgressBar from "./MultiSegmentProgressBar";
-import { flashcardService } from "../services/flashcardService";
+import Modal from "../ui/Modal";
+import Input from "../ui/Input";
+import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import { Alert } from "../ui/Alert";
+import MultiSegmentProgressBar from "../ui/MultiSegmentProgressBar";
+import { flashcardService } from "../../services/flashcardService";
 
 interface EditFlashcardDeckModalProps {
   isOpen: boolean;
@@ -276,3 +276,5 @@ export function EditFlashcardDeckModal({
     </Modal>
   );
 }
+
+export default EditFlashcardDeckModal;

@@ -11,12 +11,16 @@ import {
   Layers
 } from "lucide-react";
 import { quizService, QuizAttemptStatus, QuestionDifficulty, QuestionType, type QuizDetailsDto } from "../services";
-import Card from "../components/Card";
-import { PrimaryButton, SecondaryButton } from "../components/Button";
-import LoadingScreen from "../components/LoadingScreen";
-import EditQuizModal from "../components/EditQuizModal";
-import MultiSegmentProgressBar from "../components/MultiSegmentProgressBar";
-import Tooltip from "../components/Tooltip";
+import {
+  Card,
+  Badge,
+  PrimaryButton,
+  SecondaryButton,
+  LoadingScreen,
+  EditQuizModal,
+  MultiSegmentProgressBar,
+  Tooltip,
+} from "../components";
 import { getScoreColorClass } from "../utils/scoreUtils";
 
 interface QuizDetailsPageProps {
@@ -57,8 +61,8 @@ function AttemptBadge({
 
   return (
     <div className="flex flex-col items-end justify-center text-right">
-      <span className="text-xs font-bold text-amber-500 dark:text-amber-400">
-        {t("quizDetails.status.inProgress", "W toku")}
+      <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+        {t("quizDetails.status.inProgress", "W TOKU")}
       </span>
     </div>
   );
@@ -235,20 +239,18 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
       {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
-          <button
+          <SecondaryButton
             type="button"
             onClick={handleGoBack}
-            title={t("quizDetails.backBtn")}
             aria-label={t("quizDetails.backBtn")}
-            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-          >
-            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-          </button>
+            icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          />
           <div className="flex flex-col justify-center min-w-0">
             {quiz.courseName && (
-              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary border border-border text-foreground/90 shadow-2xs mb-1">
+              <Badge variant="secondary" className="self-start mb-1">
                 {quiz.courseName}
-              </span>
+              </Badge>
             )}
             <h1 className="text-xl font-bold text-foreground truncate">
               {quiz.name}

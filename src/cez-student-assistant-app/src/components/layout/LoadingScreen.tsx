@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import Spinner from "./Spinner";
+import Spinner from "../ui/Spinner";
 
 interface LoadingScreenProps {
   message?: string;

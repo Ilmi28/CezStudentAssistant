@@ -1,26 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Input } from "./Input";
-import { Alert } from "./Alert";
-import { PrimaryButton, SecondaryButton } from "./Button";
-import Modal from "./Modal";
+import { Input } from "../ui/Input";
+import { Alert } from "../ui/Alert";
+import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import Modal from "../ui/Modal";
 
-interface AddCourseModalProps {
+interface EditCourseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (name: string, description?: string) => Promise<void>;
+  initialName: string;
+  initialDescription?: string | null;
 }
 
-export default function AddCourseModal({
+export default function EditCourseModal({
   isOpen,
   onClose,
   onSubmit,
-}: AddCourseModalProps) {
+  initialName,
+  initialDescription,
+}: EditCourseModalProps) {
   const { t } = useTranslation();
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [name, setName] = useState(initialName || "");
+  const [description, setDescription] = useState(initialDescription || "");
   const [modalError, setModalError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setName(initialName || "");
+      setDescription(initialDescription || "");
+      setModalError(null);
+    }
+  }, [isOpen, initialName, initialDescription]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +44,6 @@ export default function AddCourseModal({
     setLoading(true);
     try {
       await onSubmit(name.trim(), description.trim() || undefined);
-      setName("");
-      setDescription("");
       onClose();
     } catch (err: any) {
       setModalError(err.message || t("auth.genericError"));
@@ -44,8 +54,6 @@ export default function AddCourseModal({
 
   const handleClose = () => {
     setModalError(null);
-    setName("");
-    setDescription("");
     onClose();
   };
 
@@ -53,7 +61,7 @@ export default function AddCourseModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={t("courses.addCourseModalTitle")}
+      title={t("courses.editCourseModalTitle")}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Alert message={modalError} />
@@ -86,7 +94,7 @@ export default function AddCourseModal({
             loading={loading}
             className="flex-1"
           >
-            {t("courses.addCourseBtn")}
+            {t("courses.editCourseBtn")}
           </PrimaryButton>
         </div>
       </form>

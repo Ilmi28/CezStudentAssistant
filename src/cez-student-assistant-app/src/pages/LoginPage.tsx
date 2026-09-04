@@ -2,10 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authService } from "../services";
-import { AuthLayout } from "../components/AuthLayout";
-import { Input } from "../components/Input";
-import { Alert } from "../components/Alert";
-import { PrimaryButton, SecondaryButton } from "../components/Button";
+import { AuthLayout, Input, Alert, PrimaryButton, SecondaryButton, Heading, Text, Flex } from "../components";
 import cezLogo from "../assets/cez-logo.png";
 
 interface LoginPageProps {
@@ -44,9 +41,9 @@ export default function LoginPage({
   return (
     <AuthLayout>
       <form onSubmit={handleLogin} className="space-y-4">
-        <h2 className="text-base font-semibold text-foreground mb-2 uppercase tracking-wide border-b border-border pb-2">
+        <Heading level={2} size="sm" uppercase className="mb-2 border-b border-border pb-2">
           {t("auth.loginTitle")}
-        </h2>
+        </Heading>
 
         <Alert message={formError} />
 
@@ -74,17 +71,15 @@ export default function LoginPage({
         </PrimaryButton>
       </form>
 
-      {/* Separator */}
-      <div className="relative flex items-center justify-center my-4">
+      <Flex align="center" justify="center" className="relative my-4">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border"></div>
         </div>
-        <span className="relative px-3 bg-card text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+        <Text size="xs" variant="subtle" uppercase className="relative px-3 bg-card font-semibold tracking-wider">
           {t("auth.orText")}
-        </span>
-      </div>
+        </Text>
+      </Flex>
 
-      {/* CEZ Button */}
       <SecondaryButton
         type="button"
         fullWidth
@@ -94,16 +89,16 @@ export default function LoginPage({
         {t("auth.cezBtn")}
       </SecondaryButton>
 
-      <div className="text-center pt-2">
-        <span className="text-[12px] text-muted-foreground">{t("auth.noAccount")}</span>
+      <Flex align="center" justify="center" gap={1} className="pt-2">
+        <Text size="xs" variant="muted">{t("auth.noAccount")}</Text>
         <button
           type="button"
           onClick={() => navigate("/register")}
-          className="text-[12px] text-primary font-medium hover:underline focus:outline-none cursor-pointer"
+          className="text-xs text-primary font-medium hover:underline focus:outline-none cursor-pointer transition-colors"
         >
           {t("auth.registerLink")}
         </button>
-      </div>
+      </Flex>
     </AuthLayout>
   );
 }

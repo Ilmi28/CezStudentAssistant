@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Input } from "./Input";
-import { Alert } from "./Alert";
-import { PrimaryButton, SecondaryButton } from "./Button";
-import Modal from "./Modal";
-import MultiSegmentProgressBar from "./MultiSegmentProgressBar";
+import { Input } from "../ui/Input";
+import { Alert } from "../ui/Alert";
+import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import Modal from "../ui/Modal";
+import MultiSegmentProgressBar from "../ui/MultiSegmentProgressBar";
 
 interface EditQuizModalProps {
   isOpen: boolean;

@@ -5,9 +5,7 @@ import { flashcardService } from "../services/flashcardService";
 import type { FlashcardDeckDetailsDto, FlashcardDto } from "../types/flashcardTypes";
 import { FlashcardStateEnum } from "../enums/flashcardEnums";
 import { QuestionDifficulty, QuizAttemptStatus } from "../enums/quizEnums";
-import { PrimaryButton, SecondaryButton } from "../components/Button";
-import { Alert } from "../components/Alert";
-import LoadingScreen from "../components/LoadingScreen";
+import { PrimaryButton, SecondaryButton, Badge, Alert, LoadingScreen } from "../components";
 import { getScoreColorClass } from "../utils/scoreUtils";
 import { ArrowLeft, ChevronLeft, FlipHorizontal } from "lucide-react";
 
@@ -257,16 +255,19 @@ export default function FlashcardStudyPage() {
       <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
         {/* Top Header */}
         <div className="flex items-center gap-3.5 min-w-0">
-          <button
+          <SecondaryButton
             type="button"
             onClick={() => navigate(fromPath)}
-            title={t("flashcardDetails.backBtn")}
             aria-label={t("flashcardDetails.backBtn")}
-            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-          >
-            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-          </button>
+            icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          />
           <div className="flex flex-col justify-center min-w-0">
+            {deck.courseName && (
+              <Badge variant="secondary" className="self-start mb-1">
+                {deck.courseName}
+              </Badge>
+            )}
             <h1 className="text-xl font-bold text-foreground truncate">
               {deck.name}
             </h1>
@@ -419,15 +420,13 @@ export default function FlashcardStudyPage() {
     <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
       {/* Top Header */}
       <div>
-        <button
+        <SecondaryButton
           type="button"
           onClick={() => navigate(fromPath)}
-          title={t("flashcards.exitStudy")}
           aria-label={t("flashcards.exitStudy")}
-          className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-        >
-          <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-        </button>
+          icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+          className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+        />
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">

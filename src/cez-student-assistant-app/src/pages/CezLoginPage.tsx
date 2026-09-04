@@ -3,10 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { authService } from "../services";
-import { AuthLayout } from "../components/AuthLayout";
-import { Input } from "../components/Input";
-import { Alert } from "../components/Alert";
-import { PrimaryButton, SecondaryButton } from "../components/Button";
+import { AuthLayout, Input, Alert, PrimaryButton, SecondaryButton, Heading } from "../components";
 
 interface CezLoginPageProps {
   onLoginSuccess: (username: string) => void;
@@ -45,9 +42,9 @@ export default function CezLoginPage({
     <AuthLayout>
       <form onSubmit={handleCezLoginSubmit} className="space-y-5">
         <div>
-          <h2 className="text-base font-semibold text-foreground mb-0.5 uppercase tracking-wide border-b border-border pb-2">
+          <Heading level={2} size="sm" uppercase className="mb-0.5 border-b border-border pb-2">
             {t("auth.cezTitle")}
-          </h2>
+          </Heading>
         </div>
 
         <Alert message={formError} />
@@ -75,7 +72,6 @@ export default function CezLoginPage({
           {t("auth.cezBtnSubmit")}
         </PrimaryButton>
 
-        {/* Back Button */}
         <div className="pt-2">
           <SecondaryButton
             type="button"

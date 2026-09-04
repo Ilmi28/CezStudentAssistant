@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "./Alert";
-import { PrimaryButton, SecondaryButton } from "./Button";
-import Modal from "./Modal";
+import { Alert } from "../ui/Alert";
+import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import Modal from "../ui/Modal";
 
 interface ConfirmModalProps {
   isOpen: boolean;

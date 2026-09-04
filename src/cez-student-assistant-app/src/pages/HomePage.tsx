@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Layers, Trophy, Brain, Activity } from "lucide-react";
-import Card from "../components/Card";
+import { Card, Heading, Text, Flex, Grid } from "../components";
 import { useDashboard } from "../hooks";
 import { getScoreColorClass } from "../utils/scoreUtils";
 
@@ -25,78 +25,73 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Unified Stats Card - Matched 100% to QuizDetailsPage / FlashcardDeckDetailsPage */}
       <Card className="p-4 sm:p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
-          {/* Liczba przedmiotów */}
-          <div className="flex items-center gap-3 pt-1 sm:pt-0">
+        <Grid cols={1} smCols={3} gap={4} className="divide-y sm:divide-y-0 sm:divide-x divide-border/50">
+          <Flex align="center" gap={3} className="pt-1 sm:pt-0">
             <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
               <Layers size={20} strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
                 {t("home.stats.courses")}
-              </span>
-              <span className="text-xl font-bold text-foreground block truncate leading-tight">
+              </Text>
+              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
                 {loadingStats ? "..." : (stats?.courseCount ?? 0)}
-              </span>
+              </Text>
             </div>
-          </div>
+          </Flex>
 
-          {/* Liczba quizów */}
-          <div className="flex items-center gap-3 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
+          <Flex align="center" gap={3} className="pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
             <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
               <Trophy size={20} strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
                 {t("home.stats.quizzes")}
-              </span>
-              <span className="text-xl font-bold text-foreground block truncate leading-tight">
+              </Text>
+              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
                 {loadingStats ? "..." : (stats?.quizCount ?? 0)}
-              </span>
+              </Text>
             </div>
-          </div>
+          </Flex>
 
-          {/* Liczba fiszek */}
-          <div className="flex items-center gap-3 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
+          <Flex align="center" gap={3} className="pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
             <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
               <Brain size={20} strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
                 {t("home.stats.flashcards")}
-              </span>
-              <span className="text-xl font-bold text-foreground block truncate leading-tight">
+              </Text>
+              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
                 {loadingStats ? "..." : (stats?.flashcardCount ?? 0)}
-              </span>
+              </Text>
             </div>
-          </div>
-        </div>
+          </Flex>
+        </Grid>
       </Card>
 
-      {/* Recent Activity Section */}
       <div>
-        <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+        <Flex align="center" justify="between" className="mb-4 border-b border-border pb-2">
+          <Heading level={3} size="sm" uppercase className="tracking-wider">
             {t("home.recentActivity")}
-          </h3>
-        </div>
+          </Heading>
+        </Flex>
 
         {loadingActivity ? (
           <Card className="p-8 text-center shadow-sm">
-            <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+            <Text size="sm" variant="muted">{t("common.loading")}</Text>
           </Card>
         ) : recentActivity.length === 0 ? (
           <Card className="p-8 text-center shadow-sm">
             <div>
               <Activity size={32} className="mx-auto text-muted-foreground/30 mb-2" />
-              <p className="text-sm text-muted-foreground">{t("home.noActivity")}</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">{t("home.noActivitySubtitle")}</p>
+              <Text size="sm" variant="muted">{t("home.noActivity")}</Text>
+              <Text size="xs" variant="subtle" className="mt-1">{t("home.noActivitySubtitle")}</Text>
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Grid cols={1} mdCols={2} gap={4}>
             {recentActivity.map((act) => {
               const isInProgress = act.status === "InProgress";
               const isQuiz = act.type === "Quiz";
@@ -110,46 +105,50 @@ export default function HomePage() {
                   className="p-4 flex-row items-center justify-between gap-3.5 cursor-pointer"
                 >
                   <div className="min-w-0 flex-1 space-y-0.5">
-                    <h4 className="text-sm md:text-[15px] font-semibold text-foreground leading-snug truncate">
+                    <Heading level={4} size="sm" className="truncate leading-snug">
                       {displayTitle}
-                    </h4>
-                    {act.courseName && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {act.courseName}
-                      </p>
+                    </Heading>
+                    {(act.courseName || isInProgress) && (
+                      <Flex align="center" gap={1.5} className="min-w-0">
+                        {act.courseName && (
+                          <Text size="xs" variant="muted" className="line-clamp-1 truncate">
+                            {act.courseName}
+                          </Text>
+                        )}
+                        {act.courseName && isInProgress && (
+                          <span className="text-muted-foreground/60 text-xs shrink-0">•</span>
+                        )}
+                        {isInProgress && (
+                          <span className="shrink-0 text-[11px] font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+                            {t("quizDetails.status.inProgress", "W TOKU")}
+                          </span>
+                        )}
+                      </Flex>
                     )}
                   </div>
 
-                  {isInProgress ? (
-                    <div className="flex flex-col items-end justify-center text-right shrink-0">
-                      <span className="text-xs font-bold text-amber-500 dark:text-amber-400">
-                        {t("quizDetails.status.inProgress", "W toku")}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-end justify-center gap-0.5 shrink-0 text-right">
-                      <span
-                        className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(
-                          act.scorePercentage
-                        )}`}
-                      >
-                        {act.scorePercentage ?? 0}%
-                      </span>
-                      {isQuiz ? (
-                        <span className="text-[11px] text-muted-foreground font-medium tabular-nums">
-                          {formatScore(act.earnedPoints ?? 0)} / {formatScore(act.maxPoints ?? 0)}
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-muted-foreground font-medium tabular-nums">
-                          {act.masteredCount ?? 0} / {act.totalCount ?? 0}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  <Flex direction="col" align="end" justify="center" gap={1} className="shrink-0 text-right">
+                    <span
+                      className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(
+                        act.scorePercentage
+                      )}`}
+                    >
+                      {act.scorePercentage ?? 0}%
+                    </span>
+                    {isQuiz ? (
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                        {formatScore(act.earnedPoints ?? 0)} / {formatScore(act.maxPoints ?? 0)}
+                      </Text>
+                    ) : (
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                        {act.masteredCount ?? 0} / {act.totalCount ?? 0}
+                      </Text>
+                    )}
+                  </Flex>
                 </Card>
               );
             })}
-          </div>
+          </Grid>
         )}
       </div>
     </div>

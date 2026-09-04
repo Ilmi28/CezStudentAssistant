@@ -8,16 +8,19 @@ import { flashcardService } from "../services/flashcardService";
 import { signalRService } from "../services/signalRService";
 import type { QuizDto } from "../types/quizTypes";
 import type { FlashcardDeckDto } from "../types/flashcardTypes";
-import EditCourseModal from "../components/EditCourseModal";
-import ConfirmModal from "../components/ConfirmModal";
-import UploadFileModal from "../components/UploadFileModal";
-import GenerateQuizModal from "../components/GenerateQuizModal";
-import GenerateFlashcardsModal from "../components/GenerateFlashcardsModal";
-import QuizCard from "../components/QuizCard";
-import { FlashcardDeckCard } from "../components/FlashcardDeckCard";
-import LoadingScreen from "../components/LoadingScreen";
-import { SecondaryButton } from "../components/Button";
-import CoursePreparationCard from "../components/CoursePreparationCard";
+import {
+  EditCourseModal,
+  ConfirmModal,
+  UploadFileModal,
+  GenerateQuizModal,
+  GenerateFlashcardsModal,
+  QuizCard,
+  FlashcardDeckCard,
+  LoadingScreen,
+  SecondaryButton,
+  Badge,
+  CoursePreparationCard,
+} from "../components";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
@@ -45,12 +48,12 @@ function AccordionHeader({
       onClick={onToggle}
       className="flex items-center justify-between cursor-pointer select-none group"
     >
-      <h3 className="text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
         {title} ({count})
       </h3>
       <div className="flex items-center gap-1">
         {onAddClick && (
-          <button
+          <SecondaryButton
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -58,14 +61,13 @@ function AccordionHeader({
             }}
             title={addTitle}
             aria-label={addTitle}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
-          >
-            <Plus size={20} />
-          </button>
+            icon={<Plus size={18} strokeWidth={2.25} />}
+            className="w-9 h-9 p-0 flex items-center justify-center shrink-0"
+          />
         )}
         <button
           type="button"
-          className="text-muted-foreground group-hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted cursor-pointer"
+          className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
         >
           <ChevronDown
             size={18}
@@ -254,20 +256,18 @@ export default function CourseDetailsPage({
       {/* Header & Title */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
-          <button
+          <SecondaryButton
             type="button"
             onClick={handleGoBack}
-            title={t("courseDetails.backBtn")}
             aria-label={t("courseDetails.backBtn")}
-            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted hover:border-primary/40 hover:text-primary transition-colors shadow-xs cursor-pointer shrink-0"
-          >
-            <ChevronLeft size={22} strokeWidth={2.25} className="shrink-0" />
-          </button>
+            icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          />
           <div className="flex flex-col justify-center min-w-0">
             {selectedCourse.isCez && (
-              <span className="self-start px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-secondary border border-border text-foreground/90 shadow-2xs mb-1">
+              <Badge variant="secondary" className="self-start mb-1">
                 {t("courses.tagCez")}
-              </span>
+              </Badge>
             )}
             <h1 className="text-xl font-bold text-foreground truncate">
               {selectedCourse.name}

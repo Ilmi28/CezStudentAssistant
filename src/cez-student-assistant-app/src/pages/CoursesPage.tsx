@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import type { CourseDto } from "../services";
-import SyncBanner from "../components/SyncBanner";
-import CourseList from "../components/CourseList";
-import AddCourseModal from "../components/AddCourseModal";
+import { SyncBanner, CourseList, AddCourseModal } from "../components";
 import { useCourse } from "../hooks";
 
 interface CoursesPageProps {
@@ -31,7 +29,6 @@ export default function CoursesPage({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Sync Banner component */}
       <SyncBanner
         syncing={syncing}
         onSyncCourses={onSyncCourses}
@@ -39,13 +36,11 @@ export default function CoursesPage({
         lastCezSync={lastCezSync}
       />
 
-      {/* Course List component */}
       <CourseList
         courses={courses}
         onOpenAddModal={() => setIsAddModalOpen(true)}
       />
 
-      {/* Add Course Modal */}
       <AddCourseModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}

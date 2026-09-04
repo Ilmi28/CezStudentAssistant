@@ -67,7 +67,7 @@
         "badgeQuiz": "QUIZ",
         "badgeFlashcard": "FISZKI",
         "scoreLabel": "Wynik",
-        "inProgressTag": "W toku",
+        "inProgressTag": "W TOKU",
         "viewAllQuizzes": "Zobacz wszystkie quizy ({{count}})",
         "startQuiz": "Rozpocznij quiz"
     },
@@ -208,7 +208,7 @@
         "attemptNumber": "Podejście #{{number}}",
         "status": {
             "notStarted": "Nierozpoczęty",
-            "inProgress": "W toku",
+            "inProgress": "W TOKU",
             "completed": "Ukończony"
         },
         "score": "Wynik",
@@ -396,7 +396,7 @@
         "cardsCount_one": "1 fiszka",
         "cardsCount_other": "{{count}} fiszek",
         "masteredAndLearning": "{{mastered}}/{{total}}",
-        "inProgress": "W toku",
+        "inProgress": "W TOKU",
         "editModalTitle": "Edytuj zestaw fiszek",
         "editModalDesc": "Rozkład trudności fiszek w podejściu",
         "atLeastOneCardError": "Wybierz co najmniej 1 fiszkę w podejściu.",

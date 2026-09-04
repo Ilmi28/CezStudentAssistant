@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "./Alert";
-import { PrimaryButton, SecondaryButton } from "./Button";
-import Modal from "./Modal";
-import DifficultyControlsGroup from "./DifficultyControlsGroup";
-import TokenEstimationWidget from "./TokenEstimationWidget";
-import { flashcardService } from "../services/flashcardService";
-import type { EstimateFlashcardTokensDto } from "../types/flashcardTypes";
+import { Alert } from "../ui/Alert";
+import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import Modal from "../ui/Modal";
+import DifficultyControlsGroup from "../ui/DifficultyControlsGroup";
+import TokenEstimationWidget from "../ui/TokenEstimationWidget";
+import { flashcardService } from "../../services/flashcardService";
+import type { EstimateFlashcardTokensDto } from "../../types/flashcardTypes";
 
 interface GenerateFlashcardsModalProps {
   isOpen: boolean;
