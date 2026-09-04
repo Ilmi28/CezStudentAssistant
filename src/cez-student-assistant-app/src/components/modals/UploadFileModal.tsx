@@ -74,7 +74,7 @@ export default function UploadFileModal({
       <form onSubmit={handleSubmit} className="space-y-4">
         <Alert message={modalError} />
 
-        <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/40 transition-colors bg-muted/10">
+        <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-border/80 transition-colors bg-muted/10">
           <Upload size={24} className="mx-auto text-muted-foreground/50 mb-2" />
           <label className="cursor-pointer block">
             <span className="text-xs text-primary font-semibold hover:underline block mb-1">

@@ -81,9 +81,9 @@ export function Select<T extends string | number>({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between px-4 py-2.5 bg-card border border-border rounded-xl text-foreground text-sm font-medium cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ${
-          disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary/50 hover:bg-muted/30"
-        } ${isOpen ? "ring-2 ring-primary/40 border-primary bg-card" : ""}`}
+        className={`btn-app-spring w-full flex items-center justify-between px-4 py-2.5 bg-card border border-border rounded-xl text-foreground text-sm font-medium cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-border/40 select-none ${
+          disabled ? "opacity-50 cursor-not-allowed" : ""
+        } ${isOpen ? "border-border/90 bg-secondary/80" : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
@@ -93,7 +93,7 @@ export function Select<T extends string | number>({
         <ChevronDown
           size={16}
           className={`text-muted-foreground transition-transform duration-200 shrink-0 ml-2 ${
-            isOpen ? "rotate-180 text-primary" : ""
+            isOpen ? "rotate-180 text-foreground" : ""
           }`}
         />
       </button>
@@ -115,12 +115,12 @@ export function Select<T extends string | number>({
                 onClick={() => handleSelect(option.value)}
                 className={`w-full px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors flex items-center justify-between ${
                   isSelected
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-foreground hover:bg-muted"
+                    ? "bg-secondary text-foreground font-semibold"
+                    : "text-foreground hover:bg-secondary/40"
                 }`}
               >
                 <span className="truncate">{option.label}</span>
-                {isSelected && <Check size={16} className="text-primary shrink-0 ml-2" />}
+                {isSelected && <Check size={16} className="text-foreground shrink-0 ml-2" />}
               </div>
             );
           })}

@@ -18,10 +18,10 @@ export default function Card({
   return (
     <div
       onClick={onClick}
-      className={`bg-card rounded-xl border border-border p-5.5 shadow-sm flex flex-col justify-between ${
+      className={`bg-card rounded-xl border border-border p-4.5 shadow-sm flex flex-col justify-between select-none ${
         borderLeftPrimary ? "border-l-4 border-l-primary" : ""
       } ${
-        hoverEffect ? "hover:border-primary/45 hover:shadow-md transition-all duration-150 cursor-pointer" : ""
+        hoverEffect ? "group card-app-spring cursor-pointer" : ""
       } ${className}`}
     >
       {children}

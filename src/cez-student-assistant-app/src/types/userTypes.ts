@@ -1,6 +1,8 @@
 import { UserLanguage, UserTheme } from "../enums/userEnums";
 import { ActivityTypeEnum } from "../enums/activityEnums";
 
+export { UserLanguage, UserTheme };
+
 export interface UserConfigurationDto {
   userId: string;
   theme: UserTheme;
@@ -18,6 +20,10 @@ export interface UserUsageDto {
   userId: string;
   monthYear: string;
   tokenCount: number;
+  dailyTokenLimit?: number;
+  dailyTokensUsed?: number;
+  dailyTokensReserved?: number;
+  dailyUsagePercentage?: number;
 }
 
 export interface DashboardStatsDto {

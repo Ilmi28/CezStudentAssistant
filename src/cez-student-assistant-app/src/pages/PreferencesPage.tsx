@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useUser } from "../hooks";
 import {
-  PrimaryButton,
   SecondaryButton,
   Select,
   MultiSegmentProgressBar,
@@ -162,7 +161,7 @@ export default function PreferencesPage() {
                 const realUsed = usage.dailyTokensUsed || 0;
                 const reserved = usage.dailyTokensReserved || 0;
                 const totalUsedAndReserved = realUsed + reserved;
-                const totalPct = Math.min(100, Math.max(0, usage.dailyUsagePercentage));
+                const totalPct = Math.min(100, Math.max(0, usage.dailyUsagePercentage ?? 0));
 
                 const realPctStr = limit > 0 ? ((realUsed / limit) * 100).toFixed(1) : "0";
                 const reservedPctStr = limit > 0 ? ((reserved / limit) * 100).toFixed(1) : "0";
@@ -244,12 +243,11 @@ export default function PreferencesPage() {
             {t("preferences.logoutDesc")}
           </Text>
           <div>
-            <PrimaryButton
+            <SecondaryButton
               onClick={handleLogout}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-none"
             >
               {t("common.logout")}
-            </PrimaryButton>
+            </SecondaryButton>
           </div>
         </div>
       </section>

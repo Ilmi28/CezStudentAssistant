@@ -43,7 +43,7 @@ export default function QuizCard({
     >
       <div className="min-w-0 flex-1 space-y-0.5">
         <Flex align="center" gap={2} className="min-w-0">
-          <Heading level={4} size="sm" className="leading-snug truncate">
+          <Heading level={4} size="sm" className="leading-snug truncate tile-title-scale">
             {displayTitle}
           </Heading>
           {isFailed && (

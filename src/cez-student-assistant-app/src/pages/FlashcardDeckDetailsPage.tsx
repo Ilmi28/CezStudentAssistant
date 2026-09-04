@@ -39,7 +39,6 @@ export default function FlashcardDeckDetailsPage() {
   const [deck, setDeck] = useState<FlashcardDeckDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fromPath = (location.state as { fromPath?: string })?.fromPath || (deck?.courseId ? `/course/${deck.courseId}` : "/courses");
@@ -63,16 +62,13 @@ export default function FlashcardDeckDetailsPage() {
   }, [id]);
 
   const handleGoBack = () => {
-    setIsNavigatingBack(true);
-    setTimeout(() => {
-      if (location.state?.fromPath) {
-        navigate(location.state.fromPath);
-      } else if (deck?.courseId) {
-        navigate(`/course/${deck.courseId}`);
-      } else {
-        navigate("/courses");
-      }
-    }, 200);
+    if (location.state?.fromPath) {
+      navigate(location.state.fromPath);
+    } else if (deck?.courseId) {
+      navigate(`/course/${deck.courseId}`);
+    } else {
+      navigate("/courses");
+    }
   };
 
   const handleDeleteDeck = async () => {
@@ -189,11 +185,7 @@ export default function FlashcardDeckDetailsPage() {
   const masteredPct = totalDeckMaxPoints > 0 ? Math.round((totalDeckEarnedPoints / totalDeckMaxPoints) * 100) : deck.progressPercentage;
 
   return (
-    <div
-      className={`max-w-4xl mx-auto space-y-6 ${
-        isNavigatingBack ? "animate-slide-out-right" : "animate-in fade-in duration-300"
-      }`}
-    >
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
       {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -400,7 +392,7 @@ export default function FlashcardDeckDetailsPage() {
                   <div
                     key={attempt.id}
                     onClick={() => handleOpenAttempt(attempt.id)}
-                    className="p-4 rounded-xl bg-card border border-border flex items-center justify-between gap-4 transition-colors hover:border-primary/40 hover:bg-muted/30 cursor-pointer"
+                    className="group card-app-spring p-4 rounded-xl bg-card border border-border flex items-center justify-between gap-4 cursor-pointer select-none"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div className="w-9 h-9 rounded-lg bg-background border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0">
@@ -408,7 +400,7 @@ export default function FlashcardDeckDetailsPage() {
                       </div>
 
                       <div className="min-w-0">
-                        <span className="text-xs font-bold text-foreground block">
+                        <span className="text-xs font-bold text-foreground block tile-title-scale">
                           {t("flashcardDetails.attemptNum", { num: attemptNumber })}
                         </span>
 

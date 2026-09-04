@@ -10,9 +10,9 @@ export interface BaseButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 const sizeStyles = {
-  sm: "text-xs font-medium px-3.5 py-2 rounded-lg",
-  md: "text-sm font-medium px-5 py-3 rounded-xl",
-  lg: "text-base font-semibold px-6 py-3.5 rounded-xl",
+  sm: "text-xs font-semibold px-3.5 py-2 rounded-lg",
+  md: "text-sm font-semibold px-5 py-2.5 rounded-xl",
+  lg: "text-base font-bold px-6 py-3 rounded-xl",
 };
 
 const spinnerSizes = {
@@ -35,11 +35,11 @@ export const PrimaryButton: React.FC<BaseButtonProps> = ({
     <button
       disabled={disabled || loading}
       className={`
-        font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
-        bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground shadow-sm shadow-primary/20
-        focus:outline-none
+        group btn-app-spring rounded-xl cursor-pointer select-none
+        bg-primary text-primary-foreground shadow-sm shadow-primary/20
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
         inline-flex items-center justify-center gap-2
-        disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
+        disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
         ${sizeStyles[size]}
         ${fullWidth ? "w-full" : ""}
         ${className}
@@ -49,9 +49,17 @@ export const PrimaryButton: React.FC<BaseButtonProps> = ({
       {loading ? (
         <Loader2 size={spinnerSizes[size]} className="animate-spin shrink-0" />
       ) : (
-        icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
+        icon && (
+          <span className="shrink-0 flex items-center justify-center btn-inner-scale">
+            {icon}
+          </span>
+        )
       )}
-      {children && <span>{children}</span>}
+      {children && (
+        <span className="btn-inner-scale">
+          {children}
+        </span>
+      )}
     </button>
   );
 };
@@ -70,11 +78,11 @@ export const SecondaryButton: React.FC<BaseButtonProps> = ({
     <button
       disabled={disabled || loading}
       className={`
-        font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
-        bg-secondary/80 border border-border/80 hover:border-primary/45 hover:bg-secondary active:scale-[0.98] text-foreground shadow-xs
-        focus:outline-none
+        group btn-app-spring rounded-xl cursor-pointer select-none
+        bg-secondary/80 border border-border/80 text-foreground shadow-xs
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
         inline-flex items-center justify-center gap-2
-        disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
+        disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
         ${sizeStyles[size]}
         ${fullWidth ? "w-full" : ""}
         ${className}
@@ -84,9 +92,17 @@ export const SecondaryButton: React.FC<BaseButtonProps> = ({
       {loading ? (
         <Loader2 size={spinnerSizes[size]} className="animate-spin shrink-0" />
       ) : (
-        icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
+        icon && (
+          <span className="shrink-0 flex items-center justify-center btn-inner-scale">
+            {icon}
+          </span>
+        )
       )}
-      {children && <span>{children}</span>}
+      {children && (
+        <span className="btn-inner-scale">
+          {children}
+        </span>
+      )}
     </button>
   );
 };
@@ -107,7 +123,7 @@ export const OutlineButton: React.FC<BaseButtonProps> = ({
       loading={loading}
       fullWidth={fullWidth}
       icon={icon}
-      className={`bg-transparent hover:bg-secondary ${className}`}
+      className={`bg-transparent ${className}`}
       disabled={disabled}
       {...props}
     >
@@ -130,11 +146,11 @@ export const DangerButton: React.FC<BaseButtonProps> = ({
     <button
       disabled={disabled || loading}
       className={`
-        font-medium rounded-xl transition-all duration-150 cursor-pointer select-none
-        bg-destructive hover:bg-destructive/90 active:scale-[0.98] text-destructive-foreground shadow-xs
-        focus:outline-none
+        group btn-app-spring rounded-xl cursor-pointer select-none
+        bg-destructive text-destructive-foreground shadow-xs
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40
         inline-flex items-center justify-center gap-2
-        disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
+        disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
         ${sizeStyles[size]}
         ${fullWidth ? "w-full" : ""}
         ${className}
@@ -144,9 +160,17 @@ export const DangerButton: React.FC<BaseButtonProps> = ({
       {loading ? (
         <Loader2 size={spinnerSizes[size]} className="animate-spin shrink-0" />
       ) : (
-        icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
+        icon && (
+          <span className="shrink-0 flex items-center justify-center btn-inner-scale">
+            {icon}
+          </span>
+        )
       )}
-      {children && <span>{children}</span>}
+      {children && (
+        <span className="btn-inner-scale">
+          {children}
+        </span>
+      )}
     </button>
   );
 };

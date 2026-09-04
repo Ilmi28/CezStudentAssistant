@@ -12,10 +12,10 @@ function NavItem({ label, isActive, onClick }: NavItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ease-out cursor-pointer ${
+      className={`group btn-app-spring px-3.5 py-2 rounded-xl text-sm font-semibold cursor-pointer select-none ${
         isActive
-          ? "bg-white/15 text-white shadow-xs scale-[1.04]"
-          : "text-white/70 hover:text-white hover:bg-white/10 hover:scale-[1.02]"
+          ? "bg-white/15 text-white shadow-xs"
+          : "text-white/70 hover:text-white"
       }`}
     >
       <span>{label}</span>
@@ -55,7 +55,7 @@ export default function Navbar() {
     <div className="flex flex-col md:flex-row md:items-center gap-6 lg:gap-10">
       {/* Brand Logo & Name */}
       <div
-        className="flex items-center gap-3.5 cursor-pointer group"
+        className="flex items-center gap-3.5 cursor-pointer group btn-app-spring select-none"
         onClick={() => navigate("/home")}
       >
         <img

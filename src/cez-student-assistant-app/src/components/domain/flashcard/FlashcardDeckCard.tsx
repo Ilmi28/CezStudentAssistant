@@ -41,7 +41,7 @@ export function FlashcardDeckCard({
     >
       <div className="min-w-0 flex-1 space-y-0.5">
         <Flex align="center" gap={2} wrap className="min-w-0">
-          <Heading level={4} size="sm" className="leading-snug truncate">
+          <Heading level={4} size="sm" className="leading-snug truncate tile-title-scale">
             {displayTitle}
           </Heading>
           {isFailed && (
@@ -49,7 +49,7 @@ export function FlashcardDeckCard({
           )}
         </Flex>
         {showCourseName && deck.courseName && (
-          <Text size="xs" variant="muted" className="line-clamp-1">
+          <Text size="xs" variant="muted" className="line-clamp-1 truncate">
             {deck.courseName}
           </Text>
         )}

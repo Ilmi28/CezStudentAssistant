@@ -128,6 +128,10 @@ export default function FlashcardStudyPage() {
     fetchDeckDetails();
   }, [id]);
 
+  const handleGoBack = () => {
+    navigate(fromPath);
+  };
+
   const currentCard: FlashcardDto | undefined = sessionCards[currentIndex];
 
   const handleSetCardState = async (state: FlashcardStateEnum) => {
@@ -257,7 +261,7 @@ export default function FlashcardStudyPage() {
         <div className="flex items-center gap-3.5 min-w-0">
           <SecondaryButton
             type="button"
-            onClick={() => navigate(fromPath)}
+            onClick={handleGoBack}
             aria-label={t("flashcardDetails.backBtn")}
             icon={<ChevronLeft size={22} strokeWidth={2.25} />}
             className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
@@ -422,7 +426,7 @@ export default function FlashcardStudyPage() {
       <div>
         <SecondaryButton
           type="button"
-          onClick={() => navigate(fromPath)}
+          onClick={handleGoBack}
           aria-label={t("flashcards.exitStudy")}
           icon={<ChevronLeft size={22} strokeWidth={2.25} />}
           className="w-10 h-10 p-0 flex items-center justify-center shrink-0"

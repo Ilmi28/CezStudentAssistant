@@ -46,7 +46,7 @@ function AccordionHeader({
   return (
     <div
       onClick={onToggle}
-      className="flex items-center justify-between cursor-pointer select-none group"
+      className="flex items-center justify-between cursor-pointer select-none group py-1"
     >
       <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
         {title} ({count})
@@ -65,15 +65,14 @@ function AccordionHeader({
             className="w-9 h-9 p-0 flex items-center justify-center shrink-0"
           />
         )}
-        <button
-          type="button"
-          className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+        <div
+          className="w-9 h-9 flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors cursor-pointer shrink-0"
         >
           <ChevronDown
             size={18}
             className={`transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
           />
-        </button>
+        </div>
       </div>
     </div>
   );
@@ -101,7 +100,6 @@ export default function CourseDetailsPage({
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isGenerateQuizModalOpen, setIsGenerateQuizModalOpen] = useState(false);
   const [isGenerateFlashcardsModalOpen, setIsGenerateFlashcardsModalOpen] = useState(false);
-  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
 
   useEffect(() => {
     loadCourseDetailsAndQuizzes();
@@ -145,11 +143,7 @@ export default function CourseDetailsPage({
   };
 
   const handleGoBack = () => {
-    if (isNavigatingBack) return;
-    setIsNavigatingBack(true);
-    setTimeout(() => {
-      navigate("/courses");
-    }, 170);
+    navigate("/courses");
   };
 
   const handleEditCourseSubmit = async (name: string, description?: string) => {
@@ -246,13 +240,7 @@ export default function CourseDetailsPage({
   }
 
   return (
-    <div
-      className={`max-w-4xl mx-auto space-y-6 ${
-        isNavigatingBack
-          ? "animate-slide-out-right"
-          : "animate-in fade-in duration-300"
-      }`}
-    >
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
       {/* Header & Title */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -316,8 +304,8 @@ export default function CourseDetailsPage({
             isFilesExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
           }`}
         >
-          <div className="overflow-hidden">
-            <div className="pt-3.5 border-t border-border mt-3.5">
+          <div className="overflow-hidden p-1 -m-1">
+            <div className="pt-3.5 border-t border-border mt-3.5 px-0.5">
               {courseFiles.length === 0 ? (
                 <div className="py-8 text-center">
                   <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
@@ -328,7 +316,7 @@ export default function CourseDetailsPage({
                   {courseFiles.map((file) => (
                     <div
                       key={file.id}
-                      className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border border-border hover:border-primary/30 transition-all"
+                      className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border border-border transition-all"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-primary flex-shrink-0">
@@ -389,8 +377,8 @@ export default function CourseDetailsPage({
             isQuizzesExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
           }`}
         >
-          <div className="overflow-hidden">
-            <div className="pt-3.5 border-t border-border mt-3.5">
+          <div className="overflow-hidden p-1 -m-1">
+            <div className="pt-3.5 border-t border-border mt-3.5 px-0.5">
               {courseQuizzes.length === 0 ? (
                 <div className="py-8 text-center">
                   <Brain size={28} className="mx-auto text-muted-foreground/35 mb-2" />
@@ -425,8 +413,8 @@ export default function CourseDetailsPage({
             isFlashcardsExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
           }`}
         >
-          <div className="overflow-hidden">
-            <div className="pt-3.5 border-t border-border mt-3.5">
+          <div className="overflow-hidden p-1 -m-1">
+            <div className="pt-3.5 border-t border-border mt-3.5 px-0.5">
               {decks.length === 0 ? (
                 <div className="py-8 text-center">
                   <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />

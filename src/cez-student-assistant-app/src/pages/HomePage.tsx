@@ -108,7 +108,7 @@ export default function HomePage() {
                   className="p-4 flex-row items-center justify-between gap-3.5 cursor-pointer"
                 >
                   <div className="min-w-0 flex-1 space-y-0.5">
-                    <Heading level={4} size="sm" className="truncate leading-snug">
+                    <Heading level={4} size="sm" className="truncate leading-snug tile-title-scale">
                       {displayTitle}
                     </Heading>
                     {act.courseName && (

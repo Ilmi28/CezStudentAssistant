@@ -34,7 +34,7 @@ export const Input: React.FC<InputProps> = ({
           w-full px-4 py-3 text-sm border rounded-xl bg-card text-foreground font-sans
           transition-all focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary
           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-          ${error ? "border-red-500/60 focus:ring-red-500" : "border-border hover:border-primary/50"}
+          ${error ? "border-red-500/60 focus:ring-red-500" : "border-border hover:border-border/80"}
           ${className}
         `.trim()}
         {...props}

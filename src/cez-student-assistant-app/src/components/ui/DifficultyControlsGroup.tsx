@@ -52,7 +52,7 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setEasyCount((prev) => Math.max(0, prev - 1))}
               disabled={easyCount <= 0}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
+              className="btn-app-spring w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-secondary/80 disabled:opacity-30 disabled:transform-none cursor-pointer text-sm font-bold select-none"
             >
               -
             </button>
@@ -63,7 +63,7 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setEasyCount((prev) => Math.min(maxPerCategory, prev + 1))}
               disabled={easyCount >= maxPerCategory}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
+              className="btn-app-spring w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-secondary/80 disabled:opacity-30 disabled:transform-none cursor-pointer text-sm font-bold select-none"
             >
               +
             </button>
@@ -80,7 +80,7 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setMediumCount((prev) => Math.max(0, prev - 1))}
               disabled={mediumCount <= 0}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
+              className="btn-app-spring w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-secondary/80 disabled:opacity-30 disabled:transform-none cursor-pointer text-sm font-bold select-none"
             >
               -
             </button>
@@ -91,7 +91,7 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setMediumCount((prev) => Math.min(maxPerCategory, prev + 1))}
               disabled={mediumCount >= maxPerCategory}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
+              className="btn-app-spring w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-secondary/80 disabled:opacity-30 disabled:transform-none cursor-pointer text-sm font-bold select-none"
             >
               +
             </button>
@@ -108,7 +108,7 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setHardCount((prev) => Math.max(0, prev - 1))}
               disabled={hardCount <= 0}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
+              className="btn-app-spring w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-secondary/80 disabled:opacity-30 disabled:transform-none cursor-pointer text-sm font-bold select-none"
             >
               -
             </button>
@@ -119,7 +119,7 @@ export default function DifficultyControlsGroup({
               type="button"
               onClick={() => setHardCount((prev) => Math.min(maxPerCategory, prev + 1))}
               disabled={hardCount >= maxPerCategory}
-              className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 active:scale-90 hover:scale-105 disabled:opacity-30 cursor-pointer text-sm font-bold transition-all duration-150 ease-out"
+              className="btn-app-spring w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-foreground hover:bg-secondary/80 disabled:opacity-30 disabled:transform-none cursor-pointer text-sm font-bold select-none"
             >
               +
             </button>

@@ -77,7 +77,6 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const [quiz, setQuiz] = useState<QuizDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
-  const [isNavigatingBack, setIsNavigatingBack] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
@@ -108,16 +107,13 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   };
 
   const handleGoBack = () => {
-    setIsNavigatingBack(true);
-    setTimeout(() => {
-      if (location.state?.fromPath) {
-        navigate(location.state.fromPath);
-      } else if (quiz?.courseId) {
-        navigate(`/course/${quiz.courseId}`);
-      } else {
-        navigate("/quizzes");
-      }
-    }, 200);
+    if (location.state?.fromPath) {
+      navigate(location.state.fromPath);
+    } else if (quiz?.courseId) {
+      navigate(`/course/${quiz.courseId}`);
+    } else {
+      navigate("/quizzes");
+    }
   };
 
   const handleStartNewAttempt = async () => {
@@ -229,13 +225,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     ? (easyAttemptCount * 1 + mediumAttemptCount * 2 + hardAttemptCount * 3)
     : totalPointsMax;
   return (
-    <div
-      className={`max-w-4xl mx-auto space-y-6 ${
-        isNavigatingBack
-          ? "animate-slide-out-right"
-          : "animate-in fade-in duration-300"
-      }`}
-    >
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
       {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -440,7 +430,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                   <div
                     key={attempt.id}
                     onClick={() => handleContinueAttempt(attempt.id)}
-                    className="p-4 rounded-xl bg-card border border-border flex items-center justify-between gap-4 transition-colors hover:border-primary/40 hover:bg-muted/30 cursor-pointer"
+                    className="group card-app-spring p-4 rounded-xl bg-card border border-border flex items-center justify-between gap-4 cursor-pointer select-none"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div className="w-9 h-9 rounded-lg bg-background border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0">
@@ -448,7 +438,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                       </div>
 
                       <div className="min-w-0">
-                        <span className="text-xs font-bold text-foreground block">
+                        <span className="text-xs font-bold text-foreground block tile-title-scale">
                           {t("quizDetails.attemptNumber", { number: attemptNumber })}
                         </span>
 

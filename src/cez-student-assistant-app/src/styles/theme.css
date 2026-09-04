@@ -55,7 +55,7 @@
   --muted-foreground: #94a3b8;
   --accent: #0284c7;
   --accent-foreground: #ffffff;
-  --destructive: #f87171;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #1e293b; /* Neutral dark border */
   --input: #0f172a;
@@ -416,4 +416,61 @@
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+/* ==========================================================================
+   Centralized Design System Micro-Animations & Touch Spring Physics
+   ========================================================================== */
+
+/* 1. Standard Button & Control Spring Physics */
+.btn-app-spring {
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+.btn-app-spring:hover:not(:active):not(:disabled) {
+  transform: scale(1.012);
+}
+
+.btn-app-spring:active:not(:disabled) {
+  transform: scale(0.975);
+  transition-duration: 50ms;
+  transition-timing-function: ease-out;
+}
+
+/* Proportional inner text/icon scaling inside buttons */
+.btn-inner-scale {
+  display: inline-block;
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-app-spring:hover:not(:active):not(:disabled) .btn-inner-scale {
+  transform: scale(1.012);
+}
+
+/* 2. Interactive Card Tile Spring Physics */
+.card-app-spring {
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+.card-app-spring:hover:not(:active) {
+  transform: scale(1.006);
+}
+
+.card-app-spring:active {
+  transform: scale(0.99);
+  transition-duration: 50ms;
+  transition-timing-function: ease-out;
+}
+
+/* Proportional inner heading scaling inside card tiles */
+.tile-title-scale {
+  display: inline-block;
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card-app-spring:hover:not(:active) .tile-title-scale {
+  transform: scale(1.006);
+}
+
 
