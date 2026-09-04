@@ -1,9 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Layers, Trophy, Brain, Activity } from "lucide-react";
 import { Card, Heading, Text, Flex, Grid } from "../components";
 import { useDashboard } from "../hooks";
 import { getScoreColorClass } from "../utils/scoreUtils";
+import { ActivityTypeEnum } from "../enums/activityEnums";
+import type { RecentActivityDto } from "../types";
 
 function formatScore(val: number): string {
   if (Number.isInteger(val)) return val.toString();
@@ -12,14 +14,15 @@ function formatScore(val: number): string {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { stats, recentActivity, loadingStats, loadingActivity } = useDashboard();
 
-  const handleActivityClick = (item: { type: string; entityId: string; id: string }) => {
-    if (item.type === "Quiz") {
-      navigate(`/quiz/${item.entityId}`);
+  const handleActivityClick = (item: RecentActivityDto) => {
+    if (item.type === ActivityTypeEnum.Quiz) {
+      navigate(`/quiz/${item.entityId}`, { state: { fromPath: location.pathname } });
     } else {
-      navigate(`/flashcards/${item.entityId}`);
+      navigate(`/flashcards/${item.entityId}`, { state: { fromPath: location.pathname } });
     }
   };
 
@@ -94,7 +97,7 @@ export default function HomePage() {
           <Grid cols={1} mdCols={2} gap={4}>
             {recentActivity.map((act) => {
               const isInProgress = act.status === "InProgress";
-              const isQuiz = act.type === "Quiz";
+              const isQuiz = act.type === ActivityTypeEnum.Quiz;
               const displayTitle = act.title || (isQuiz ? "Quiz" : "Fiszki");
 
               return (
@@ -108,43 +111,39 @@ export default function HomePage() {
                     <Heading level={4} size="sm" className="truncate leading-snug">
                       {displayTitle}
                     </Heading>
-                    {(act.courseName || isInProgress) && (
-                      <Flex align="center" gap={1.5} className="min-w-0">
-                        {act.courseName && (
-                          <Text size="xs" variant="muted" className="line-clamp-1 truncate">
-                            {act.courseName}
-                          </Text>
-                        )}
-                        {act.courseName && isInProgress && (
-                          <span className="text-muted-foreground/60 text-xs shrink-0">•</span>
-                        )}
-                        {isInProgress && (
-                          <span className="shrink-0 text-[11px] font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
-                            {t("quizDetails.status.inProgress", "W TOKU")}
-                          </span>
-                        )}
-                      </Flex>
+                    {act.courseName && (
+                      <Text size="xs" variant="muted" className="line-clamp-1 truncate">
+                        {act.courseName}
+                      </Text>
                     )}
                   </div>
 
-                  <Flex direction="col" align="end" justify="center" gap={1} className="shrink-0 text-right">
-                    <span
-                      className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(
-                        act.scorePercentage
-                      )}`}
-                    >
-                      {act.scorePercentage ?? 0}%
-                    </span>
-                    {isQuiz ? (
-                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
-                        {formatScore(act.earnedPoints ?? 0)} / {formatScore(act.maxPoints ?? 0)}
-                      </Text>
-                    ) : (
-                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
-                        {act.masteredCount ?? 0} / {act.totalCount ?? 0}
-                      </Text>
-                    )}
-                  </Flex>
+                  {isInProgress ? (
+                    <Flex direction="col" align="end" justify="center" className="text-right shrink-0">
+                      <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+                        {t("quizDetails.status.inProgress", "W TOKU")}
+                      </span>
+                    </Flex>
+                  ) : (
+                    <Flex direction="col" align="end" justify="center" gap={1} className="shrink-0 text-right">
+                      <span
+                        className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(
+                          act.scorePercentage
+                        )}`}
+                      >
+                        {act.scorePercentage ?? 0}%
+                      </span>
+                      {isQuiz ? (
+                        <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                          {formatScore(act.earnedPoints ?? 0)} / {formatScore(act.maxPoints ?? 0)}
+                        </Text>
+                      ) : (
+                        <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                          {act.masteredCount ?? 0} / {act.totalCount ?? 0}
+                        </Text>
+                      )}
+                    </Flex>
+                  )}
                 </Card>
               );
             })}

@@ -1,5 +1,6 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.User;
+using CezStudentAssistant.Application.Enums;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Domain.Enums;
@@ -57,7 +58,7 @@ public class GetRecentActivityQueryHandler(IUnitOfWork unitOfWork)
             {
                 Id = qa.Id,
                 EntityId = qa.QuizId,
-                Type = "Quiz",
+                Type = ActivityType.Quiz,
                 Title = qa.Quiz?.Name ?? string.Empty,
                 CourseName = qa.Course?.Name ?? string.Empty,
                 ScorePercentage = score,
@@ -89,7 +90,7 @@ public class GetRecentActivityQueryHandler(IUnitOfWork unitOfWork)
             {
                 Id = fa.Id,
                 EntityId = fa.DeckId,
-                Type = "Flashcard",
+                Type = ActivityType.Flashcard,
                 Title = fa.Deck?.Name ?? string.Empty,
                 CourseName = fa.Deck?.Course?.Name ?? string.Empty,
                 ScorePercentage = score,
@@ -102,6 +103,8 @@ public class GetRecentActivityQueryHandler(IUnitOfWork unitOfWork)
 
         var combinedActivities = quizActivities
             .Concat(flashcardActivities)
+            .GroupBy(a => a.EntityId)
+            .Select(g => g.OrderByDescending(a => a.AttemptDate).First())
             .OrderByDescending(a => a.AttemptDate)
             .Take(query.Limit)
             .ToList();

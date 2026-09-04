@@ -1,4 +1,5 @@
 using CezStudentAssistant.Application.Consts;
+using CezStudentAssistant.Application.Enums;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Queries.User;
 using CezStudentAssistant.Domain.Entities;
@@ -111,11 +112,11 @@ public class GetRecentActivityQueryHandlerTests
         result.Data.Should().HaveCount(2);
 
         // Flashcard attempt was started more recently (-10m vs -30m)
-        result.Data![0].Type.Should().Be("Flashcard");
+        result.Data![0].Type.Should().Be(ActivityType.Flashcard);
         result.Data[0].Title.Should().Be("Fiszki BD");
         result.Data[0].ScorePercentage.Should().Be(20.0);
 
-        result.Data[1].Type.Should().Be("Quiz");
+        result.Data[1].Type.Should().Be(ActivityType.Quiz);
         result.Data[1].Title.Should().Be("Quiz #1");
         result.Data[1].ScorePercentage.Should().Be(80.0);
     }

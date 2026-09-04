@@ -1,21 +1,12 @@
-export type UserTheme = 1 | 2 | 3;
-export const UserTheme = {
-  Dark: 1 as UserTheme,
-  Light: 2 as UserTheme,
-  System: 3 as UserTheme,
-} as const;
-
-export type UserLanguage = 1 | 2;
-export const UserLanguage = {
-  Polish: 1 as UserLanguage,
-  English: 2 as UserLanguage,
-} as const;
+import { UserLanguage, UserTheme } from "../enums/userEnums";
+import { ActivityTypeEnum } from "../enums/activityEnums";
 
 export interface UserConfigurationDto {
-  isCezConnected: boolean;
-  lastCezSync?: string | null;
+  userId: string;
   theme: UserTheme;
   language: UserLanguage;
+  isCezConnected: boolean;
+  lastCezSync?: string | null;
 }
 
 export interface UpdateUserConfigurationPayload {
@@ -24,10 +15,9 @@ export interface UpdateUserConfigurationPayload {
 }
 
 export interface UserUsageDto {
-  dailyTokensUsed: number;
-  dailyTokensReserved?: number;
-  dailyTokenLimit: number;
-  dailyUsagePercentage: number;
+  userId: string;
+  monthYear: string;
+  tokenCount: number;
 }
 
 export interface DashboardStatsDto {
@@ -40,7 +30,7 @@ export interface DashboardStatsDto {
 export interface RecentActivityDto {
   id: string;
   entityId: string;
-  type: "Quiz" | "Flashcard";
+  type: ActivityTypeEnum;
   title: string;
   courseName: string;
   scorePercentage?: number | null;
@@ -51,5 +41,3 @@ export interface RecentActivityDto {
   attemptDate: string;
   status: string;
 }
-
-

@@ -1,4 +1,5 @@
 using System;
+using CezStudentAssistant.Application.Enums;
 
 namespace CezStudentAssistant.Application.Dtos.User;
 
@@ -6,7 +7,7 @@ public class RecentActivityDto
 {
     public Guid Id { get; set; }
     public Guid EntityId { get; set; }
-    public string Type { get; set; } = string.Empty;
+    public ActivityType Type { get; set; }
     public string Title { get; set; } = string.Empty;
     public string CourseName { get; set; } = string.Empty;
     public double? ScorePercentage { get; set; }

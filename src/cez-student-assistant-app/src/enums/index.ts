@@ -3,3 +3,4 @@ export * from './courseEnums';
 export * from './jobEnums';
 export * from './userEnums';
 export * from './flashcardEnums';
+export * from './activityEnums';

@@ -50,22 +50,10 @@ export default function QuizCard({
             <Badge variant="error" className="shrink-0">Błąd generowania (Ponawianie...)</Badge>
           )}
         </Flex>
-        {(showCourseName && quiz.courseName || isInProgress) && (
-          <Flex align="center" gap={1.5} className="min-w-0">
-            {showCourseName && quiz.courseName && (
-              <Text size="xs" variant="muted" className="line-clamp-1 truncate">
-                {quiz.courseName}
-              </Text>
-            )}
-            {showCourseName && quiz.courseName && isInProgress && (
-              <span className="text-muted-foreground/60 text-xs shrink-0">•</span>
-            )}
-            {isInProgress && (
-              <span className="shrink-0 text-[11px] font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
-                {t("quizDetails.status.inProgress", "W TOKU")}
-              </span>
-            )}
-          </Flex>
+        {showCourseName && quiz.courseName && (
+          <Text size="xs" variant="muted" className="line-clamp-1 truncate">
+            {quiz.courseName}
+          </Text>
         )}
       </div>
 
@@ -87,6 +75,10 @@ export default function QuizCard({
               <RefreshCw size={15} className="animate-spin" />
             </div>
           </Tooltip>
+        ) : isInProgress ? (
+          <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+            {t("quizDetails.status.inProgress", "W TOKU")}
+          </span>
         ) : (
           <>
             <span
