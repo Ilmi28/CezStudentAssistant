@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Dtos.Course;
 using CezStudentAssistant.Application.Exceptions;
+using CezStudentAssistant.Application.Helpers;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
 using CezStudentAssistant.Application.Responses;
@@ -35,6 +36,39 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
             throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
+        // Fetch Quizzes with Questions, Options, and Attempts with Answers for difficulty-weighted calculation
+        var quizRepo = unitOfWork.Repository<IQuizRepository>();
+        var quizzes = await quizRepo.Find(
+            q => q.CourseId == query.CourseId && q.UserId == query.UserId,
+            true,
+            q => q.Questions,
+            q => q.Attempts
+        ).ToListAsync(ct);
+
+        var quizAttemptRepo = unitOfWork.Repository<IQuizAttemptRepository>();
+        var attemptsWithAnswers = await quizAttemptRepo.Find(
+            a => a.UserId == query.UserId && a.Quiz.CourseId == query.CourseId,
+            true,
+            a => a.Answers
+        ).ToListAsync(ct);
+
+        foreach (var quiz in quizzes)
+        {
+            var quizAttempts = attemptsWithAnswers.Where(a => a.QuizId == quiz.Id).ToList();
+            quiz.Attempts = quizAttempts;
+        }
+
+        // Fetch Flashcard Decks with Cards and Attempts
+        var deckRepo = unitOfWork.Repository<IFlashcardDeckRepository>();
+        var decks = await deckRepo.Find(
+            d => d.CourseId == query.CourseId && d.UserId == query.UserId,
+            true,
+            d => d.Cards,
+            d => d.Attempts
+        ).ToListAsync(ct);
+
+        var prepResult = CoursePreparationCalculationHelper.CalculatePreparation(quizzes, decks);
+
         var dto = new CourseDetailsDto
         {
             Id = course.Id,
@@ -43,6 +77,9 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
             Type = course.Type,
             LastSynched = course.LastSynched,
             IsCez = course.CezExternalId != null,
+            PreparationPercentage = prepResult.PreparationPercentage,
+            QuizProgressPercentage = prepResult.QuizProgressPercentage,
+            FlashcardProgressPercentage = prepResult.FlashcardProgressPercentage,
             Files = []
         };
 

@@ -25,6 +25,9 @@ public class GetCourseDetailsQueryHandlerTests
     private IUnitOfWork _unitOfWork = null!;
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _resourceRepository = null!;
+    private IQuizRepository _quizRepository = null!;
+    private IQuizAttemptRepository _quizAttemptRepository = null!;
+    private IFlashcardDeckRepository _flashcardDeckRepository = null!;
     private GetCourseDetailsQueryHandler _sut = null!;
 
     [SetUp]
@@ -33,9 +36,15 @@ public class GetCourseDetailsQueryHandlerTests
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _courseRepository = Substitute.For<ICourseRepository>();
         _resourceRepository = Substitute.For<ICezResourceRepository>();
+        _quizRepository = Substitute.For<IQuizRepository>();
+        _quizAttemptRepository = Substitute.For<IQuizAttemptRepository>();
+        _flashcardDeckRepository = Substitute.For<IFlashcardDeckRepository>();
 
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
+        _unitOfWork.Repository<IQuizRepository>().Returns(_quizRepository);
+        _unitOfWork.Repository<IQuizAttemptRepository>().Returns(_quizAttemptRepository);
+        _unitOfWork.Repository<IFlashcardDeckRepository>().Returns(_flashcardDeckRepository);
 
         _sut = new GetCourseDetailsQueryHandler(_unitOfWork);
     }
@@ -64,16 +73,17 @@ public class GetCourseDetailsQueryHandlerTests
         _courseRepository.GetByIdAsync(courseId, Arg.Any<CancellationToken>(), true, Arg.Any<Expression<Func<CourseEntity, object>>[]>())
             .Returns(course);
 
-        var resource = new Resource
-        {
-            Id = Guid.NewGuid(),
-            CourseId = courseId,
-            Name = "syllabus.pdf",
-            DisplayName = "syllabus.pdf",
-            MimeType = "application/pdf"
-        };
-        var mockResources = new List<Resource> { resource }.BuildMockDbSet();
-        _resourceRepository.Find(Arg.Any<Expression<Func<Resource, bool>>>(), true).Returns(mockResources);
+        var mockQuizzes = new List<Domain.Entities.Quiz>().BuildMockDbSet();
+        _quizRepository.Find(Arg.Any<Expression<Func<Domain.Entities.Quiz, bool>>>(), true, Arg.Any<Expression<Func<Domain.Entities.Quiz, object>>[]>())
+            .Returns(mockQuizzes);
+
+        var mockAttempts = new List<QuizAttempt>().BuildMockDbSet();
+        _quizAttemptRepository.Find(Arg.Any<Expression<Func<QuizAttempt, bool>>>(), true, Arg.Any<Expression<Func<QuizAttempt, object>>[]>())
+            .Returns(mockAttempts);
+
+        var mockDecks = new List<FlashcardDeck>().BuildMockDbSet();
+        _flashcardDeckRepository.Find(Arg.Any<Expression<Func<FlashcardDeck, bool>>>(), true, Arg.Any<Expression<Func<FlashcardDeck, object>>[]>())
+            .Returns(mockDecks);
 
         var query = new GetCourseDetailsQuery { UserId = userId, CourseId = courseId };
 

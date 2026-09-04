@@ -17,6 +17,7 @@ import QuizCard from "../components/QuizCard";
 import { FlashcardDeckCard } from "../components/FlashcardDeckCard";
 import LoadingScreen from "../components/LoadingScreen";
 import { SecondaryButton } from "../components/Button";
+import CoursePreparationCard from "../components/CoursePreparationCard";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
@@ -295,6 +296,9 @@ export default function CourseDetailsPage({
           </div>
         )}
       </div>
+
+      {/* Course Preparation Stats Card */}
+      <CoursePreparationCard course={selectedCourse} />
 
       {/* Files List Section */}
       <div className="bg-card rounded-xl border border-border p-5 shadow-sm">

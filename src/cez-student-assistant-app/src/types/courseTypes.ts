@@ -21,6 +21,9 @@ export interface CourseDetailsDto {
   lastSynched: string | null;
   files: CourseResourceDto[];
   isCez?: boolean;
+  preparationPercentage?: number | null;
+  quizProgressPercentage?: number | null;
+  flashcardProgressPercentage?: number | null;
 }
 
 export interface UploadCourseFileResponseDto {

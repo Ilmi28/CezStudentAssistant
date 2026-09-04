@@ -10,5 +10,8 @@ public class CourseDetailsDto
     public CourseType Type { get; set; }
     public DateTime LastSynched { get; set; }
     public bool IsCez { get; set; }
+    public int? PreparationPercentage { get; set; }
+    public int? QuizProgressPercentage { get; set; }
+    public int? FlashcardProgressPercentage { get; set; }
     public List<CourseResourceDto> Files { get; set; } = new();
 }
