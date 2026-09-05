@@ -7,4 +7,5 @@ public class CourseResourceDto
     public required string MimeType { get; set; }
     public DateTime LastModified { get; set; }
     public required string DownloadUrl { get; set; }
+    public bool IsHidden { get; set; }
 }

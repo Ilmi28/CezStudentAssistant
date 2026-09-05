@@ -179,4 +179,14 @@ export const courseService = {
     );
     await handleResponse(res);
   },
+
+  async toggleCourseFileVisibility(courseId: string, fileId: string): Promise<CourseResourceDto> {
+    const res = await customFetch(
+      `${API_BASE_URL}/course/${courseId}/file/${fileId}/toggle-visibility`,
+      { method: "PATCH" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<CourseResourceDto>(res);
+  },
 };

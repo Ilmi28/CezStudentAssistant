@@ -9,6 +9,7 @@ public class Resource : BaseEntity
     public required string MimeType { get; set; }
     public ResourceSource Source { get; set; }
     public int EstimatedTokens { get; set; }
+    public bool IsHidden { get; set; }
     public Guid CourseId { get; set; }
     public Course Course { get; set; } = null!;
     public DateTime? CezLastModified { get; set; }

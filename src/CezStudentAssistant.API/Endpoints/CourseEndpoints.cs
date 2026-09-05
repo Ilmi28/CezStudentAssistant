@@ -82,6 +82,13 @@ public static class CourseEndpoints
             return Results.Ok(result);
         }).RequireAuthorization();
 
+        group.MapPatch("/{courseId:guid}/file/{fileId:guid}/toggle-visibility", async (Guid courseId, Guid fileId, IMediator mediator) =>
+        {
+            var command = new ToggleCourseFileVisibilityCommand { CourseId = courseId, FileId = fileId };
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
         group.MapPost("/{courseId:guid}/estimate-quiz-tokens", async (Guid courseId, EstimateQuizTokensQuery query, IMediator mediator) =>
         {
             query.CourseId = courseId;

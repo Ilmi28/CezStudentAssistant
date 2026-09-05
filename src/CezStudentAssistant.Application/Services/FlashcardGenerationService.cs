@@ -121,7 +121,7 @@ public class FlashcardGenerationService(
             ?? throw new NotFoundException(AIMessageConsts.CourseNotFound);
 
         var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
-        var resources = await resourceRepo.Find(r => r.CourseId == courseId).ToListAsync(ct);
+        var resources = await resourceRepo.Find(r => r.CourseId == courseId && !r.IsHidden).ToListAsync(ct);
 
         var files = new List<AIFile>();
         foreach (var resource in resources)

@@ -13,9 +13,9 @@ export default function CoursePreparationCard({
 }: CoursePreparationCardProps) {
   const { t } = useTranslation();
 
-  const overallProgress = course.preparationPercentage ?? null;
-  const quizProgress = course.quizProgressPercentage ?? null;
-  const flashcardProgress = course.flashcardProgressPercentage ?? null;
+  const overallProgress = course.preparationPercentage ?? 0;
+  const quizProgress = course.quizProgressPercentage ?? 0;
+  const flashcardProgress = course.flashcardProgressPercentage ?? 0;
 
   return (
     <Card className="p-5 md:p-6 shadow-sm space-y-4">
@@ -35,15 +35,9 @@ export default function CoursePreparationCard({
         </Flex>
 
         <Flex align="baseline" gap={1.5}>
-          {overallProgress !== null ? (
-            <span className={`text-2xl font-black tabular-nums ${getScoreColorClass(overallProgress)}`}>
-              {overallProgress}%
-            </span>
-          ) : (
-            <Text size="2xl" variant="muted" className="font-black tabular-nums">
-              -
-            </Text>
-          )}
+          <span className={`text-2xl font-black tabular-nums ${getScoreColorClass(overallProgress)}`}>
+            {overallProgress}%
+          </span>
         </Flex>
       </Flex>
 
@@ -51,7 +45,7 @@ export default function CoursePreparationCard({
         <div
           className="h-full bg-emerald-500 transition-all duration-500 ease-out"
           style={{
-            width: `${overallProgress !== null ? Math.min(100, Math.max(0, overallProgress)) : 0}%`,
+            width: `${Math.min(100, Math.max(0, overallProgress))}%`,
           }}
         />
       </div>
@@ -66,7 +60,7 @@ export default function CoursePreparationCard({
               {t("courseDetails.quizProgressLabel", "Quizy")}
             </Text>
             <Text size="sm" variant="default" className="font-bold tabular-nums">
-              {quizProgress !== null ? `${quizProgress}%` : "-"}
+              {quizProgress}%
             </Text>
           </div>
         </Flex>
@@ -80,7 +74,7 @@ export default function CoursePreparationCard({
               {t("courseDetails.flashcardsMasteredLabel", "Fiszki")}
             </Text>
             <Text size="sm" variant="default" className="font-bold tabular-nums">
-              {flashcardProgress !== null ? `${flashcardProgress}%` : "-"}
+              {flashcardProgress}%
             </Text>
           </div>
         </Flex>

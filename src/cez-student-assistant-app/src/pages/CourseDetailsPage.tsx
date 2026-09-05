@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Brain } from "lucide-react";
+import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Brain, Eye, EyeOff } from "lucide-react";
 import { courseService, type CourseDetailsDto, type CourseResourceDto } from "../services";
 import { quizService } from "../services/quizService";
 import { flashcardService } from "../services/flashcardService";
@@ -235,6 +235,18 @@ export default function CourseDetailsPage({
     }
   };
 
+  const handleToggleFileVisibility = async (fileId: string) => {
+    if (!id) return;
+    try {
+      await courseService.toggleCourseFileVisibility(id, fileId);
+      const filesData = await courseService.getCourseFiles(id);
+      setCourseFiles(filesData);
+    } catch (toggleErr) {
+      console.warn("[CourseDetailsPage] File visibility toggle failed:", toggleErr);
+      setError(t("common.genericError"));
+    }
+  };
+
   if (loading || !selectedCourse) {
     return <LoadingScreen message={t("courseDetails.loadingDetails")} />;
   }
@@ -316,24 +328,39 @@ export default function CourseDetailsPage({
                   {courseFiles.map((file) => (
                     <div
                       key={file.id}
-                      className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border border-border transition-all"
+                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+                        file.isHidden
+                          ? "bg-muted/15 border-dashed border-border/60"
+                          : "bg-muted/40 border-border"
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-primary flex-shrink-0">
                           <FileText size={15} />
                         </div>
                         <div className="min-w-0">
-                          <div className="text-xs font-medium text-foreground truncate">{file.displayName}</div>
+                          <div className={`text-xs font-medium truncate ${file.isHidden ? "text-muted-foreground" : "text-foreground"}`}>
+                            {file.displayName}
+                          </div>
                           <div className="text-[11px] text-muted-foreground/50">{file.mimeType}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0 ml-2">
                         <button
                           type="button"
+                          onClick={() => handleToggleFileVisibility(file.id)}
+                          title={file.isHidden ? t("courseDetails.unhideFile") : t("courseDetails.hideFile")}
+                          aria-label={file.isHidden ? t("courseDetails.unhideFile") : t("courseDetails.hideFile")}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        >
+                          {file.isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => handleFileDownload(file.id, file.displayName)}
                           title={t("courseDetails.downloadFile")}
                           aria-label={t("courseDetails.downloadFile")}
-                          className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors cursor-pointer"
+                          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                         >
                           <Download size={18} />
                         </button>
@@ -474,7 +501,7 @@ export default function CourseDetailsPage({
         isOpen={isGenerateQuizModalOpen}
         onClose={() => setIsGenerateQuizModalOpen(false)}
         onSubmit={handleGenerateQuizSubmit}
-        hasFiles={courseFiles.length > 0}
+        hasFiles={courseFiles.some((f) => !f.isHidden)}
         courseId={id || ""}
       />
 
@@ -482,7 +509,7 @@ export default function CourseDetailsPage({
         isOpen={isGenerateFlashcardsModalOpen}
         onClose={() => setIsGenerateFlashcardsModalOpen(false)}
         onSubmit={handleGenerateFlashcardsSubmit}
-        hasFiles={courseFiles.length > 0}
+        hasFiles={courseFiles.some((f) => !f.isHidden)}
         courseId={id || ""}
       />
     </div>

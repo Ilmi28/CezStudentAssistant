@@ -87,7 +87,7 @@ public class EstimateQuizTokensQueryHandler(
     private async Task<int> CalculateInputTokensAsync(Guid courseId, CancellationToken ct)
     {
         var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
-        var resources = await resourceRepo.Find(r => r.CourseId == courseId).ToListAsync(ct);
+        var resources = await resourceRepo.Find(r => r.CourseId == courseId && !r.IsHidden).ToListAsync(ct);
 
         var updatedAny = false;
         var inputTokens = 0;

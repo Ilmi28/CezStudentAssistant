@@ -59,8 +59,6 @@ export default function GenerateQuizModal({
 
   useEffect(() => {
     if (!isOpen || !hasFiles || !courseId) {
-      setBaseEstimation(null);
-      setLoadingEstimation(false);
       return;
     }
 
@@ -109,7 +107,7 @@ export default function GenerateQuizModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasFiles) {
-      setModalError(t("courseDetails.generateNoFilesError"));
+      setModalError(t("courseDetails.generateNoFilesError", "Brak aktywnych plików."));
       return;
     }
     if (currentEstimation && !currentEstimation.canGenerate) {
@@ -162,7 +160,7 @@ export default function GenerateQuizModal({
         <Alert message={modalError} />
 
         {!hasFiles && (
-          <Alert message={t("courseDetails.generateNoFilesError")} variant="warning" />
+          <Alert message={t("courseDetails.generateNoFilesError", "Brak aktywnych plików.")} variant="warning" />
         )}
 
         <p className="text-xs text-muted-foreground">

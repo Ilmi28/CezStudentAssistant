@@ -21,6 +21,8 @@ public static class CourseMessageConsts
     public const string UploadCourseFileError = "An error occurred while uploading course file.";
     public const string DeleteCourseFileSuccess = "File deleted successfully.";
     public const string DeleteCourseFileError = "An error occurred while deleting course file.";
+    public const string ToggleCourseFileVisibilitySuccess = "File visibility toggled successfully.";
+    public const string ToggleCourseFileVisibilityError = "An error occurred while toggling file visibility.";
     public const string UnsupportedFileFormat = "Unsupported file format. Please upload PDF, TXT, DOCX, ODT, PPTX, EPUB, JSON or image files.";
     public const string CourseFilesContainerConfigMissing = "Configuration 'BlobContainerSettings:CourseFilesContainer' is missing or empty.";
 }

@@ -49,8 +49,6 @@ export default function GenerateFlashcardsModal({
 
   useEffect(() => {
     if (!isOpen || !hasFiles || !courseId) {
-      setBaseEstimation(null);
-      setLoadingEstimation(false);
       return;
     }
 
@@ -107,7 +105,7 @@ export default function GenerateFlashcardsModal({
     }
 
     if (!hasFiles) {
-      setModalError(t("courseDetails.noFilesWarning"));
+      setModalError(t("courseDetails.noFilesWarning", "Brak aktywnych plików."));
       return;
     }
 
@@ -147,7 +145,7 @@ export default function GenerateFlashcardsModal({
         {!hasFiles && (
           <Alert
             variant="warning"
-            message={t("courseDetails.noFilesWarning")}
+            message={t("courseDetails.noFilesWarning", "Brak aktywnych plików.")}
           />
         )}
 

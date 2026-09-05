@@ -48,7 +48,8 @@ public class GetCourseFilesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
             DisplayName = r.DisplayName,
             MimeType = r.MimeType,
             LastModified = r.LastModifiedAt,
-            DownloadUrl = $"/course/{course.Id}/file/{r.Id}/download"
+            DownloadUrl = $"/course/{course.Id}/file/{r.Id}/download",
+            IsHidden = r.IsHidden
         }).ToList();
     }
 }

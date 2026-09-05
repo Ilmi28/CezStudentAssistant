@@ -11,6 +11,7 @@ export interface CourseResourceDto {
   mimeType: string;
   lastModified: string;
   downloadUrl: string;
+  isHidden?: boolean;
 }
 
 export interface CourseDetailsDto {

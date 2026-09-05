@@ -69,7 +69,6 @@ export default function UploadFileModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={t("courseDetails.uploadTitle")}
-      icon={<Upload size={20} className="text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Alert message={modalError} />
@@ -123,7 +122,6 @@ export default function UploadFileModal({
             type="submit"
             loading={loading}
             disabled={!selectedFile}
-            icon={!loading ? <Upload size={16} /> : undefined}
             className="flex-1"
           >
             {t("courseDetails.uploadBtn")}
