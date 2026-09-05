@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Brain, Layers, Target } from "lucide-react";
 import type { CourseDetailsDto } from "../../../types/courseTypes";
 import { Card, Heading, Text, Flex, Grid } from "../../index";
-import { getScoreColorClass } from "../../../utils/scoreUtils";
 
 interface CoursePreparationCardProps {
   course: CourseDetailsDto;
@@ -20,64 +18,49 @@ export default function CoursePreparationCard({
   return (
     <Card className="p-5 md:p-6 shadow-sm space-y-4">
       <Flex align="center" justify="between" wrap gap={3} className="pb-3 border-b border-border">
-        <Flex align="center" gap={2.5}>
-          <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-            <Target size={18} strokeWidth={2.25} />
-          </div>
-          <div>
-            <Heading level={2} size="sm" className="font-bold">
-              {t("courseDetails.preparationTitle", "Poziom przygotowania do przedmiotu")}
-            </Heading>
-            <Text size="xs" variant="muted">
-              {t("courseDetails.preparationSubtitle", "Wskaźnik wyliczony na podstawie wyników quizów i opanowanych fiszek")}
-            </Text>
-          </div>
-        </Flex>
+        <div>
+          <Heading level={2} size="sm" className="font-bold">
+            {t("courseDetails.preparationTitle", "Poziom przygotowania do przedmiotu")}
+          </Heading>
+          <Text size="xs" variant="muted">
+            {t("courseDetails.preparationSubtitle", "Wskaźnik wyliczony na podstawie wyników quizów i opanowanych fiszek")}
+          </Text>
+        </div>
 
         <Flex align="baseline" gap={1.5}>
-          <span className={`text-2xl font-black tabular-nums ${getScoreColorClass(overallProgress)}`}>
+          <span className="text-2xl font-black tabular-nums text-foreground">
             {overallProgress}%
           </span>
         </Flex>
       </Flex>
 
-      <div className="w-full h-3.5 bg-secondary rounded-full overflow-hidden border border-border/60">
+      <div className="w-full h-3 bg-secondary rounded-full overflow-hidden border border-border/40">
         <div
-          className="h-full bg-emerald-500 transition-all duration-500 ease-out"
+          className="h-full bg-primary transition-all duration-500 ease-out"
           style={{
             width: `${Math.min(100, Math.max(0, overallProgress))}%`,
           }}
         />
       </div>
 
-      <Grid cols={1} smCols={2} gap={0} className="divide-y sm:divide-y-0 sm:divide-x divide-border/50 pt-1">
-        <Flex align="center" gap={3} className="py-2 sm:py-0 sm:px-4 first:pl-0">
-          <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500 shrink-0">
-            <Brain size={16} />
+      <Grid cols={2} gap={4} className="pt-1">
+        <div className="space-y-0.5">
+          <Text size="xs" variant="muted" className="font-medium">
+            {t("courseDetails.quizProgressLabel", "Quizy")}
+          </Text>
+          <div className="text-base font-bold tabular-nums text-foreground">
+            {quizProgress}%
           </div>
-          <div>
-            <Text size="xs" variant="muted" className="font-medium">
-              {t("courseDetails.quizProgressLabel", "Quizy")}
-            </Text>
-            <Text size="sm" variant="default" className="font-bold tabular-nums">
-              {quizProgress}%
-            </Text>
-          </div>
-        </Flex>
+        </div>
 
-        <Flex align="center" gap={3} className="py-2 sm:py-0 sm:px-4 last:pr-0">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
-            <Layers size={16} />
+        <div className="space-y-0.5">
+          <Text size="xs" variant="muted" className="font-medium">
+            {t("courseDetails.flashcardsMasteredLabel", "Fiszki")}
+          </Text>
+          <div className="text-base font-bold tabular-nums text-foreground">
+            {flashcardProgress}%
           </div>
-          <div>
-            <Text size="xs" variant="muted" className="font-medium">
-              {t("courseDetails.flashcardsMasteredLabel", "Fiszki")}
-            </Text>
-            <Text size="sm" variant="default" className="font-bold tabular-nums">
-              {flashcardProgress}%
-            </Text>
-          </div>
-        </Flex>
+        </div>
       </Grid>
     </Card>
   );

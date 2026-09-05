@@ -8,4 +8,6 @@ public class CourseResourceDto
     public DateTime LastModified { get; set; }
     public required string DownloadUrl { get; set; }
     public bool IsHidden { get; set; }
+    public int EstimatedTokens { get; set; }
+    public double EstimatedDailyUsagePercentage { get; set; }
 }

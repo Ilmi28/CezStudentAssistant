@@ -335,14 +335,27 @@ export default function CourseDetailsPage({
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-primary flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-muted-foreground flex-shrink-0">
                           <FileText size={15} />
                         </div>
                         <div className="min-w-0">
                           <div className={`text-xs font-medium truncate ${file.isHidden ? "text-muted-foreground" : "text-foreground"}`}>
                             {file.displayName}
                           </div>
-                          <div className="text-[11px] text-muted-foreground/50">{file.mimeType}</div>
+                          <div className="text-[11px] text-muted-foreground/60 flex items-center gap-1.5 flex-wrap">
+                            <span>{file.mimeType}</span>
+                            {file.estimatedTokens !== undefined && file.estimatedTokens > 0 && (
+                              <>
+                                <span>•</span>
+                                <span className="font-medium">
+                                  {t("courseDetails.tokensLabel", {
+                                    count: file.estimatedTokens.toLocaleString(),
+                                    pct: file.estimatedDailyUsagePercentage ?? 0,
+                                  })}
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0 ml-2">

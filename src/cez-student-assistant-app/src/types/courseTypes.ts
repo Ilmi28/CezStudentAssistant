@@ -12,6 +12,8 @@ export interface CourseResourceDto {
   lastModified: string;
   downloadUrl: string;
   isHidden?: boolean;
+  estimatedTokens?: number;
+  estimatedDailyUsagePercentage?: number;
 }
 
 export interface CourseDetailsDto {

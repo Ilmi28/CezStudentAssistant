@@ -19,6 +19,13 @@ export class UnauthorizedError extends ApiError {
   }
 }
 
+export class PayloadTooLargeError extends ApiError {
+  constructor(message = "File size limit exceeded") {
+    super(message, 413);
+    this.name = "PayloadTooLargeError";
+  }
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   statusCode: number;
@@ -114,6 +121,10 @@ export const handleResponse = async <T>(res: Response, isAuthEndpoint = false): 
     throw new UnauthorizedError();
   }
 
+  if (res.status === 413) {
+    throw new PayloadTooLargeError(i18n.t("courseDetails.fileTooLargeError", "Rozmiar pliku jest za duży (przekroczono limit serwera)."));
+  }
+
   if (!res.ok || (body && !body.success)) {
     const serverMessage = body?.message;
 
@@ -138,7 +149,7 @@ export const handleResponse = async <T>(res: Response, isAuthEndpoint = false): 
       throw new ApiError(serverMessage, res.status, body?.errors);
     }
 
-    throw new ApiError(`Request failed with status ${res.status}`, res.status);
+    throw new ApiError(i18n.t("common.serverError", "Wystąpił błąd podczas przetwarzania żądania."), res.status);
   }
 
   return body?.data as T;

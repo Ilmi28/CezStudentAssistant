@@ -33,7 +33,7 @@ public class GeminiAIClient(
         var prompt = quizService.BuildPrompt(request);
         var schema = quizService.BuildSchema();
 
-        var content = await BuildContentAsync(prompt, request.Files);
+        var content = await BuildContentAsync(prompt, request.Files, request.AdditionalInstructions);
 
         var config = new GenerateContentConfig
         {
@@ -67,7 +67,7 @@ public class GeminiAIClient(
         var prompt = flashcardService.BuildPrompt(request);
         var schema = flashcardService.BuildSchema();
 
-        var content = await BuildContentAsync(prompt, request.Files);
+        var content = await BuildContentAsync(prompt, request.Files, request.AdditionalInstructions);
 
         var config = new GenerateContentConfig
         {
@@ -96,7 +96,7 @@ public class GeminiAIClient(
     public async Task<int> EstimateTokenUsageAsync(AIQuizRequest request)
     {
         var prompt = quizService.BuildPrompt(request);
-        var content = await BuildContentAsync(prompt, request.Files);
+        var content = await BuildContentAsync(prompt, request.Files, request.AdditionalInstructions);
 
         var response = await client.Models.CountTokensAsync(_model, content);
         return response.TotalTokens ?? 0;
@@ -155,7 +155,7 @@ public class GeminiAIClient(
         return delays.ToArray();
     }
 
-    private async Task<Content> BuildContentAsync(string prompt, IEnumerable<AIFile>? files)
+    private async Task<Content> BuildContentAsync(string prompt, IEnumerable<AIFile>? files, string? additionalInstructions = null)
     {
         var parts = new List<Part>
         {
@@ -179,6 +179,16 @@ public class GeminiAIClient(
                     }
                 }
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(additionalInstructions))
+        {
+            parts.Add(Part.FromText($"""
+                [FINAL DIRECTIVE - USER CUSTOM FOCUS]:
+                REMINDER: Focus your output questions/cards, title, and description specifically according to the user's requested focus:
+                "{additionalInstructions}"
+                Ensure all generated content remains factually grounded in the provided document(s).
+                """));
         }
 
         return new Content

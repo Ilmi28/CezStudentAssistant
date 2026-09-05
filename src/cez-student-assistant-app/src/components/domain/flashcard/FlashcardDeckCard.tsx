@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 import type { FlashcardDeckDto } from "../../../types/flashcardTypes";
 import { FlashcardDeckStatusEnum } from "../../../enums/flashcardEnums";
-import { Card, Badge, Heading, Text, Flex, Tooltip } from "../../index";
+import { Card, Heading, Text, Flex, Tooltip } from "../../index";
 import { getScoreColorClass } from "../../../utils/scoreUtils";
 
 interface FlashcardDeckCardProps {
@@ -22,8 +22,7 @@ export function FlashcardDeckCard({
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const isGenerating = deck.status === FlashcardDeckStatusEnum.Generating;
-  const isFailed = deck.status === FlashcardDeckStatusEnum.Failed;
+  const isProcessing = deck.status === FlashcardDeckStatusEnum.Generating || deck.status === FlashcardDeckStatusEnum.Failed;
 
   const rawTitle = deck.name;
   const isGenericTitle = !rawTitle || rawTitle.startsWith("Fiszki z") || rawTitle === deck.courseName;
@@ -31,9 +30,9 @@ export function FlashcardDeckCard({
 
   return (
     <Card
-      hoverEffect={!isGenerating && !isFailed}
+      hoverEffect={!isProcessing}
       onClick={() => {
-        if (!isGenerating && !isFailed) {
+        if (!isProcessing) {
           navigate(`/flashcards/${deck.id}`, { state: { fromPath: location.pathname } });
         }
       }}
@@ -44,9 +43,6 @@ export function FlashcardDeckCard({
           <Heading level={4} size="sm" className="leading-snug truncate tile-title-scale">
             {displayTitle}
           </Heading>
-          {isFailed && (
-            <Badge variant="error">Błąd generowania (Ponawianie...)</Badge>
-          )}
         </Flex>
         {showCourseName && deck.courseName && (
           <Text size="xs" variant="muted" className="line-clamp-1 truncate">
@@ -56,18 +52,10 @@ export function FlashcardDeckCard({
       </div>
 
       <Flex direction="col" align="end" justify="center" gap={0.5} className="shrink-0 text-right">
-        {isGenerating ? (
+        {isProcessing ? (
           <Tooltip content="Generowanie fiszek...">
             <div
               className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
-            >
-              <RefreshCw size={15} className="animate-spin" />
-            </div>
-          </Tooltip>
-        ) : isFailed ? (
-          <Tooltip content="Błąd generowania. Zadanie oczekuje na ponowienie...">
-            <div
-              className="w-8 h-8 rounded-full bg-destructive/15 text-destructive flex items-center justify-center shrink-0 border border-destructive/25"
             >
               <RefreshCw size={15} className="animate-spin" />
             </div>

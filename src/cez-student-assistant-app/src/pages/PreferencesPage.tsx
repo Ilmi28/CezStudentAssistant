@@ -9,7 +9,6 @@ import {
   Text,
   Flex,
   Grid,
-  Badge,
 } from "../components";
 import { userService } from "../services";
 import { UserTheme, UserLanguage } from "../types";
@@ -212,9 +211,9 @@ export default function PreferencesPage() {
           <Heading level={2} size="base" className="font-bold tracking-wide">
             {t("preferences.cezSection")}
           </Heading>
-          <Badge variant={isCezConnected ? "success" : "warning"} uppercase>
+          <span className={`text-xs font-bold uppercase tracking-wider ${isCezConnected ? "text-emerald-400" : "text-amber-400"}`}>
             {isCezConnected ? t("preferences.connected") : t("preferences.notConnected")}
-          </Badge>
+          </span>
         </Flex>
         <div className="space-y-3.5">
           <Text size="sm" variant="muted">

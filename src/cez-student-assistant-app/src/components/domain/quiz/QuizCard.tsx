@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 import type { QuizDto } from "../../../types";
 import { QuizStatusEnum, QuizAttemptStatus } from "../../../enums/quizEnums";
-import { Card, Badge, Heading, Text, Flex, Tooltip } from "../../index";
+import { Card, Heading, Text, Flex, Tooltip } from "../../index";
 import { getScoreColorClass } from "../../../utils/scoreUtils";
 
 interface QuizCardProps {
@@ -22,8 +22,7 @@ export default function QuizCard({
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const isGenerating = quiz.status === QuizStatusEnum.Generating;
-  const isFailed = quiz.status === QuizStatusEnum.Failed;
+  const isProcessing = quiz.status === QuizStatusEnum.Generating || quiz.status === QuizStatusEnum.Failed;
 
   const rawTitle = quiz.name;
   const isGenericTitle = !rawTitle || rawTitle.startsWith("Quiz z") || rawTitle === quiz.courseName;
@@ -33,9 +32,9 @@ export default function QuizCard({
 
   return (
     <Card
-      hoverEffect={!isGenerating}
+      hoverEffect={!isProcessing}
       onClick={() => {
-        if (!isGenerating) {
+        if (!isProcessing) {
           navigate(`/quiz/${quiz.id}`, { state: { fromPath: location.pathname } });
         }
       }}
@@ -46,9 +45,6 @@ export default function QuizCard({
           <Heading level={4} size="sm" className="leading-snug truncate tile-title-scale">
             {displayTitle}
           </Heading>
-          {isFailed && (
-            <Badge variant="error" className="shrink-0">Błąd generowania (Ponawianie...)</Badge>
-          )}
         </Flex>
         {showCourseName && quiz.courseName && (
           <Text size="xs" variant="muted" className="line-clamp-1 truncate">
@@ -58,19 +54,11 @@ export default function QuizCard({
       </div>
 
       <Flex direction="col" align="end" justify="center" gap={0.5} className="shrink-0 text-right">
-        {isGenerating ? (
+        {isProcessing ? (
           <Tooltip content={t("quizzes.btnGenerating")}>
             <div
               aria-label={t("quizzes.btnGenerating")}
               className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
-            >
-              <RefreshCw size={15} className="animate-spin" />
-            </div>
-          </Tooltip>
-        ) : isFailed ? (
-          <Tooltip content="Błąd generowania. Zadanie oczekuje na ponowienie...">
-            <div
-              className="w-8 h-8 rounded-full bg-destructive/15 text-destructive flex items-center justify-center shrink-0 border border-destructive/25"
             >
               <RefreshCw size={15} className="animate-spin" />
             </div>
