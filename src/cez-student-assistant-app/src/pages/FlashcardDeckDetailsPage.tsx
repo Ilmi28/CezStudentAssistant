@@ -202,7 +202,7 @@ export default function FlashcardDeckDetailsPage() {
                 {deck.courseName}
               </Badge>
             )}
-            <h1 className="text-xl font-bold text-foreground truncate">
+            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
               {deck.name}
             </h1>
           </div>

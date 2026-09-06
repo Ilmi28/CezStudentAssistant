@@ -26,12 +26,14 @@ public sealed class GenerateFlashcardsCommand : ICommand, IUserRequest
     public int? EasyCount { get; set; }
     public int? MediumCount { get; set; }
     public int? HardCount { get; set; }
+    public bool GenerateFromPromptOnly { get; set; }
 }
 
 public class GenerateFlashcardsCommandHandler(
     IJobScheduler jobScheduler,
     IJobService jobService,
-    IUnitOfWork unitOfWork) : BaseCommandHandler<GenerateFlashcardsCommand>
+    IUnitOfWork unitOfWork,
+    IAIClient? aiClient = null) : BaseCommandHandler<GenerateFlashcardsCommand>
 {
     private const int EstimatedTokensPerOutputCard = 150;
 
@@ -48,7 +50,7 @@ public class GenerateFlashcardsCommandHandler(
         var existingDecks = deckRepo.Find(d => d.CourseId == command.CourseId).ToList();
         var deckTitle = $"Fiszki #{existingDecks.Count + 1}";
 
-        var reservedCount = await EstimateTokensAsync(command.CourseId, command.CardCount, ct);
+        var reservedCount = await EstimateTokensAsync(command, ct);
 
         var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
         var reservation = new TokenUsage
@@ -83,25 +85,40 @@ public class GenerateFlashcardsCommandHandler(
             AdditionalInstructions = command.AdditionalInstructions,
             EasyCount = command.EasyCount,
             MediumCount = command.MediumCount,
-            HardCount = command.HardCount
+            HardCount = command.HardCount,
+            GenerateFromPromptOnly = command.GenerateFromPromptOnly
         };
 
         var jobId = jobScheduler.Enqueue<IFlashcardGenerationService>(service => service.GenerateFlashcards(dto, ct));
         await jobService.UpdateJobAsync(job, JobStatus.Enqueued, jobId, ct);
     }
 
-    private async Task<int> EstimateTokensAsync(Guid courseId, int cardCount, CancellationToken ct)
+    private async Task<int> EstimateTokensAsync(GenerateFlashcardsCommand command, CancellationToken ct)
     {
-        var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
-        var resources = await resourceRepo.Find(r => r.CourseId == courseId).ToListAsync(ct);
         var inputTokens = 0;
 
-        foreach (var resource in resources)
+        if (command.GenerateFromPromptOnly && aiClient != null)
         {
-            inputTokens += resource.EstimatedTokens;
+            inputTokens = await aiClient.EstimateTokenUsageAsync(new Application.Requests.AI.AIQuizRequest
+            {
+                QuestionCount = command.CardCount,
+                AdditionalInstructions = command.AdditionalInstructions,
+                GenerateFromPromptOnly = true,
+                Files = []
+            });
+        }
+        else
+        {
+            var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
+            var resources = await resourceRepo.Find(r => r.CourseId == command.CourseId).ToListAsync(ct);
+
+            foreach (var resource in resources)
+            {
+                inputTokens += resource.EstimatedTokens;
+            }
         }
 
-        var outputTokens = Math.Max(1, cardCount) * EstimatedTokensPerOutputCard;
+        var outputTokens = Math.Max(1, command.CardCount) * EstimatedTokensPerOutputCard;
         return inputTokens + outputTokens;
     }
 }

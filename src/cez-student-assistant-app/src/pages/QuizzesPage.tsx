@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Brain } from "lucide-react";
-import { Card, QuizCard, Flex, Grid, Heading, Text } from "../components";
+import { Card, QuizCard, Flex, Heading, Text } from "../components";
 import { useQuiz } from "../hooks";
 
 export default function QuizzesPage() {
@@ -30,11 +30,11 @@ export default function QuizzesPage() {
             </div>
           </Card>
         ) : (
-          <Grid cols={1} mdCols={2} gap={4}>
+          <div className="space-y-2.5">
             {quizzes.map((q, idx) => (
               <QuizCard key={q.id} quiz={q} index={idx + 1} />
             ))}
-          </Grid>
+          </div>
         )}
       </div>
     </div>

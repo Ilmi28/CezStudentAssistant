@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { BookOpen } from "lucide-react";
-import { Card, FlashcardDeckCard, Flex, Grid, Heading, Text } from "../components";
+import { Card, FlashcardDeckCard, Flex, Heading, Text } from "../components";
 import { useFlashcards } from "../hooks";
 import { signalRService } from "../services/signalRService";
 
@@ -42,11 +42,11 @@ export default function FlashcardsPage() {
             </div>
           </Card>
         ) : (
-          <Grid cols={1} mdCols={2} gap={4}>
+          <div className="space-y-2.5">
             {decks.map((deck, idx) => (
               <FlashcardDeckCard key={deck.id} deck={deck} index={idx + 1} />
             ))}
-          </Grid>
+          </div>
         )}
       </div>
     </div>

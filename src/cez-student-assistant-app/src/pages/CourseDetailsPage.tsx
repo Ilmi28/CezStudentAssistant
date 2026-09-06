@@ -269,7 +269,7 @@ export default function CourseDetailsPage({
                 {t("courses.tagCez")}
               </Badge>
             )}
-            <h1 className="text-xl font-bold text-foreground truncate">
+            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
               {selectedCourse.name}
             </h1>
           </div>
@@ -426,7 +426,7 @@ export default function CourseDetailsPage({
                   <p className="text-[11px] text-muted-foreground/60 mt-1">{t("quizzes.noQuizzesSubtitle")}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
                   {courseQuizzes.map((quiz, idx) => (
                     <QuizCard key={quiz.id} quiz={quiz} index={idx + 1} showCourseName={false} />
                   ))}
@@ -462,7 +462,7 @@ export default function CourseDetailsPage({
                   <p className="text-[11px] text-muted-foreground/60 mt-1">{t("flashcards.noCourseDecksSubtitle")}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
                   {decks.map((deck, idx) => (
                     <FlashcardDeckCard key={deck.id} deck={deck} index={idx + 1} showCourseName={false} />
                   ))}

@@ -44,6 +44,7 @@ public class GetUserQuizzesQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandl
             .Include(q => q.Attempts)
                 .ThenInclude(a => a.Answers)
                     .ThenInclude(ans => ans.SelectedOptions)
+            .OrderByDescending(q => q.CreatedAt)
             .ToListAsync(ct);
 
         return quizzes.Select(q =>

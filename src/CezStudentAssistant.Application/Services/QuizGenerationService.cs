@@ -57,7 +57,9 @@ public class QuizGenerationService(
             var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
             var dailyTokensUsed = await tokenUsageRepo.GetDailyTokenUsageAsync(dto.UserId, DateTime.UtcNow, ct);
 
-            aiFiles = await DownloadCourseFilesAsync(dto.CourseId, ct);
+            aiFiles = dto.GenerateFromPromptOnly
+                ? new List<AIFile>()
+                : await DownloadCourseFilesAsync(dto.CourseId, ct);
 
             var aiRequest = new AIQuizRequest
             {
@@ -67,7 +69,8 @@ public class QuizGenerationService(
                 AdditionalInstructions = dto.AdditionalInstructions,
                 EasyCount = dto.EasyQuestionCountPerAttempt,
                 MediumCount = dto.MediumQuestionCountPerAttempt,
-                HardCount = dto.HardQuestionCountPerAttempt
+                HardCount = dto.HardQuestionCountPerAttempt,
+                GenerateFromPromptOnly = dto.GenerateFromPromptOnly
             };
 
             var estimatedTokens = await aiClient.EstimateTokenUsageAsync(aiRequest);

@@ -102,6 +102,22 @@ public class GeminiAIClient(
         return response.TotalTokens ?? 0;
     }
 
+    public async Task<int> EstimateTextTokenUsageAsync(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return 0;
+        }
+
+        var content = new Content
+        {
+            Parts = [new Part { Text = text }]
+        };
+
+        var response = await client.Models.CountTokensAsync(_model, content);
+        return response.TotalTokens ?? 0;
+    }
+
     private async Task<GenerateContentResponse> GenerateContentWithRetryAsync(Content content, GenerateContentConfig config)
     {
         var attempts = 0;
@@ -183,11 +199,16 @@ public class GeminiAIClient(
 
         if (!string.IsNullOrWhiteSpace(additionalInstructions))
         {
+            var hasFiles = files != null && files.Any();
+            var groundingNote = hasFiles
+                ? "Ensure all generated content remains factually grounded in the provided document(s)."
+                : "Ensure all generated content is factually accurate and directly addresses the user's requested focus topic using expert domain knowledge.";
+
             parts.Add(Part.FromText($"""
                 [FINAL DIRECTIVE - USER CUSTOM FOCUS]:
                 REMINDER: Focus your output questions/cards, title, and description specifically according to the user's requested focus:
                 "{additionalInstructions}"
-                Ensure all generated content remains factually grounded in the provided document(s).
+                {groundingNote}
                 """));
         }
 

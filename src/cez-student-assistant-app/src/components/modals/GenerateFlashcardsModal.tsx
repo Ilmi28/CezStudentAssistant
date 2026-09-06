@@ -5,6 +5,7 @@ import { PrimaryButton, SecondaryButton } from "../ui/Button";
 import Modal from "../ui/Modal";
 import DifficultyControlsGroup from "../ui/DifficultyControlsGroup";
 import TokenEstimationWidget from "../ui/TokenEstimationWidget";
+import { Toggle } from "../ui/Toggle";
 import { flashcardService } from "../../services/flashcardService";
 import type { EstimateFlashcardTokensDto } from "../../types/flashcardTypes";
 
@@ -16,7 +17,8 @@ interface GenerateFlashcardsModalProps {
     additionalInstructions?: string,
     easyCount?: number | null,
     mediumCount?: number | null,
-    hardCount?: number | null
+    hardCount?: number | null,
+    generateFromPromptOnly?: boolean
   ) => Promise<void>;
   hasFiles: boolean;
   courseId: string;
@@ -40,61 +42,56 @@ export default function GenerateFlashcardsModal({
   const [mediumCount, setMediumCount] = useState<number>(4);
   const [hardCount, setHardCount] = useState<number>(2);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
+  const [promptOnlyMode, setPromptOnlyMode] = useState<boolean>(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [baseEstimation, setBaseEstimation] = useState<EstimateFlashcardTokensDto | null>(null);
+  const [estimation, setEstimation] = useState<EstimateFlashcardTokensDto | null>(null);
   const [loadingEstimation, setLoadingEstimation] = useState(false);
 
   const totalSelected = easyCount + mediumCount + hardCount;
 
   useEffect(() => {
-    if (!isOpen || !hasFiles || !courseId) {
+    if (isOpen) {
+      setPromptOnlyMode(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !courseId) {
+      return;
+    }
+
+    if (!promptOnlyMode && !hasFiles) {
+      setEstimation(null);
       return;
     }
 
     let isMounted = true;
     setLoadingEstimation(true);
 
-    flashcardService
-      .estimateFlashcardTokens(courseId, 10)
-      .then((result) => {
-        if (isMounted) {
-          setBaseEstimation(result);
-        }
-      })
-      .catch((err) => {
-        console.warn("[GenerateFlashcardsModal] Token estimation failed:", err);
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoadingEstimation(false);
-        }
-      });
+    const timer = setTimeout(() => {
+      flashcardService
+        .estimateFlashcardTokens(courseId, totalSelected, additionalInstructions, promptOnlyMode)
+        .then((result) => {
+          if (isMounted) {
+            setEstimation(result);
+          }
+        })
+        .catch((err) => {
+          console.warn("[GenerateFlashcardsModal] Token estimation failed:", err);
+        })
+        .finally(() => {
+          if (isMounted) {
+            setLoadingEstimation(false);
+          }
+        });
+    }, 1000);
 
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
-  }, [isOpen, hasFiles, courseId]);
-
-  const currentEstimation = (() => {
-    if (!baseEstimation) return null;
-    const count = Math.max(1, totalSelected);
-    const baseInputTokens = Math.max(0, baseEstimation.estimatedTokens - 1500);
-    const totalEstimatedTokens = baseInputTokens + count * 150;
-    const estimatedPercentage = baseEstimation.dailyTokenLimit > 0
-      ? Math.round((totalEstimatedTokens / baseEstimation.dailyTokenLimit) * 10000) / 100
-      : 0;
-    const canGenerate = (baseEstimation.dailyTokensUsed + totalEstimatedTokens) <= baseEstimation.dailyTokenLimit;
-
-    return {
-      estimatedTokens: totalEstimatedTokens,
-      estimatedDailyUsagePercentage: estimatedPercentage,
-      canGenerate,
-      dailyTokenLimit: baseEstimation.dailyTokenLimit,
-      dailyTokensUsed: baseEstimation.dailyTokensUsed,
-      dailyTokensReserved: baseEstimation.dailyTokensReserved,
-    };
-  })();
+  }, [isOpen, hasFiles, courseId, promptOnlyMode, additionalInstructions, totalSelected]);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,8 +101,13 @@ export default function GenerateFlashcardsModal({
       return;
     }
 
-    if (!hasFiles) {
+    if (!promptOnlyMode && !hasFiles) {
       setModalError(t("courseDetails.noFilesWarning", "Brak aktywnych plików."));
+      return;
+    }
+
+    if (promptOnlyMode && !additionalInstructions.trim()) {
+      setModalError(t("auth.emptyFields"));
       return;
     }
 
@@ -118,7 +120,8 @@ export default function GenerateFlashcardsModal({
         additionalInstructions.trim() || undefined,
         easyCount,
         mediumCount,
-        hardCount
+        hardCount,
+        promptOnlyMode
       );
       onClose();
     } catch (err: any) {
@@ -128,6 +131,13 @@ export default function GenerateFlashcardsModal({
     }
   };
 
+  const isSubmitDisabled =
+    loading ||
+    (!promptOnlyMode && !hasFiles) ||
+    (promptOnlyMode && !additionalInstructions.trim()) ||
+    totalSelected <= 0 ||
+    (estimation !== null && !estimation.canGenerate);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -136,18 +146,7 @@ export default function GenerateFlashcardsModal({
       maxWidth="lg"
     >
       <form onSubmit={handleFormSubmit} className="space-y-4">
-        <p className="text-xs text-muted-foreground leading-relaxed -mt-1 mb-2">
-          {t("flashcards.generateModalDesc")}
-        </p>
-
         {modalError && <Alert variant="error" message={modalError} />}
-
-        {!hasFiles && (
-          <Alert
-            variant="warning"
-            message={t("courseDetails.noFilesWarning", "Brak aktywnych plików.")}
-          />
-        )}
 
         <DifficultyControlsGroup
           easyCount={easyCount}
@@ -161,24 +160,51 @@ export default function GenerateFlashcardsModal({
           maxPerCategory={30}
         />
 
-        <div>
-          <label className="block text-xs font-medium text-foreground mb-1.5">
-            {t("courseDetails.generateInstructions")}
-          </label>
-          <textarea
-            value={additionalInstructions}
-            onChange={(e) => setAdditionalInstructions(e.target.value)}
-            rows={2}
-            className="w-full px-3.5 py-2 rounded-xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors resize-none"
+        <div className="space-y-2.5 pt-2 border-t border-border/60">
+          <Toggle
+            checked={promptOnlyMode}
+            onChange={(checked) => {
+              setPromptOnlyMode(checked);
+              if (modalError) setModalError(null);
+            }}
+            label={t("courseDetails.promptOnlyToggleLabel", "Tylko własny prompt")}
           />
+
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-foreground">
+                {t("courseDetails.generateInstructions")}
+              </label>
+              <span className="text-[11px] text-muted-foreground/70 font-medium tabular-nums">
+                {additionalInstructions.length} / 5000
+              </span>
+            </div>
+            <textarea
+              value={additionalInstructions}
+              onChange={(e) => {
+                setAdditionalInstructions(e.target.value.slice(0, 5000));
+                if (modalError) setModalError(null);
+              }}
+              rows={3}
+              maxLength={5000}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors resize-y min-h-[84px] max-h-[240px]"
+            />
+          </div>
         </div>
 
-        <TokenEstimationWidget
-          hasFiles={hasFiles}
-          loading={loadingEstimation}
-          estimation={currentEstimation}
-          itemLabel={t("nav.flashcards")}
-        />
+        {!promptOnlyMode && !hasFiles ? (
+          <Alert
+            variant="warning"
+            message={t("courseDetails.noFilesWarning", "Brak aktywnych plików.")}
+          />
+        ) : (
+          <TokenEstimationWidget
+            hasFiles={promptOnlyMode ? true : hasFiles}
+            loading={loadingEstimation}
+            estimation={estimation}
+            itemLabel={t("nav.flashcards")}
+          />
+        )}
 
         <div className="flex justify-end gap-3 pt-3 border-t border-border/60">
           <SecondaryButton type="button" onClick={onClose} disabled={loading}>
@@ -186,12 +212,7 @@ export default function GenerateFlashcardsModal({
           </SecondaryButton>
           <PrimaryButton
             type="submit"
-            disabled={
-              loading ||
-              !hasFiles ||
-              totalSelected <= 0 ||
-              (currentEstimation !== null && !currentEstimation.canGenerate)
-            }
+            disabled={isSubmitDisabled}
           >
             {loading ? t("flashcards.generateBtnLoading") : t("flashcards.generateBtn")}
           </PrimaryButton>

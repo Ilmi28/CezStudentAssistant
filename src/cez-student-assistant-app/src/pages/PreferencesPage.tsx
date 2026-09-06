@@ -19,7 +19,7 @@ export default function PreferencesPage() {
   const [fetchingConfig, setFetchingConfig] = useState(true);
 
   const { username, isCezConnected, lastCezSync, handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
-  const { updateTheme, updateUserLanguage, setShowCezModal, syncing } = useUI();
+  const { applyTheme, updateTheme, updateUserLanguage, setShowCezModal, syncing } = useUI();
   const { handleSyncCourses } = useCourse();
   const { usage, loadingUsage } = useUser();
   const { t, i18n } = useTranslation();
@@ -29,6 +29,7 @@ export default function PreferencesPage() {
       try {
         const config = await userService.getUserConfiguration();
         setThemeState(config.theme);
+        applyTheme(config.theme);
         setLanguageState(config.language);
         setIsCezConnected(config.isCezConnected);
         if (config.lastCezSync !== undefined) {
@@ -122,6 +123,7 @@ export default function PreferencesPage() {
                 options={[
                   { value: UserTheme.Dark, label: t("preferences.themeDark") },
                   { value: UserTheme.Light, label: t("preferences.themeLight") },
+                  { value: UserTheme.System, label: t("preferences.themeSystem") },
                 ]}
               />
             </div>

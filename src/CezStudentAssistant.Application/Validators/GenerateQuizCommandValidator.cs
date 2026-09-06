@@ -16,5 +16,16 @@ public class GenerateQuizCommandValidator : AbstractValidator<GenerateQuizComman
         RuleFor(x => x.TimeLimitMinutes)
             .GreaterThan(0)
             .When(x => x.TimeLimitMinutes.HasValue);
+
+        RuleFor(x => x.AdditionalInstructions)
+            .MaximumLength(5000)
+            .When(x => !string.IsNullOrWhiteSpace(x.AdditionalInstructions));
+
+        When(x => x.GenerateFromPromptOnly, () =>
+        {
+            RuleFor(x => x.AdditionalInstructions)
+                .NotEmpty()
+                .WithMessage("Własne instrukcje (prompt) są wymagane w trybie generowania bez plików kursu.");
+        });
     }
 }

@@ -94,7 +94,7 @@ export default function HomePage() {
             </div>
           </Card>
         ) : (
-          <Grid cols={1} mdCols={2} gap={4}>
+          <div className="space-y-2.5">
             {recentActivity.map((act) => {
               const isInProgress = act.status === "InProgress";
               const isQuiz = act.type === ActivityTypeEnum.Quiz;
@@ -105,10 +105,10 @@ export default function HomePage() {
                   key={act.id}
                   hoverEffect
                   onClick={() => handleActivityClick(act)}
-                  className="p-4 flex-row items-center justify-between gap-3.5 cursor-pointer"
+                  className="p-3.5 px-4 flex-row items-center justify-between gap-4 cursor-pointer"
                 >
                   <div className="min-w-0 flex-1 space-y-0.5">
-                    <Heading level={4} size="sm" className="truncate leading-snug tile-title-scale">
+                    <Heading level={4} size="sm" className="line-clamp-1 truncate leading-snug tile-title-scale" title={displayTitle}>
                       {displayTitle}
                     </Heading>
                     {act.courseName && (
@@ -147,7 +147,7 @@ export default function HomePage() {
                 </Card>
               );
             })}
-          </Grid>
+          </div>
         )}
       </div>
     </div>

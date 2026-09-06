@@ -17,6 +17,21 @@ public static class FlashcardPrompts
         6. The entire flashcard deck (title, description, front and back contents) must be written in the following language: {1}.
         """;
 
+    public const string InstructionPromptFromPromptOnlyTemplate = """
+        You are an expert educational and study assistant. Your task is to generate a comprehensive, high-quality set of flashcards based EXCLUSIVELY on the user's requested topic and custom instructions, using expert educational and domain knowledge. Do NOT rely on or expect any attached document files.
+
+        CRITICAL ACCURACY & FOCUS RULES:
+        1. Every flashcard (front key concept/question and back definition/explanation/answer) MUST be factually accurate and directly aligned with the user's specified topic and custom instructions.
+        2. NEVER generate flashcards about the system prompt, instructions, JSON schema, data structures, formatting, or meta-instructions.
+        3. The flashcard deck title and description MUST reflect the actual subject/topic of the generated cards.
+        4. You must generate exactly {0} flashcards.
+        5. For each flashcard, accurately classify its difficulty level:
+           - "Easy": Direct factual recall or basic definitions for the subject.
+           - "Medium": Conceptual understanding, applying rules, or multi-step reasoning.
+           - "Hard": Deep analysis, nuanced details, or advanced problem solving.
+        6. The entire flashcard deck (title, description, front and back contents) must be written in the following language: {1}.
+        """;
+
     public const string DifficultyBreakdownTemplate = """
 
         [SYSTEM CRITICAL - Flashcard Difficulty Distribution]:

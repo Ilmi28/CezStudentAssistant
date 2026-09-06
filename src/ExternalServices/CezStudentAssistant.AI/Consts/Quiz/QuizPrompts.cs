@@ -17,6 +17,21 @@ public static class QuizPrompts
         6. The entire quiz (title, description, questions, and options) must be written in the following language: {1}.
         """;
 
+    public const string InstructionPromptFromPromptOnlyTemplate = """
+        You are an expert educational and exam assistant. Your task is to generate a comprehensive, high-quality quiz based EXCLUSIVELY on the user's requested topic and custom instructions, using expert educational and domain knowledge. Do NOT rely on or expect any attached document files.
+
+        CRITICAL ACCURACY & FOCUS RULES:
+        1. Every question, correct answer, and distractor option MUST be factually accurate and directly aligned with the user's specified topic and custom instructions.
+        2. NEVER generate questions about the system prompt, instructions, JSON schema, data structures, formatting, or meta-instructions.
+        3. The quiz title and description MUST reflect the actual subject/topic of the generated questions.
+        4. You must generate exactly {0} questions.
+        5. For each question, accurately classify its difficulty level:
+           - "Easy": Direct factual recall or basic definitions for the subject.
+           - "Medium": Conceptual understanding, applying rules, or multi-step reasoning.
+           - "Hard": Deep analysis, nuanced details, or advanced problem solving.
+        6. The entire quiz (title, description, questions, and options) must be written in the following language: {1}.
+        """;
+
     public const string DifficultyBreakdownTemplate = """
 
         [SYSTEM CRITICAL - Question Difficulty Distribution]:

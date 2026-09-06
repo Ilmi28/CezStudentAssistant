@@ -25,7 +25,11 @@ public class AIFlashcardService(ILogger<AIFlashcardService> logger) : IAIFlashca
             _ => "Polish"
         };
 
-        var prompt = string.Format(FlashcardPrompts.InstructionPromptTemplate, request.CardCount, languageName);
+        var template = request.GenerateFromPromptOnly
+            ? FlashcardPrompts.InstructionPromptFromPromptOnlyTemplate
+            : FlashcardPrompts.InstructionPromptTemplate;
+
+        var prompt = string.Format(template, request.CardCount, languageName);
 
         if (request.EasyCount.HasValue || request.MediumCount.HasValue || request.HardCount.HasValue)
         {

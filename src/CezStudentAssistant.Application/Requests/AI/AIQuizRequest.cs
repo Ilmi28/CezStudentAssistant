@@ -11,4 +11,5 @@ public class AIQuizRequest
     public int? EasyCount { get; set; }
     public int? MediumCount { get; set; }
     public int? HardCount { get; set; }
+    public bool GenerateFromPromptOnly { get; set; }
 }

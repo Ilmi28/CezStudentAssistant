@@ -49,7 +49,7 @@ export default function CourseList({ courses, onOpenAddModal }: CourseListProps)
               className="px-5.5 py-4 cursor-pointer flex-row items-center justify-between shadow-xs"
             >
               <div className="min-w-0 pr-4">
-                <Text size="sm" className="font-medium text-foreground truncate tile-title-scale">
+                <Text size="sm" className="font-medium text-foreground line-clamp-2 break-words tile-title-scale" title={c.name}>
                   {c.name}
                 </Text>
               </div>

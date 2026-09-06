@@ -23,6 +23,7 @@ public sealed class EstimateFlashcardTokensQuery : IQuery<EstimateFlashcardToken
     public Guid CourseId { get; set; }
     public int CardCount { get; set; } = 10;
     public string? AdditionalInstructions { get; set; }
+    public bool GenerateFromPromptOnly { get; set; }
 }
 
 public class EstimateFlashcardTokensQueryHandler(
@@ -63,7 +64,7 @@ public class EstimateFlashcardTokensQueryHandler(
         }
         var totalUsedAndReserved = completedTokens + reservedTokens;
 
-        var inputTokens = await CalculateInputTokensAsync(query.CourseId, ct);
+        var inputTokens = await CalculateInputTokensAsync(query, ct);
 
         var estimatedOutputTokens = Math.Max(1, query.CardCount) * EstimatedTokensPerOutputCard;
         var totalEstimatedTokens = inputTokens + estimatedOutputTokens;
@@ -84,17 +85,28 @@ public class EstimateFlashcardTokensQueryHandler(
         };
     }
 
-    private async Task<int> CalculateInputTokensAsync(Guid courseId, CancellationToken ct)
+    private async Task<int> CalculateInputTokensAsync(EstimateFlashcardTokensQuery query, CancellationToken ct)
     {
+        if (query.GenerateFromPromptOnly)
+        {
+            return await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
+            {
+                QuestionCount = query.CardCount,
+                AdditionalInstructions = query.AdditionalInstructions,
+                GenerateFromPromptOnly = true,
+                Files = []
+            });
+        }
+
         var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
-        var resources = await resourceRepo.Find(r => r.CourseId == courseId && !r.IsHidden).ToListAsync(ct);
+        var resources = await resourceRepo.Find(r => r.CourseId == query.CourseId && !r.IsHidden).ToListAsync(ct);
         var inputTokens = 0;
 
         foreach (var resource in resources)
         {
             if (resource.EstimatedTokens <= 0)
             {
-                await using var stream = await fileService.DownloadAsync($"{courseId}/{resource.Name}", _containerName, ct);
+                await using var stream = await fileService.DownloadAsync($"{query.CourseId}/{resource.Name}", _containerName, ct);
 
                 var aiFile = new AIFile
                 {
@@ -117,6 +129,12 @@ public class EstimateFlashcardTokensQueryHandler(
             }
 
             inputTokens += resource.EstimatedTokens;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.AdditionalInstructions))
+        {
+            var promptTokens = await aiClient.EstimateTextTokenUsageAsync(query.AdditionalInstructions);
+            inputTokens += promptTokens;
         }
 
         return inputTokens;

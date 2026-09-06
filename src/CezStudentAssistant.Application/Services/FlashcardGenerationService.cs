@@ -62,7 +62,9 @@ public class FlashcardGenerationService(
             var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
             var dailyTokensUsed = await tokenUsageRepo.GetDailyTokenUsageAsync(dto.UserId, DateTime.UtcNow, ct);
 
-            aiFiles = await DownloadCourseFilesAsync(dto.CourseId, ct);
+            aiFiles = dto.GenerateFromPromptOnly
+                ? new List<AIFile>()
+                : await DownloadCourseFilesAsync(dto.CourseId, ct);
 
             var aiRequest = new AIFlashcardRequest
             {
@@ -72,7 +74,8 @@ public class FlashcardGenerationService(
                 AdditionalInstructions = dto.AdditionalInstructions,
                 EasyCount = dto.EasyCount,
                 MediumCount = dto.MediumCount,
-                HardCount = dto.HardCount
+                HardCount = dto.HardCount,
+                GenerateFromPromptOnly = dto.GenerateFromPromptOnly
             };
 
             var estimatedTokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest

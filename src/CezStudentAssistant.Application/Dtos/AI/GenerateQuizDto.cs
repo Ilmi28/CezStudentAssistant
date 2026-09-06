@@ -16,4 +16,5 @@ public class GenerateQuizDto
     public int? EasyQuestionCountPerAttempt { get; set; }
     public int? MediumQuestionCountPerAttempt { get; set; }
     public int? HardQuestionCountPerAttempt { get; set; }
+    public bool GenerateFromPromptOnly { get; set; }
 }

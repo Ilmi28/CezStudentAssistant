@@ -25,7 +25,11 @@ public class AIQuizService(IMapper mapper, ILogger<AIQuizService> logger) : IAIQ
             _ => "Polish"
         };
 
-        var instructionPrompt = string.Format(QuizPrompts.InstructionPromptTemplate, request.QuestionCount, languageName);
+        var template = request.GenerateFromPromptOnly
+            ? QuizPrompts.InstructionPromptFromPromptOnlyTemplate
+            : QuizPrompts.InstructionPromptTemplate;
+
+        var instructionPrompt = string.Format(template, request.QuestionCount, languageName);
 
         if (request.EasyCount.HasValue || request.MediumCount.HasValue || request.HardCount.HasValue)
         {

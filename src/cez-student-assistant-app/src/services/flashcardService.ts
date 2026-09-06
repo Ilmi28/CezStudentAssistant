@@ -38,7 +38,8 @@ export const flashcardService = {
     additionalInstructions?: string,
     easyCount?: number | null,
     mediumCount?: number | null,
-    hardCount?: number | null
+    hardCount?: number | null,
+    generateFromPromptOnly?: boolean
   ): Promise<void> {
     const res = await customFetch(
       `${API_BASE_URL}/flashcards/generate`,
@@ -52,6 +53,7 @@ export const flashcardService = {
           easyCount,
           mediumCount,
           hardCount,
+          generateFromPromptOnly,
         }),
       },
       false,
@@ -63,7 +65,8 @@ export const flashcardService = {
   async estimateFlashcardTokens(
     courseId: string,
     cardCount: number = 10,
-    additionalInstructions?: string
+    additionalInstructions?: string,
+    generateFromPromptOnly?: boolean
   ): Promise<EstimateFlashcardTokensDto> {
     const res = await customFetch(
       `${API_BASE_URL}/flashcards/course/${courseId}/estimate-tokens`,
@@ -74,6 +77,7 @@ export const flashcardService = {
           courseId,
           cardCount,
           additionalInstructions,
+          generateFromPromptOnly,
         }),
       },
       false,

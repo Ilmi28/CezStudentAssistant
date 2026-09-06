@@ -99,4 +99,41 @@ public class GetUserQuizzesQueryHandlerTests
         result.Data[0].LastAttemptExpiresAt.Should().Be(expiresAt);
         result.Data[0].LastAttemptPoints.Should().Be(5);
     }
+
+    [Test]
+    public async Task Handle_ShouldOrderQuizzesByCreatedAtDescending_WhenMultipleQuizzesExist()
+    {
+        var userId = Guid.NewGuid();
+        var oldQuiz = new QuizEntity
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Name = "Old Quiz",
+            CreatedAt = DateTime.UtcNow.AddDays(-5),
+            Questions = new List<Question>(),
+            Attempts = new List<QuizAttempt>()
+        };
+        var newQuiz = new QuizEntity
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Name = "New Quiz",
+            CreatedAt = DateTime.UtcNow,
+            Questions = new List<Question>(),
+            Attempts = new List<QuizAttempt>()
+        };
+
+        var mockDbSet = new List<QuizEntity> { oldQuiz, newQuiz }.BuildMockDbSet();
+        _quizRepository.Find(Arg.Any<Expression<Func<QuizEntity, bool>>>()).Returns(mockDbSet);
+
+        var query = new GetUserQuizzesQuery { UserId = userId };
+
+        var result = await _sut.Handle(query, CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(2);
+        result.Data![0].Id.Should().Be(newQuiz.Id);
+        result.Data[1].Id.Should().Be(oldQuiz.Id);
+    }
 }

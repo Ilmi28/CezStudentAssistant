@@ -36,11 +36,11 @@ export function FlashcardDeckCard({
           navigate(`/flashcards/${deck.id}`, { state: { fromPath: location.pathname } });
         }
       }}
-      className={`p-4 flex-row items-center justify-between gap-3.5 ${className}`}
+      className={`p-3.5 px-4 flex-row items-center justify-between gap-4 ${className}`}
     >
       <div className="min-w-0 flex-1 space-y-0.5">
         <Flex align="center" gap={2} wrap className="min-w-0">
-          <Heading level={4} size="sm" className="leading-snug truncate tile-title-scale">
+          <Heading level={4} size="sm" className="leading-snug line-clamp-1 truncate tile-title-scale" title={displayTitle}>
             {displayTitle}
           </Heading>
         </Flex>

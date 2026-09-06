@@ -9,4 +9,5 @@ public interface IAIClient
     Task<AIQuizResponse> GenerateQuizAsync(AIQuizRequest request);
     Task<AIFlashcardDeck> GenerateFlashcardsAsync(AIFlashcardRequest request);
     Task<int> EstimateTokenUsageAsync(AIQuizRequest request);
+    Task<int> EstimateTextTokenUsageAsync(string text);
 }

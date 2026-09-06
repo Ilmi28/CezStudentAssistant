@@ -16,6 +16,8 @@ export { default as Tooltip } from './ui/Tooltip';
 export { default as MultiSegmentProgressBar } from './ui/MultiSegmentProgressBar';
 export { default as TokenEstimationWidget } from './ui/TokenEstimationWidget';
 export { default as DifficultyControlsGroup } from './ui/DifficultyControlsGroup';
+export { Toggle } from './ui/Toggle';
+export type { ToggleProps } from './ui/Toggle';
 
 export { default as Navbar } from './layout/Navbar';
 export { default as Topbar } from './layout/Topbar';

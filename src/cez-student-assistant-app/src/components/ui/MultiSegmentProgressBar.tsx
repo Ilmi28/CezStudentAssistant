@@ -7,6 +7,7 @@ export interface ProgressBarSegment {
   colorClass: string;
   tooltipLabel?: string;
   customTooltip?: string;
+  animated?: boolean;
 }
 
 export interface MultiSegmentProgressBarProps {
@@ -60,15 +61,16 @@ export const MultiSegmentProgressBar: React.FC<MultiSegmentProgressBarProps> = (
           const pctStr = calculatedTotal > 0 ? ((seg.value / calculatedTotal) * 100).toFixed(1) : "0";
           const labelPrefix = seg.tooltipLabel ? `${seg.tooltipLabel}: ` : "";
           const text = seg.customTooltip || `${labelPrefix}${seg.value.toLocaleString()} (${pctStr}%)`;
+          const isAnimated = seg.animated !== false;
 
           return (
             <div
               key={seg.id}
               style={{ width: `${pct}%` }}
-              className="h-full cursor-pointer transition-[width] duration-500 ease-out"
+              className={`h-full cursor-pointer ${isAnimated ? "transition-[width] duration-500 ease-out" : ""}`}
               onMouseEnter={(e) => handleMouseEnter(e, text)}
             >
-              <div className={`w-full h-full ${seg.colorClass} rounded-full transition-all duration-500 ease-out hover:brightness-110`} />
+              <div className={`w-full h-full ${seg.colorClass} rounded-full ${isAnimated ? "transition-all duration-500 ease-out" : ""} hover:brightness-110`} />
             </div>
           );
         })}
@@ -76,7 +78,7 @@ export const MultiSegmentProgressBar: React.FC<MultiSegmentProgressBarProps> = (
         {showRemainingSegment && remainingPct > 0 && (
           <div
             style={{ width: `${remainingPct}%` }}
-            className="h-full cursor-pointer bg-transparent"
+            className="h-full cursor-pointer bg-transparent transition-[width] duration-500 ease-out"
             onMouseEnter={(e) => {
               const remPctStr = calculatedTotal > 0 ? ((remainingValue / calculatedTotal) * 100).toFixed(1) : "0";
               const text = remainingSegmentTooltip || `Wolny limit: ${remainingValue.toLocaleString()} (${remPctStr}%)`;

@@ -59,14 +59,15 @@ export const courseService = {
   async estimateQuizTokens(
     courseId: string,
     questionCount: number,
-    additionalInstructions?: string
+    additionalInstructions?: string,
+    generateFromPromptOnly?: boolean
   ): Promise<EstimateQuizTokensResponseDto> {
     const res = await customFetch(
       `${API_BASE_URL}/course/${courseId}/estimate-quiz-tokens`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionCount, additionalInstructions }),
+        body: JSON.stringify({ questionCount, additionalInstructions, generateFromPromptOnly }),
       },
       false,
       authService.refreshToken
@@ -82,7 +83,8 @@ export const courseService = {
     easyQuestionCountPerAttempt?: number | null,
     mediumQuestionCountPerAttempt?: number | null,
     hardQuestionCountPerAttempt?: number | null,
-    questionCountPerAttempt?: number | null
+    questionCountPerAttempt?: number | null,
+    generateFromPromptOnly?: boolean
   ): Promise<GenerateQuizResponseDto> {
     const res = await customFetch(
       `${API_BASE_URL}/course/${courseId}/generate-quiz`,
@@ -97,6 +99,7 @@ export const courseService = {
           mediumQuestionCountPerAttempt,
           hardQuestionCountPerAttempt,
           questionCountPerAttempt,
+          generateFromPromptOnly,
         }),
       },
       false,

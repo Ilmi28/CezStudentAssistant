@@ -240,7 +240,7 @@ export default function QuizSolverPage({
                 {attemptDetails.courseName}
               </Badge>
             )}
-            <h1 className="text-xl font-bold text-foreground truncate">
+            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
               {attemptDetails.name}
             </h1>
           </div>

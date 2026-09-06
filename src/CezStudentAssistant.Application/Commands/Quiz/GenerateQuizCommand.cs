@@ -25,6 +25,7 @@ public sealed class GenerateQuizCommand : ICommand, IUserRequest
     public int? MediumQuestionCountPerAttempt { get; set; }
     public int? HardQuestionCountPerAttempt { get; set; }
     public int? QuestionCountPerAttempt { get; set; }
+    public bool GenerateFromPromptOnly { get; set; }
 }
 
 public class GenerateQuizCommandHandler(
@@ -51,7 +52,7 @@ public class GenerateQuizCommandHandler(
         var existingQuizzes = quizRepo.Find(q => q.CourseId == command.CourseId).ToList();
         var quizTitle = $"Quiz #{existingQuizzes.Count + 1}";
 
-        var reservedCount = await EstimateTokensAsync(command.CourseId, command.QuestionCount, ct);
+        var reservedCount = await EstimateTokensAsync(command, ct);
 
         var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
         var reservation = new Domain.Entities.TokenUsage
@@ -92,51 +93,65 @@ public class GenerateQuizCommandHandler(
             AdditionalInstructions = command.AdditionalInstructions,
             EasyQuestionCountPerAttempt = command.EasyQuestionCountPerAttempt,
             MediumQuestionCountPerAttempt = command.MediumQuestionCountPerAttempt,
-            HardQuestionCountPerAttempt = command.HardQuestionCountPerAttempt
+            HardQuestionCountPerAttempt = command.HardQuestionCountPerAttempt,
+            GenerateFromPromptOnly = command.GenerateFromPromptOnly
         };
 
         var jobId = jobScheduler.Enqueue<IQuizGenerationService>(service => service.GenerateQuiz(dto, ct));
         await jobService.UpdateJobAsync(job, JobStatus.Enqueued, jobId, ct);
     }
 
-    private async Task<int> EstimateTokensAsync(Guid courseId, int questionCount, CancellationToken ct)
+    private async Task<int> EstimateTokensAsync(GenerateQuizCommand command, CancellationToken ct)
     {
-        var outputTokens = Math.Max(1, questionCount) * EstimatedTokensPerOutputQuestion;
+        var outputTokens = Math.Max(1, command.QuestionCount) * EstimatedTokensPerOutputQuestion;
         var inputTokens = 0;
 
-        var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
-        var resources = resourceRepo.Find(r => r.CourseId == courseId).ToList();
-
-        var updatedAny = false;
-        var containerName = configuration?["BlobContainerSettings:CourseFilesContainer"];
-
-        foreach (var resource in resources)
+        if (command.GenerateFromPromptOnly && aiClient != null)
         {
-            if (resource.EstimatedTokens <= 0 && fileService != null && aiClient != null && !string.IsNullOrWhiteSpace(containerName))
+            inputTokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
             {
-                await using var stream = await fileService.DownloadAsync($"{courseId}/{resource.Name}", containerName, ct);
-                if (stream != null)
-                {
-                    var tokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
-                    {
-                        QuestionCount = 0,
-                        Files = [new AIFile { Stream = stream, MimeType = resource.MimeType }]
-                    });
+                QuestionCount = command.QuestionCount,
+                AdditionalInstructions = command.AdditionalInstructions,
+                GenerateFromPromptOnly = true,
+                Files = []
+            });
+        }
+        else
+        {
+            var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
+            var resources = resourceRepo.Find(r => r.CourseId == command.CourseId).ToList();
 
-                    if (tokens > 0)
+            var updatedAny = false;
+            var containerName = configuration?["BlobContainerSettings:CourseFilesContainer"];
+
+            foreach (var resource in resources)
+            {
+                if (resource.EstimatedTokens <= 0 && fileService != null && aiClient != null && !string.IsNullOrWhiteSpace(containerName))
+                {
+                    await using var stream = await fileService.DownloadAsync($"{command.CourseId}/{resource.Name}", containerName, ct);
+                    if (stream != null)
                     {
-                        resource.EstimatedTokens = tokens;
-                        updatedAny = true;
+                        var tokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
+                        {
+                            QuestionCount = 0,
+                            Files = [new AIFile { Stream = stream, MimeType = resource.MimeType }]
+                        });
+
+                        if (tokens > 0)
+                        {
+                            resource.EstimatedTokens = tokens;
+                            updatedAny = true;
+                        }
                     }
                 }
+
+                inputTokens += resource.EstimatedTokens;
             }
 
-            inputTokens += resource.EstimatedTokens;
-        }
-
-        if (updatedAny)
-        {
-            await unitOfWork.SaveChangesAsync(ct);
+            if (updatedAny)
+            {
+                await unitOfWork.SaveChangesAsync(ct);
+            }
         }
 
         var total = inputTokens + outputTokens;

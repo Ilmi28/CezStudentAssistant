@@ -23,6 +23,7 @@ public sealed class EstimateQuizTokensQuery : IQuery<EstimateQuizTokensDto>, IUs
     public Guid CourseId { get; set; }
     public int QuestionCount { get; set; } = 5;
     public string? AdditionalInstructions { get; set; }
+    public bool GenerateFromPromptOnly { get; set; }
 }
 
 public class EstimateQuizTokensQueryHandler(
@@ -63,7 +64,7 @@ public class EstimateQuizTokensQueryHandler(
         }
         var totalUsedAndReserved = completedTokens + reservedTokens;
 
-        var inputTokens = await CalculateInputTokensAsync(query.CourseId, ct);
+        var inputTokens = await CalculateInputTokensAsync(query, ct);
 
         var estimatedOutputTokens = Math.Max(1, query.QuestionCount) * EstimatedTokensPerOutputQuestion;
         var totalEstimatedTokens = inputTokens + estimatedOutputTokens;
@@ -84,10 +85,21 @@ public class EstimateQuizTokensQueryHandler(
         };
     }
 
-    private async Task<int> CalculateInputTokensAsync(Guid courseId, CancellationToken ct)
+    private async Task<int> CalculateInputTokensAsync(EstimateQuizTokensQuery query, CancellationToken ct)
     {
+        if (query.GenerateFromPromptOnly)
+        {
+            return await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
+            {
+                QuestionCount = query.QuestionCount,
+                AdditionalInstructions = query.AdditionalInstructions,
+                GenerateFromPromptOnly = true,
+                Files = []
+            });
+        }
+
         var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
-        var resources = await resourceRepo.Find(r => r.CourseId == courseId && !r.IsHidden).ToListAsync(ct);
+        var resources = await resourceRepo.Find(r => r.CourseId == query.CourseId && !r.IsHidden).ToListAsync(ct);
 
         var updatedAny = false;
         var inputTokens = 0;
@@ -96,7 +108,7 @@ public class EstimateQuizTokensQueryHandler(
         {
             if (resource.EstimatedTokens <= 0)
             {
-                await using var stream = await fileService.DownloadAsync($"{courseId}/{resource.Name}", _containerName, ct);
+                await using var stream = await fileService.DownloadAsync($"{query.CourseId}/{resource.Name}", _containerName, ct);
                 if (stream != null)
                 {
                     var tokens = await aiClient.EstimateTokenUsageAsync(new AIQuizRequest
@@ -114,6 +126,12 @@ public class EstimateQuizTokensQueryHandler(
             }
 
             inputTokens += resource.EstimatedTokens;
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.AdditionalInstructions))
+        {
+            var promptTokens = await aiClient.EstimateTextTokenUsageAsync(query.AdditionalInstructions);
+            inputTokens += promptTokens;
         }
 
         if (updatedAny)

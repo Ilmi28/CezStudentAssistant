@@ -242,7 +242,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
                 {quiz.courseName}
               </Badge>
             )}
-            <h1 className="text-xl font-bold text-foreground truncate">
+            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
               {quiz.name}
             </h1>
           </div>

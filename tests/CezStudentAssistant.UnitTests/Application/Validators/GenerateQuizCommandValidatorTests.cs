@@ -89,4 +89,36 @@ public class GenerateQuizCommandValidatorTests
 
         result.ShouldHaveValidationErrorFor(x => x.TimeLimitMinutes);
     }
+
+    [Test]
+    public void Validate_ShouldFail_WhenGenerateFromPromptOnlyIsTrueAndAdditionalInstructionsIsEmpty()
+    {
+        var command = new GenerateQuizCommand
+        {
+            CourseId = Guid.NewGuid(),
+            QuestionCount = 5,
+            GenerateFromPromptOnly = true,
+            AdditionalInstructions = ""
+        };
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.AdditionalInstructions);
+    }
+
+    [Test]
+    public void Validate_ShouldPass_WhenGenerateFromPromptOnlyIsTrueAndAdditionalInstructionsIsProvided()
+    {
+        var command = new GenerateQuizCommand
+        {
+            CourseId = Guid.NewGuid(),
+            QuestionCount = 5,
+            GenerateFromPromptOnly = true,
+            AdditionalInstructions = "Stwórz quiz z BASH"
+        };
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldNotHaveAnyValidationErrors();
+    }
 }

@@ -5,6 +5,7 @@ import { PrimaryButton, SecondaryButton } from "../ui/Button";
 import Modal from "../ui/Modal";
 import DifficultyControlsGroup from "../ui/DifficultyControlsGroup";
 import TokenEstimationWidget from "../ui/TokenEstimationWidget";
+import { Toggle } from "../ui/Toggle";
 import { courseService } from "../../services/courseService";
 import type { EstimateQuizTokensResponseDto } from "../../types";
 
@@ -18,7 +19,8 @@ interface GenerateQuizModalProps {
     easyCount?: number | null,
     mediumCount?: number | null,
     hardCount?: number | null,
-    questionCountPerAttempt?: number | null
+    questionCountPerAttempt?: number | null,
+    generateFromPromptOnly?: boolean
   ) => Promise<void>;
   hasFiles: boolean;
   courseId: string;
@@ -47,9 +49,10 @@ export default function GenerateQuizModal({
   const [questionCountPerAttempt, setQuestionCountPerAttempt] = useState<number | null>(null);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState<number | "">("");
   const [additionalInstructions, setAdditionalInstructions] = useState("");
+  const [promptOnlyMode, setPromptOnlyMode] = useState<boolean>(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [baseEstimation, setBaseEstimation] = useState<EstimateQuizTokensResponseDto | null>(null);
+  const [estimation, setEstimation] = useState<EstimateQuizTokensResponseDto | null>(null);
   const [loadingEstimation, setLoadingEstimation] = useState(false);
 
   const totalSelected = easyCount + mediumCount + hardCount;
@@ -58,59 +61,59 @@ export default function GenerateQuizModal({
     : Math.max(1, totalSelected);
 
   useEffect(() => {
-    if (!isOpen || !hasFiles || !courseId) {
+    if (isOpen) {
+      setPromptOnlyMode(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !courseId) {
+      return;
+    }
+
+    if (!promptOnlyMode && !hasFiles) {
+      setEstimation(null);
       return;
     }
 
     let isMounted = true;
     setLoadingEstimation(true);
 
-    courseService
-      .estimateQuizTokens(courseId, 5)
-      .then((result) => {
-        if (isMounted) {
-          setBaseEstimation(result);
-        }
-      })
-      .catch((err) => {
-        console.warn("[GenerateQuizModal] Baseline token estimation failed:", err);
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoadingEstimation(false);
-        }
-      });
+    const timer = setTimeout(() => {
+      courseService
+        .estimateQuizTokens(courseId, totalSelected, additionalInstructions, promptOnlyMode)
+        .then((result) => {
+          if (isMounted) {
+            setEstimation(result);
+          }
+        })
+        .catch((err) => {
+          console.warn("[GenerateQuizModal] Baseline token estimation failed:", err);
+        })
+        .finally(() => {
+          if (isMounted) {
+            setLoadingEstimation(false);
+          }
+        });
+    }, 1000);
 
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
-  }, [isOpen, hasFiles, courseId]);
-
-  const currentEstimation = (() => {
-    if (!baseEstimation) return null;
-    const count = Math.max(1, totalSelected);
-    const baseInputTokens = Math.max(0, baseEstimation.estimatedTokens - 1000);
-    const totalEstimatedTokens = baseInputTokens + count * 200;
-    const estimatedPercentage = baseEstimation.dailyTokenLimit > 0
-      ? Math.round((totalEstimatedTokens / baseEstimation.dailyTokenLimit) * 10000) / 100
-      : 0;
-    const canGenerate = (baseEstimation.dailyTokensUsed + totalEstimatedTokens) <= baseEstimation.dailyTokenLimit;
-
-    return {
-      ...baseEstimation,
-      estimatedTokens: totalEstimatedTokens,
-      estimatedDailyUsagePercentage: estimatedPercentage,
-      canGenerate,
-    };
-  })();
+  }, [isOpen, hasFiles, courseId, promptOnlyMode, additionalInstructions, totalSelected]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasFiles) {
+    if (!promptOnlyMode && !hasFiles) {
       setModalError(t("courseDetails.generateNoFilesError", "Brak aktywnych plików."));
       return;
     }
-    if (currentEstimation && !currentEstimation.canGenerate) {
+    if (promptOnlyMode && !additionalInstructions.trim()) {
+      setModalError(t("auth.emptyFields"));
+      return;
+    }
+    if (estimation && !estimation.canGenerate) {
       setModalError(t("courseDetails.tokenLimitExceededWarning"));
       return;
     }
@@ -129,7 +132,8 @@ export default function GenerateQuizModal({
         easyCount,
         mediumCount,
         hardCount,
-        activeAttemptCount
+        activeAttemptCount,
+        promptOnlyMode
       );
       onClose();
     } catch (err: unknown) {
@@ -148,7 +152,10 @@ export default function GenerateQuizModal({
     onClose();
   };
 
-  const isSubmitDisabled = !hasFiles || (currentEstimation !== null && !currentEstimation.canGenerate);
+  const isSubmitDisabled =
+    (!promptOnlyMode && !hasFiles) ||
+    (promptOnlyMode && !additionalInstructions.trim()) ||
+    (estimation !== null && !estimation.canGenerate);
 
   return (
     <Modal
@@ -159,16 +166,8 @@ export default function GenerateQuizModal({
       <form onSubmit={handleSubmit} className="space-y-4">
         <Alert message={modalError} />
 
-        {!hasFiles && (
-          <Alert message={t("courseDetails.generateNoFilesError", "Brak aktywnych plików.")} variant="warning" />
-        )}
-
-        <p className="text-xs text-muted-foreground">
-          {t("courseDetails.generateDesc")}
-        </p>
-
         {/* Time Limit Section with Slider */}
-        <div className="space-y-2.5">
+        <div className="space-y-2.5 pt-1">
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-foreground font-medium">
               {t("quizDetails.quizTimeLimitLabel", "Limit czasu")}
@@ -239,24 +238,48 @@ export default function GenerateQuizModal({
           maxPerCategory={20}
         />
 
-        <div>
-          <label className="block text-xs font-medium text-foreground mb-1.5">
-            {t("courseDetails.generateInstructions", "Własne instrukcje")}
-          </label>
-          <textarea
-            value={additionalInstructions}
-            onChange={(e) => setAdditionalInstructions(e.target.value)}
-            rows={2}
-            className="w-full px-3.5 py-2 rounded-xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors resize-none"
+        <div className="space-y-2.5 pt-2 border-t border-border/60">
+          <Toggle
+            checked={promptOnlyMode}
+            onChange={(checked) => {
+              setPromptOnlyMode(checked);
+              if (modalError) setModalError(null);
+            }}
+            label={t("courseDetails.promptOnlyToggleLabel", "Tylko własny prompt")}
           />
+
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-foreground">
+                {t("courseDetails.generateInstructions", "Własne instrukcje")}
+              </label>
+              <span className="text-[11px] text-muted-foreground/70 font-medium tabular-nums">
+                {additionalInstructions.length} / 5000
+              </span>
+            </div>
+            <textarea
+              value={additionalInstructions}
+              onChange={(e) => {
+                setAdditionalInstructions(e.target.value.slice(0, 5000));
+                if (modalError) setModalError(null);
+              }}
+              rows={3}
+              maxLength={5000}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors resize-y min-h-[84px] max-h-[240px]"
+            />
+          </div>
         </div>
 
-        <TokenEstimationWidget
-          hasFiles={hasFiles}
-          loading={loadingEstimation}
-          estimation={currentEstimation}
-          itemLabel="Ten quiz"
-        />
+        {!promptOnlyMode && !hasFiles ? (
+          <Alert message={t("courseDetails.generateNoFilesError", "Brak aktywnych plików.")} variant="warning" />
+        ) : (
+          <TokenEstimationWidget
+            hasFiles={promptOnlyMode ? true : hasFiles}
+            loading={loadingEstimation}
+            estimation={estimation}
+            itemLabel="Ten quiz"
+          />
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <SecondaryButton type="button" onClick={handleClose}>
