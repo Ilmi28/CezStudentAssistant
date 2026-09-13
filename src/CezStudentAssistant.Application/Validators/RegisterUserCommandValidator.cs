@@ -12,6 +12,11 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .MinimumLength(3)
             .MaximumLength(50);
 
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MaximumLength(100);
+
         RuleFor(x => x.Password)
             .NotEmpty()
             .MinimumLength(8)

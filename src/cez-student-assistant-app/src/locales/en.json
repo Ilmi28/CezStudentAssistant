@@ -10,6 +10,7 @@
         "avatarDefault": "ST",
         "back": "Back",
         "cancel": "Cancel",
+        "save": "Save",
         "switchLanguage": "Przełącz na polski",
         "switchLanguageLabel": "PL",
         "paginationInfo": "Page {{current}} of {{total}}",
@@ -28,6 +29,8 @@
         "loginLoading": "Logging in...",
         "usernameLabel": "Username",
         "usernamePlaceholder": "",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "",
         "passwordLabel": "Password",
         "passwordPlaceholder": "",
         "orText": "Or login via",
@@ -346,6 +349,7 @@
         "passwordSection": "Account Password",
         "setPasswordBtn": "Set Password",
         "changePasswordBtn": "Change Password",
+        "editProfileBtn": "Edit profile",
         "passwordSetSuccess": "Password set successfully.",
         "passwordChangeSuccess": "Password changed successfully.",
         "logoutDesc": "Sign out of your account on this device."
@@ -366,6 +370,15 @@
         "confirmPassword": "Confirm New Password",
         "submit": "Change Password",
         "passwordsDoNotMatch": "Passwords do not match."
+    },
+    "editProfileModal": {
+        "title": "Edit Profile",
+        "desc": "Update your local profile details in the application.",
+        "username": "Username",
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "emptyUsernameError": "Username is required.",
+        "successMessage": "Profile updated successfully."
     },
     "apiErrors": {
         "This CEZ account is already connected to another user.": "This CEZ account is already connected to another user.",

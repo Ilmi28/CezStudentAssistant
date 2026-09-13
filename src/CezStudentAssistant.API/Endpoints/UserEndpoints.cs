@@ -1,5 +1,7 @@
 using CezStudentAssistant.Application.Commands.UserConfiguration;
+using CezStudentAssistant.Application.Commands.UserProfile;
 using CezStudentAssistant.Application.Queries.User;
+using CezStudentAssistant.Application.Queries.UserProfile;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +46,19 @@ public static class UserEndpoints
         {
             var query = new GetRecentActivityQuery { Limit = limit ?? 6 };
             var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapGet("/profile", async (IMediator mediator) =>
+        {
+            var query = new GetUserProfileQuery();
+            var result = await mediator.Send(query);
+            return Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPut("/profile", async (UpdateUserProfileCommand command, IMediator mediator) =>
+        {
+            var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
     }

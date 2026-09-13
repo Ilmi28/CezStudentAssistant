@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace CezStudentAssistant.Cez.Responses;
 
@@ -9,6 +9,9 @@ internal class ExternalGetSiteInfoResponse
 
     [JsonPropertyName("fullname")]
     public string? FullName { get; set; }
+
+    [JsonPropertyName("useremail")]
+    public string? Email { get; set; }
 
     [JsonPropertyName("userid")]
     public long UserId { get; set; }

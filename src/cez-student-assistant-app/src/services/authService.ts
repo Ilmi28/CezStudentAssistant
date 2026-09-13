@@ -14,13 +14,13 @@ export const authService = {
     return handleResponse<void>(res, true);
   },
 
-  async register(userName: string, password: string): Promise<void> {
+  async register(userName: string, email: string, password: string): Promise<void> {
     const res = await customFetch(
       `${API_BASE_URL}/auth/register`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userName, password }),
+        body: JSON.stringify({ userName, email, password }),
       },
       true
     );

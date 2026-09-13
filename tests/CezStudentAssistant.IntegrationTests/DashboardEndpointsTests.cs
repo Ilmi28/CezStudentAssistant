@@ -46,7 +46,7 @@ public class DashboardEndpointsTests
 
     private async Task RegisterAndLogin(string username, string password)
     {
-        var registerResponse = await _client.PostAsJsonAsync("/auth/register", new RegisterUserCommand(username, password));
+        var registerResponse = await _client.PostAsJsonAsync("/auth/register", new RegisterUserCommand(username, $"{username}@example.com", password));
         registerResponse.EnsureSuccessStatusCode();
 
         var loginResponse = await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, password));

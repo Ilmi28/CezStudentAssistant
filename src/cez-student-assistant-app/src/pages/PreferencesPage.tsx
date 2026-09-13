@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useUser } from "../hooks";
 import {
+  PrimaryButton,
   SecondaryButton,
   Select,
   MultiSegmentProgressBar,
@@ -9,24 +10,32 @@ import {
   Text,
   Flex,
   Grid,
+  Input,
   SetPasswordModal,
   ChangePasswordModal,
   ConfirmModal,
   Alert,
 } from "../components";
 import { authService, userService } from "../services";
-import { UserTheme, UserLanguage } from "../types";
+import { UserTheme, UserLanguage, type UserProfileDto } from "../types";
 
 export default function PreferencesPage() {
   const [theme, setThemeState] = useState<UserTheme>(UserTheme.Dark);
   const [language, setLanguageState] = useState<UserLanguage>(UserLanguage.Polish);
   const [hasPassword, setHasPassword] = useState<boolean>(false);
   const [fetchingConfig, setFetchingConfig] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfileDto | null>(null);
 
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showDisconnectCezModal, setShowDisconnectCezModal] = useState(false);
   const [cezError, setCezError] = useState<string | null>(null);
+
+  const [profileUserName, setProfileUserName] = useState("");
+  const [profileFullName, setProfileFullName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   const {
     username,
@@ -36,6 +45,7 @@ export default function PreferencesPage() {
     handleCezDisconnect,
     setIsCezConnected,
     setLastCezSync,
+    checkAuthStatus
   } = useAuth();
 
   const { applyTheme, updateTheme, updateUserLanguage, setShowCezModal, syncing, setSuccess } = useUI();
@@ -46,12 +56,16 @@ export default function PreferencesPage() {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const config = await userService.getUserConfiguration();
+        const [config, profile] = await Promise.all([
+          userService.getUserConfiguration(),
+          userService.getUserProfile().catch(() => null)
+        ]);
         setThemeState(config.theme);
         applyTheme(config.theme);
         setLanguageState(config.language);
         setIsCezConnected(config.isCezConnected);
         setHasPassword(!!config.hasPassword);
+        if (profile) setUserProfile(profile);
         if (config.lastCezSync !== undefined) {
           setLastCezSync(config.lastCezSync);
         }
@@ -66,6 +80,16 @@ export default function PreferencesPage() {
     }
     loadConfig();
   }, []);
+
+  useEffect(() => {
+    if (userProfile) {
+      setProfileUserName(userProfile.userName || "");
+      setProfileFullName(userProfile.fullName || "");
+      setProfileEmail(userProfile.email || "");
+    } else if (username) {
+      setProfileUserName(username);
+    }
+  }, [userProfile, username]);
 
   const handleThemeSelect = (newTheme: UserTheme) => {
     setThemeState(newTheme);
@@ -90,6 +114,37 @@ export default function PreferencesPage() {
   const handleChangePassword = async (currentPassword: string, newPassword: string) => {
     await authService.changePassword(currentPassword, newPassword);
     setSuccess(t("preferences.passwordChangeSuccess"));
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileUserName.trim()) {
+      setProfileError(t("editProfileModal.emptyUsernameError", "Nazwa użytkownika jest wymagana."));
+      return;
+    }
+
+    setProfileError(null);
+    setSavingProfile(true);
+    try {
+      const updated = await userService.updateUserProfile({
+        userName: profileUserName.trim(),
+        fullName: profileFullName.trim(),
+        email: profileEmail.trim(),
+      });
+      setUserProfile(updated);
+      setProfileUserName(updated.userName);
+      setProfileFullName(updated.fullName || "");
+      setProfileEmail(updated.email || "");
+      if (profileUserName.trim() !== username) {
+        localStorage.setItem("username", profileUserName.trim());
+        await checkAuthStatus();
+      }
+      setSuccess(t("editProfileModal.successMessage", "Profil został pomyślnie zaktualizowany."));
+    } catch (err: any) {
+      setProfileError(err.message || t("common.genericError"));
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const handleDisconnectCezConfirm = async () => {
@@ -128,19 +183,45 @@ export default function PreferencesPage() {
           </Heading>
         </div>
 
-        <Flex align="center" gap={4} className="py-1">
-          <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg">
-            {username ? username.charAt(0).toUpperCase() : "U"}
-          </div>
-          <div>
-            <Text size="sm" variant="default" className="font-bold">
-              {username || t("preferences.defaultUsername")}
-            </Text>
-            <Text size="xs" variant="muted">
-              {t("preferences.userRole")}
-            </Text>
-          </div>
-        </Flex>
+        <form onSubmit={handleSaveProfile} className="space-y-4 py-1">
+          <Alert message={profileError} />
+
+          <Grid cols={1} smCols={2} gap={4}>
+            <Input
+              label={t("editProfileModal.username", "Nazwa użytkownika")}
+              value={profileUserName}
+              onChange={(e) => {
+                setProfileUserName(e.target.value);
+                if (profileError) setProfileError(null);
+              }}
+            />
+
+            <Input
+              label={t("editProfileModal.fullName", "Imię i nazwisko")}
+              value={profileFullName}
+              onChange={(e) => {
+                setProfileFullName(e.target.value);
+                if (profileError) setProfileError(null);
+              }}
+            />
+          </Grid>
+
+          <Input
+            type="email"
+            label={t("editProfileModal.email", "Adres e-mail")}
+            value={profileEmail}
+            onChange={(e) => {
+              setProfileEmail(e.target.value);
+              if (profileError) setProfileError(null);
+            }}
+          />
+
+          <Flex justify="end" className="pt-1">
+            <PrimaryButton type="submit" loading={savingProfile}>
+              {t("common.save", "Zapisz")}
+            </PrimaryButton>
+          </Flex>
+        </form>
       </section>
 
       {/* Section 2: App Preferences */}

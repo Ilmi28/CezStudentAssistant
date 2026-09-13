@@ -17,6 +17,22 @@ export interface UpdateUserConfigurationPayload {
   language?: UserLanguage;
 }
 
+export interface UserProfileDto {
+  userName: string;
+  fullName?: string | null;
+  email?: string | null;
+  isCezConnected: boolean;
+  cezUsername?: string | null;
+  cezFullName?: string | null;
+  cezEmail?: string | null;
+}
+
+export interface UpdateUserProfilePayload {
+  userName: string;
+  fullName?: string | null;
+  email?: string | null;
+}
+
 export interface UserUsageDto {
   userId: string;
   monthYear: string;

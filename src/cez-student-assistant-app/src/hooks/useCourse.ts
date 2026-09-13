@@ -15,8 +15,6 @@ export function useCourse() {
   const { handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
   const { setError, setSyncing } = useUI();
 
-
-
   const refreshCourses = async (pageNumber: number = 1, pageSize: number = 100, searchTerm?: string) => {
     try {
       const pagedResult = await courseService.getCourses(pageNumber, pageSize, searchTerm);

@@ -12,13 +12,14 @@ export default function RegisterPage({}: RegisterPageProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [regUser, setRegUser] = useState("");
+  const [regEmail, setRegEmail] = useState("");
   const [regPass, setRegPass] = useState("");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regUser.trim() || !regPass) {
+    if (!regUser.trim() || !regEmail.trim() || !regPass) {
       setFormError(t("auth.emptyFields"));
       return;
     }
@@ -26,7 +27,7 @@ export default function RegisterPage({}: RegisterPageProps) {
     setFormError(null);
     setLoading(true);
     try {
-      await authService.register(regUser.trim(), regPass);
+      await authService.register(regUser.trim(), regEmail.trim(), regPass);
       navigate("/login");
     } catch (err: any) {
       setFormError(err.message || t("auth.genericError"));
@@ -49,6 +50,16 @@ export default function RegisterPage({}: RegisterPageProps) {
           value={regUser}
           onChange={(e) => {
             setRegUser(e.target.value);
+            if (formError) setFormError(null);
+          }}
+        />
+
+        <Input
+          type="email"
+          label={t("auth.emailLabel", "Adres e-mail")}
+          value={regEmail}
+          onChange={(e) => {
+            setRegEmail(e.target.value);
             if (formError) setFormError(null);
           }}
         />

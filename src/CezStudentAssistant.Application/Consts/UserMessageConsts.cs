@@ -12,6 +12,12 @@ public static class UserMessageConsts
     public const string GetDashboardStatsError = "An error occurred while retrieving dashboard statistics.";
     public const string GetRecentActivitySuccess = "Successfully retrieved recent activity.";
     public const string GetRecentActivityError = "An error occurred while retrieving recent activity.";
+    public const string GetUserProfileSuccess = "Successfully retrieved user profile.";
+    public const string GetUserProfileError = "An error occurred while retrieving user profile.";
+    public const string UpdateUserProfileSuccess = "Successfully updated user profile.";
+    public const string UpdateUserProfileError = "An error occurred while updating user profile.";
+    public const string UsernameAlreadyTaken = "Ten login jest już zajęty przez innego użytkownika.";
+    public const string UsernameCannotBeEmpty = "Nazwa użytkownika nie może być pusta.";
     public const string UserNotFound = "User not found.";
     public const string MaximumDailyTokensConfigMissing = "Configuration 'Gemini:MaximumDailyTokens' is missing or invalid.";
 }

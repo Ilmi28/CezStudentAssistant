@@ -126,7 +126,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureDeleted();
-        db.Database.Migrate();
+        db.Database.EnsureCreated();
 
         var blobServiceClient = scope.ServiceProvider.GetRequiredService<BlobServiceClient>();
         var containerClient = blobServiceClient.GetBlobContainerClient("course-files");

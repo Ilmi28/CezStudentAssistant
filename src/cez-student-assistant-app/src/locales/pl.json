@@ -10,6 +10,7 @@
         "avatarDefault": "ST",
         "back": "Powrót",
         "cancel": "Anuluj",
+        "save": "Zapisz",
         "switchLanguage": "Switch to English",
         "switchLanguageLabel": "EN",
         "paginationInfo": "Strona {{current}} z {{total}}",
@@ -28,6 +29,8 @@
         "loginLoading": "Logowanie...",
         "usernameLabel": "Nazwa użytkownika",
         "usernamePlaceholder": "",
+        "emailLabel": "Adres e-mail",
+        "emailPlaceholder": "",
         "passwordLabel": "Hasło",
         "passwordPlaceholder": "",
         "orText": "Lub zaloguj przez",
@@ -346,6 +349,7 @@
         "passwordSection": "Hasło Konta",
         "setPasswordBtn": "Ustaw hasło",
         "changePasswordBtn": "Zmień hasło",
+        "editProfileBtn": "Edytuj profil",
         "passwordSetSuccess": "Hasło zostało pomyślnie ustawione.",
         "passwordChangeSuccess": "Hasło zostało pomyślnie zmienione.",
         "logoutDesc": "Wyloguj się ze swojego konta na tym urządzeniu."
@@ -366,6 +370,15 @@
         "confirmPassword": "Powtórz nowe hasło",
         "submit": "Zmień hasło",
         "passwordsDoNotMatch": "Hasła nie są identyczne."
+    },
+    "editProfileModal": {
+        "title": "Edycja Profilu",
+        "desc": "Zaktualizuj swoje dane profilu lokalnego w aplikacji.",
+        "username": "Nazwa użytkownika",
+        "fullName": "Imię i nazwisko",
+        "email": "Adres e-mail",
+        "emptyUsernameError": "Nazwa użytkownika jest wymagana.",
+        "successMessage": "Profil został pomyślnie zaktualizowany."
     },
     "apiErrors": {
         "This CEZ account is already connected to another user.": "To konto CEZ jest już połączone z innym użytkownikiem.",

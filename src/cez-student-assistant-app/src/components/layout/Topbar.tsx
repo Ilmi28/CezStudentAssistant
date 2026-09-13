@@ -5,6 +5,7 @@ interface TopbarProps {
   loading: boolean;
   onRefresh: () => void;
   username: string | null;
+  fullName?: string | null;
   onLogout: () => void;
 }
 
@@ -12,6 +13,7 @@ export default function Topbar({
   loading,
   onRefresh,
   username,
+  fullName,
   onLogout,
 }: TopbarProps) {
   return (
@@ -21,6 +23,7 @@ export default function Topbar({
         loading={loading}
         onRefresh={onRefresh}
         username={username}
+        fullName={fullName}
         onLogout={onLogout}
       />
     </header>

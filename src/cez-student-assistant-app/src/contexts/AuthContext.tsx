@@ -3,6 +3,8 @@ import { createContext, useState, type ReactNode } from "react";
 export interface AuthContextState {
   username: string | null;
   setUsername: (user: string | null) => void;
+  fullName: string | null;
+  setFullName: (name: string | null) => void;
   isAuthChecking: boolean;
   setIsAuthChecking: (checking: boolean) => void;
   isCezConnected: boolean;
@@ -15,6 +17,7 @@ export const AuthContext = createContext<AuthContextState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [username, setUsername] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   const [isCezConnected, setIsCezConnectedState] = useState<boolean>(() => {
@@ -44,6 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         username,
         setUsername,
+        fullName,
+        setFullName,
         isAuthChecking,
         setIsAuthChecking,
         isCezConnected,

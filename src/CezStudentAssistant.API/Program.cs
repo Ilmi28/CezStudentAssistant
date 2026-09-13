@@ -154,10 +154,6 @@ public class Program
             {
                 var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
                 var exception = exceptionFeature?.Error;
-                if (exception != null)
-                {
-                    File.WriteAllText(@"C:\Users\Ilmi\Source\Repos\CezStudentAssistant\debug_error.log", exception.ToString());
-                }
 
                 ApiResponse apiResponse = exception switch
                 {

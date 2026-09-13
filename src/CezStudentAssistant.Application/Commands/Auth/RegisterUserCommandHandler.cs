@@ -9,7 +9,7 @@ using CezStudentAssistant.Domain.Interfaces.Repositories;
 
 namespace CezStudentAssistant.Application.Commands.Auth;
 
-public sealed record RegisterUserCommand(string UserName, string Password) : ICommand { }
+public sealed record RegisterUserCommand(string UserName, string Email, string Password) : ICommand { }
 
 public class RegisterUserCommandHandler(
     IUnitOfWork unitOfWork,
@@ -27,13 +27,19 @@ public class RegisterUserCommandHandler(
         if (userWithUserNameExists)
             throw new ConflictException(AuthMessagesConsts.RegistrationConflictUsername);
 
+        var trimmedEmail = command.Email.Trim();
+        var userWithEmailExists = await userRepo.ExistsAsync(x => x.Email == trimmedEmail, ct);
+        if (userWithEmailExists)
+            throw new ConflictException(AuthMessagesConsts.RegistrationConflictEmail);
+
         var user = new User
         {
             UserName = command.UserName,
+            Email = trimmedEmail,
             PasswordHash = passwordService.CreatePasswordHash(command.Password)
         };
 
         await userRepo.AddAsync(user, ct);
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync(ct);
     }
 }

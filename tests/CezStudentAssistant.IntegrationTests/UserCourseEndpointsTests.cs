@@ -46,7 +46,7 @@ public class UserCourseEndpointsTests
 
     private async Task RegisterAndLogin(string username, string password)
     {
-        await _client.PostAsJsonAsync("/auth/register", new RegisterUserCommand(username, password));
+        await _client.PostAsJsonAsync("/auth/register", new RegisterUserCommand(username, $"{username}@example.com", password));
         await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, password));
     }
 

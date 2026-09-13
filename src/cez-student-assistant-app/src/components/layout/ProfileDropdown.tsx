@@ -6,10 +6,11 @@ import { Card, Flex, Text, SecondaryButton } from "../index";
 
 interface ProfileDropdownProps {
   username: string | null;
+  fullName?: string | null;
   onLogout: () => void;
 }
 
-export default function ProfileDropdown({ username, onLogout }: ProfileDropdownProps) {
+export default function ProfileDropdown({ username, fullName, onLogout }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -64,7 +65,17 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
   };
 
   const defaultUserText = t("preferences.defaultUsername");
-  const displayUsername = username || defaultUserText;
+  const displayName = fullName?.trim() || username || defaultUserText;
+
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const avatarText = getInitials(displayName);
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -76,10 +87,10 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
         aria-haspopup="true"
       >
         <Flex align="center" justify="center" className="w-7 h-7 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold shrink-0 uppercase">
-          {username ? username.substring(0, 2) : t("common.avatarDefault")}
+          {avatarText}
         </Flex>
-        <Text size="sm" className="font-semibold text-white truncate max-w-[140px] inline-block transition-transform duration-200 group-hover:scale-[1.03]" title={displayUsername}>
-          {displayUsername}
+        <Text size="sm" className="font-semibold text-white truncate max-w-[140px] inline-block transition-transform duration-200 group-hover:scale-[1.03]" title={displayName}>
+          {displayName}
         </Text>
         <ChevronDown
           size={16}
@@ -98,8 +109,13 @@ export default function ProfileDropdown({ username, onLogout }: ProfileDropdownP
               {t("profile.signedInAs")}
             </Text>
             <Text size="sm" className="font-semibold text-foreground truncate mt-0.5">
-              {displayUsername}
+              {displayName}
             </Text>
+            {fullName?.trim() && username && (
+              <Text size="xs" variant="muted" className="truncate block mt-0.5">
+                @{username}
+              </Text>
+            )}
           </div>
 
           <div className="space-y-1">

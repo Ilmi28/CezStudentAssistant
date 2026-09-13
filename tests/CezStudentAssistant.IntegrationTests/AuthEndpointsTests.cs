@@ -46,7 +46,7 @@ public class AuthEndpointsTests
     [Test]
     public async Task Register_ShouldCreateUserAndSetCookies_WhenDataIsValid()
     {
-        var command = new RegisterUserCommand("testuser", "Password123!");
+        var command = new RegisterUserCommand("testuser", "testuser@example.com", "Password123!");
 
         var response = await _client.PostAsJsonAsync("/auth/register", command);
 
@@ -59,7 +59,7 @@ public class AuthEndpointsTests
     [Test]
     public async Task Register_ShouldReturnBadRequest_WhenValidationFails()
     {
-        var command = new RegisterUserCommand("ab", "short");
+        var command = new RegisterUserCommand("ab", "invalid-email", "short");
 
         var response = await _client.PostAsJsonAsync("/auth/register", command);
 
@@ -75,7 +75,7 @@ public class AuthEndpointsTests
     [Test]
     public async Task Register_ShouldReturnConflict_WhenUsernameAlreadyExists()
     {
-        var command = new RegisterUserCommand("testuser", "Password123!");
+        var command = new RegisterUserCommand("testuser", "testuser@example.com", "Password123!");
 
         await _client.PostAsJsonAsync("/auth/register", command);
         var response = await _client.PostAsJsonAsync("/auth/register", command);
@@ -89,7 +89,7 @@ public class AuthEndpointsTests
     [Test]
     public async Task Login_ShouldReturnSuccess_WhenCredentialsAreValid()
     {
-        var registerCommand = new RegisterUserCommand("loginuser", "Password123!");
+        var registerCommand = new RegisterUserCommand("loginuser", "loginuser@example.com", "Password123!");
         await _client.PostAsJsonAsync("/auth/register", registerCommand);
 
         var command = new LoginUserCommand("loginuser", "Password123!");
@@ -107,7 +107,7 @@ public class AuthEndpointsTests
     [Test]
     public async Task Login_ShouldReturnUnauthorized_WhenCredentialsAreInvalid()
     {
-        var registerCommand = new RegisterUserCommand("loginuser", "Password123!");
+        var registerCommand = new RegisterUserCommand("loginuser", "loginuser@example.com", "Password123!");
         await _client.PostAsJsonAsync("/auth/register", registerCommand);
 
         var command = new LoginUserCommand("loginuser", "WrongPassword123!");
@@ -291,7 +291,7 @@ public class AuthEndpointsTests
 
     private async Task SeedUser(string username)
     {
-        var command = new RegisterUserCommand(username, "Password123!");
+        var command = new RegisterUserCommand(username, $"{username}@example.com", "Password123!");
         await _client.PostAsJsonAsync("/auth/register", command);
     }
 

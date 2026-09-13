@@ -1,6 +1,14 @@
 import { API_BASE_URL, customFetch, handleResponse } from "./baseClient";
 import { authService } from "./authService";
-import type { UserConfigurationDto, UpdateUserConfigurationPayload, UserUsageDto, DashboardStatsDto, RecentActivityDto } from "../types";
+import type {
+  UserConfigurationDto,
+  UpdateUserConfigurationPayload,
+  UserProfileDto,
+  UpdateUserProfilePayload,
+  UserUsageDto,
+  DashboardStatsDto,
+  RecentActivityDto
+} from "../types";
 
 export const userService = {
   async getUserConfiguration(): Promise<UserConfigurationDto> {
@@ -55,6 +63,30 @@ export const userService = {
       authService.refreshToken
     );
     return handleResponse<RecentActivityDto[]>(res);
+  },
+
+  async getUserProfile(): Promise<UserProfileDto> {
+    const res = await customFetch(
+      `${API_BASE_URL}/user/profile`,
+      { method: "GET" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<UserProfileDto>(res);
+  },
+
+  async updateUserProfile(payload: UpdateUserProfilePayload): Promise<UserProfileDto> {
+    const res = await customFetch(
+      `${API_BASE_URL}/user/profile`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<UserProfileDto>(res);
   },
 };
 

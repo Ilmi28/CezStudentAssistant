@@ -6,13 +6,11 @@ import { cezService, UnauthorizedError } from "../services";
 
 export default function DashboardLayout() {
   const location = useLocation();
-  const { username, handleLogout, handleCezLinkSubmit, setIsCezConnected, setLastCezSync } = useAuth();
+  const { username, fullName, handleLogout, handleCezLinkSubmit, setIsCezConnected, setLastCezSync } = useAuth();
   const { loading, setLoading, showCezModal, setShowCezModal, setError } = useUI();
   const { refreshCourses } = useCourse();
   const { refreshQuizzes } = useQuiz();
   const { t } = useTranslation();
-
-
 
   const handleRefreshLists = async () => {
     setLoading(true);
@@ -42,6 +40,7 @@ export default function DashboardLayout() {
         loading={loading}
         onRefresh={handleRefreshLists}
         username={username}
+        fullName={fullName}
         onLogout={handleLogout}
       />
       <div className="flex-1 overflow-y-auto p-6 md:p-8">

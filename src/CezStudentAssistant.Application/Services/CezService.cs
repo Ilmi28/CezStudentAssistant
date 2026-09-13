@@ -89,7 +89,9 @@ public class CezService(
         var cezUser = new CezUser
         {
             UserId = userId,
+            UserName = userInfoResponse.Data.UserName ?? userName,
             FullName = userInfoResponse.Data.FullName,
+            Email = userInfoResponse.Data.Email,
             Token = loginResponse.Data.Token ?? string.Empty,
             PrivateToken = loginResponse.Data.PrivateToken ?? string.Empty,
             ExternalUserId = userInfoResponse.Data.ExternalUserId
@@ -312,13 +314,17 @@ public class CezService(
             var user = new User
             {
                 UserName = siteInfoData.UserName
-                    ?? throw new BadRequestException(CezMessagesConsts.GetSiteInfoError)
+                    ?? throw new BadRequestException(CezMessagesConsts.GetSiteInfoError),
+                FullName = null,
+                Email = null
             };
 
             await cezUserRepo.AddAsync(
                 new CezUser
                 {
+                    UserName = siteInfoData.UserName,
                     FullName = siteInfoData.FullName,
+                    Email = siteInfoData.Email,
                     Token = tokensData.Token ?? string.Empty,
                     PrivateToken = tokensData.PrivateToken ?? string.Empty,
                     ExternalUserId = siteInfoData.ExternalUserId,
@@ -335,7 +341,9 @@ public class CezService(
         {
             existingCezUser = new CezUser
             {
+                UserName = siteInfoData.UserName,
                 FullName = siteInfoData.FullName,
+                Email = siteInfoData.Email,
                 Token = tokensData.Token ?? string.Empty,
                 PrivateToken = tokensData.PrivateToken ?? string.Empty,
                 ExternalUserId = siteInfoData.ExternalUserId,
@@ -345,7 +353,9 @@ public class CezService(
             return existingUser.Id;
         }
 
+        existingCezUser.UserName = siteInfoData.UserName;
         existingCezUser.FullName = siteInfoData.FullName;
+        existingCezUser.Email = siteInfoData.Email;
         existingCezUser.Token = tokensData.Token ?? string.Empty;
         existingCezUser.PrivateToken = tokensData.PrivateToken ?? string.Empty;
         existingCezUser.ExternalUserId = siteInfoData.ExternalUserId;

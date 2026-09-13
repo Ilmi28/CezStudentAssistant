@@ -38,7 +38,7 @@ public class RegisterUserCommandHandlerTests
     [Test]
     public async Task Handle_ShouldReturnSuccessResponse_WhenDataIsValid()
     {
-        var command = new RegisterUserCommand("newuser", "Password123!");
+        var command = new RegisterUserCommand("newuser", "user@test.com", "Password123!");
         
         _userRepository.ExistsAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
             .Returns(false);
@@ -48,16 +48,29 @@ public class RegisterUserCommandHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         result.Success.Should().BeTrue();
-        await _userRepository.Received(1).AddAsync(Arg.Is<User>(u => u.UserName == command.UserName), Arg.Any<CancellationToken>());
-        await _unitOfWork.Received(1).SaveChangesAsync();
+        await _userRepository.Received(1).AddAsync(Arg.Is<User>(u => u.UserName == command.UserName && u.Email == command.Email), Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Test]
     public async Task Handle_ShouldThrowConflictException_WhenUsernameAlreadyExists()
     {
-        var command = new RegisterUserCommand("existinguser", "Password123!");
+        var command = new RegisterUserCommand("existinguser", "user@test.com", "Password123!");
 
         _userRepository.ExistsAsync(Arg.Any<Expression<Func<User, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        Func<Task> act = () => _sut.Handle(command, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Test]
+    public async Task Handle_ShouldThrowConflictException_WhenEmailAlreadyExists()
+    {
+        var command = new RegisterUserCommand("newuser", "existing@test.com", "Password123!");
+
+        _userRepository.ExistsAsync(Arg.Is<Expression<Func<User, bool>>>(e => e.Compile().Invoke(new User { UserName = "other", Email = "existing@test.com" })), Arg.Any<CancellationToken>())
             .Returns(true);
 
         Func<Task> act = () => _sut.Handle(command, CancellationToken.None);

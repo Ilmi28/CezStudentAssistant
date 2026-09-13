@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AuthContext } from "../contexts/AuthContext";
-import { authService, cezService, UnauthorizedError } from "../services";
+import { authService, cezService, userService, UnauthorizedError } from "../services";
 import { useUI } from "./useUI";
 
 export function useAuth() {
@@ -19,9 +19,18 @@ export function useAuth() {
     try {
       const storedUser = localStorage.getItem("username") || "Student";
       ctx.setUsername(storedUser);
+      const profile = await userService.getUserProfile().catch(() => null);
+      if (profile) {
+        if (profile.userName) {
+          ctx.setUsername(profile.userName);
+          localStorage.setItem("username", profile.userName);
+        }
+        ctx.setFullName(profile.fullName || null);
+      }
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {
         ctx.setUsername(null);
+        ctx.setFullName(null);
       } else {
         setError(t("common.errorConnection"));
       }
@@ -37,6 +46,10 @@ export function useAuth() {
   const handleLoginSuccess = async (user: string) => {
     localStorage.setItem("username", user);
     ctx.setUsername(user);
+    const profile = await userService.getUserProfile().catch(() => null);
+    if (profile?.fullName) {
+      ctx.setFullName(profile.fullName);
+    }
     navigate("/home");
   };
 
@@ -48,6 +61,7 @@ export function useAuth() {
     }
     localStorage.removeItem("username");
     ctx.setUsername(null);
+    ctx.setFullName(null);
     ctx.setIsCezConnected(false);
     ctx.setLastCezSync(null);
     document.cookie = "accessToken=; Max-Age=0; path=/;";
@@ -70,6 +84,7 @@ export function useAuth() {
       }
       ctx.setIsCezConnected(true);
       setShowCezModal(false);
+      await checkAuthStatus();
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {
         handleLogout();
@@ -86,6 +101,7 @@ export function useAuth() {
     try {
       await cezService.disconnectCez();
       ctx.setIsCezConnected(false);
+      await checkAuthStatus();
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {
         handleLogout();
@@ -97,8 +113,12 @@ export function useAuth() {
     }
   };
 
+  const displayName = ctx.fullName?.trim() || ctx.username || t("preferences.defaultUsername");
+
   return {
     username: ctx.username,
+    fullName: ctx.fullName,
+    displayName,
     isAuthenticated: ctx.username !== null,
     isAuthChecking: ctx.isAuthChecking,
     isCezConnected: ctx.isCezConnected,
