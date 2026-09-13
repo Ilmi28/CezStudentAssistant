@@ -14,9 +14,15 @@ public static class FlashcardEndpoints
     {
         var group = app.MapGroup("/flashcards").WithTags("Flashcards");
 
-        group.MapGet("/", async (Guid? courseId, IMediator mediator) =>
+        group.MapGet("/", async (Guid? courseId, int pageNumber = 1, int pageSize = 10, string? searchTerm = null, IMediator mediator = default!) =>
         {
-            var query = new GetUserFlashcardDecksQuery { CourseId = courseId };
+            var query = new GetUserFlashcardDecksQuery
+            {
+                CourseId = courseId,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm
+            };
             var result = await mediator.Send(query);
             return Results.Ok(result);
         }).RequireAuthorization();

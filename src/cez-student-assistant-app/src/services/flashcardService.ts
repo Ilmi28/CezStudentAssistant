@@ -6,20 +6,31 @@ import type {
   EstimateFlashcardTokensDto,
   FlashcardAttemptDto,
 } from "../types/flashcardTypes";
+import type { PagedResultDto, PagedQueryParams } from "../types/commonTypes";
 import { FlashcardStateEnum } from "../enums/flashcardEnums";
 
 export const flashcardService = {
-  async getFlashcardDecks(courseId?: string): Promise<FlashcardDeckDto[]> {
-    const url = courseId
-      ? `${API_BASE_URL}/flashcards?courseId=${courseId}`
-      : `${API_BASE_URL}/flashcards`;
+  async getFlashcardDecks(params?: PagedQueryParams | string): Promise<PagedResultDto<FlashcardDeckDto>> {
+    let url = `${API_BASE_URL}/flashcards`;
+    if (typeof params === "string") {
+      url += `?courseId=${encodeURIComponent(params)}&pageSize=100`;
+    } else if (params) {
+      const queryParts: string[] = [];
+      if (params.pageNumber) queryParts.push(`pageNumber=${params.pageNumber}`);
+      if (params.pageSize) queryParts.push(`pageSize=${params.pageSize}`);
+      if (params.searchTerm) queryParts.push(`searchTerm=${encodeURIComponent(params.searchTerm)}`);
+      if (params.courseId) queryParts.push(`courseId=${encodeURIComponent(params.courseId)}`);
+      if (queryParts.length > 0) {
+        url += `?${queryParts.join("&")}`;
+      }
+    }
     const res = await customFetch(
       url,
       { method: "GET" },
       false,
       authService.refreshToken
     );
-    return handleResponse<FlashcardDeckDto[]>(res);
+    return handleResponse<PagedResultDto<FlashcardDeckDto>>(res);
   },
 
   async getFlashcardDeckDetails(id: string): Promise<FlashcardDeckDetailsDto> {

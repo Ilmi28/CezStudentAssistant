@@ -7,17 +7,26 @@ import type {
   UploadCourseFileResponseDto,
   GenerateQuizResponseDto,
   EstimateQuizTokensResponseDto,
+  PagedResultDto,
 } from "../types";
 
 export const courseService = {
-  async getCourses(): Promise<CourseDto[]> {
+  async getCourses(pageNumber: number = 1, pageSize: number = 10, searchTerm?: string): Promise<PagedResultDto<CourseDto>> {
+    const params = new URLSearchParams({
+      pageNumber: pageNumber.toString(),
+      pageSize: pageSize.toString(),
+    });
+    if (searchTerm && searchTerm.trim() !== "") {
+      params.append("searchTerm", searchTerm.trim());
+    }
+
     const res = await customFetch(
-      `${API_BASE_URL}/course`,
+      `${API_BASE_URL}/course?${params.toString()}`,
       { method: "GET" },
       false,
       authService.refreshToken
     );
-    return handleResponse<CourseDto[]>(res);
+    return handleResponse<PagedResultDto<CourseDto>>(res);
   },
 
   async getCourseDetails(id: string): Promise<CourseDetailsDto> {

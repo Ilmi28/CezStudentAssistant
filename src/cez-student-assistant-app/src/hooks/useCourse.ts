@@ -17,10 +17,11 @@ export function useCourse() {
 
 
 
-  const refreshCourses = async () => {
+  const refreshCourses = async (pageNumber: number = 1, pageSize: number = 100, searchTerm?: string) => {
     try {
-      const courseList = await courseService.getCourses();
-      ctx.setCourses(courseList);
+      const pagedResult = await courseService.getCourses(pageNumber, pageSize, searchTerm);
+      ctx.setCourses(pagedResult.items);
+      return pagedResult;
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {
         handleLogout();

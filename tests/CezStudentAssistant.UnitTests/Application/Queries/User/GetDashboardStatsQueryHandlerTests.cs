@@ -16,6 +16,7 @@ using CezStudentAssistant.UnitTests.Helpers;
 using EntityCourse = CezStudentAssistant.Domain.Entities.Course;
 using EntityQuiz = CezStudentAssistant.Domain.Entities.Quiz;
 using EntityUser = CezStudentAssistant.Domain.Entities.User;
+using EntityFlashcard = CezStudentAssistant.Domain.Entities.Flashcard;
 
 namespace CezStudentAssistant.UnitTests.Application.Queries.User;
 
@@ -55,7 +56,6 @@ public class GetDashboardStatsQueryHandlerTests
     [Test]
     public async Task Handle_ShouldReturnCounts_WhenQueriesExecuted()
     {
-        // Arrange
         var userId = Guid.NewGuid();
         var query = new GetDashboardStatsQuery { UserId = userId };
 
@@ -76,11 +76,11 @@ public class GetDashboardStatsQueryHandlerTests
         }.AsAsyncQueryable();
 
         var deckId = Guid.NewGuid();
-        var cards = new List<Flashcard>
+        var cards = new List<EntityFlashcard>
         {
-            new Flashcard { Id = Guid.NewGuid(), Front = "T1", Back = "D1", DeckId = deckId, Deck = new FlashcardDeck { Name = "D1", UserId = userId } },
-            new Flashcard { Id = Guid.NewGuid(), Front = "T2", Back = "D2", DeckId = deckId, Deck = new FlashcardDeck { Name = "D1", UserId = userId } },
-            new Flashcard { Id = Guid.NewGuid(), Front = "T3", Back = "D3", DeckId = deckId, Deck = new FlashcardDeck { Name = "D1", UserId = userId } }
+            new EntityFlashcard { Id = Guid.NewGuid(), Front = "T1", Back = "D1", DeckId = deckId, Deck = new FlashcardDeck { Name = "D1", UserId = userId } },
+            new EntityFlashcard { Id = Guid.NewGuid(), Front = "T2", Back = "D2", DeckId = deckId, Deck = new FlashcardDeck { Name = "D1", UserId = userId } },
+            new EntityFlashcard { Id = Guid.NewGuid(), Front = "T3", Back = "D3", DeckId = deckId, Deck = new FlashcardDeck { Name = "D1", UserId = userId } }
         }.AsAsyncQueryable();
 
         _courseRepo.Find(Arg.Any<Expression<Func<EntityCourse, bool>>>(), Arg.Any<bool>(), Arg.Any<Expression<Func<EntityCourse, object>>[]>())
@@ -92,13 +92,11 @@ public class GetDashboardStatsQueryHandlerTests
         _deckRepo.Find(Arg.Any<Expression<Func<FlashcardDeck, bool>>>(), Arg.Any<bool>(), Arg.Any<Expression<Func<FlashcardDeck, object>>[]>())
             .Returns(decks);
 
-        _cardRepo.Find(Arg.Any<Expression<Func<Flashcard, bool>>>(), Arg.Any<bool>(), Arg.Any<Expression<Func<Flashcard, object>>[]>())
+        _cardRepo.Find(Arg.Any<Expression<Func<EntityFlashcard, bool>>>(), Arg.Any<bool>(), Arg.Any<Expression<Func<EntityFlashcard, object>>[]>())
             .Returns(cards);
 
-        // Act
         var result = await _sut.Handle(query, CancellationToken.None);
 
-        // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Message.Should().Be(UserMessageConsts.GetDashboardStatsSuccess);

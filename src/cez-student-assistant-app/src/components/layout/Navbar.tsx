@@ -12,10 +12,10 @@ function NavItem({ label, isActive, onClick }: NavItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`group btn-app-spring px-3.5 py-2 rounded-xl text-sm font-semibold cursor-pointer select-none ${
+      className={`group btn-app-spring px-3.5 py-2 rounded-xl text-sm font-semibold cursor-pointer select-none transition-all ${
         isActive
-          ? "bg-white/15 text-white shadow-xs"
-          : "text-white/70 hover:text-white"
+          ? "bg-white/20 text-white border border-white/25 shadow-xs font-semibold"
+          : "text-white/75 hover:text-white hover:bg-white/10 border border-transparent"
       }`}
     >
       <span>{label}</span>

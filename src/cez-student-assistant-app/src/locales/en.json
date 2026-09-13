@@ -11,7 +11,10 @@
         "back": "Back",
         "cancel": "Cancel",
         "switchLanguage": "Przełącz na polski",
-        "switchLanguageLabel": "PL"
+        "switchLanguageLabel": "PL",
+        "paginationInfo": "Page {{current}} of {{total}}",
+        "previous": "Previous",
+        "next": "Next"
     },
     "nav": {
         "home": "Home",
@@ -80,6 +83,7 @@
         "syncBtnLoading": "Synchronizing...",
         "connectCezBtn": "Connect to CEZ",
         "title": "My Courses",
+        "searchPlaceholder": "Search...",
         "subtitle": "ACADEMIC YEAR 2025/2026",
         "noCourses": "No enrolled courses. Run synchronization to retrieve courses from CEZ.",
         "thName": "Course Name",
@@ -105,6 +109,7 @@
     },
     "quizzes": {
         "title": "My Quizzes",
+        "searchPlaceholder": "Search...",
         "noQuizzes": "No quizzes yet.",
         "noQuizzesSubtitle": "Go to the Courses tab, select a course, and generate a quiz from your educational files.",
         "statusGenerating": "Generating...",
@@ -334,6 +339,7 @@
     },
     "flashcards": {
         "title": "My Flashcards",
+        "searchPlaceholder": "Search...",
         "loadingDecks": "Loading flashcard decks...",
         "loadingDeckDetails": "Loading flashcard deck...",
         "loadingStudy": "Loading flashcards...",

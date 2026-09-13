@@ -108,8 +108,8 @@ export default function CourseDetailsPage({
     const unsubscribe = signalRService.subscribeJobStatus((_jobId, status) => {
       if (status === "Succeeded" || status === "Failed") {
         if (id) {
-          quizService.getQuizzes(id).then(setCourseQuizzes).catch(console.warn);
-          flashcardService.getFlashcardDecks(id).then(setDecks).catch(console.warn);
+          quizService.getQuizzes(id).then((res) => setCourseQuizzes(res.items)).catch(console.warn);
+          flashcardService.getFlashcardDecks(id).then((res) => setDecks(res.items)).catch(console.warn);
         }
       }
     });
@@ -131,8 +131,8 @@ export default function CourseDetailsPage({
       ]);
       setSelectedCourse(details);
       setCourseFiles(filesData);
-      setCourseQuizzes(quizzesData);
-      setDecks(decksData);
+      setCourseQuizzes(quizzesData.items);
+      setDecks(decksData.items);
     } catch (err) {
       console.warn("[CourseDetailsPage] Failed to load details:", err);
       setError(t("common.genericError"));
@@ -187,7 +187,7 @@ export default function CourseDetailsPage({
       questionCountPerAttempt
     );
     const quizzesData = await quizService.getQuizzes(id);
-    setCourseQuizzes(quizzesData);
+    setCourseQuizzes(quizzesData.items);
   };
 
   const handleGenerateFlashcardsSubmit = async (
@@ -207,7 +207,7 @@ export default function CourseDetailsPage({
       hardCount
     );
     const decksData = await flashcardService.getFlashcardDecks(id);
-    setDecks(decksData);
+    setDecks(decksData.items);
   };
 
   const handleFileDownload = async (fileId: string, fileName: string) => {

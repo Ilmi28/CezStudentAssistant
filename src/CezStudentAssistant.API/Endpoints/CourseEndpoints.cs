@@ -12,11 +12,15 @@ public static class CourseEndpoints
     {
         var group = app.MapGroup("/course").WithTags("Course");
 
-        group.MapGet("/", async (IMediator mediator) =>
+        group.MapGet("/", async (int pageNumber = 1, int pageSize = 10, string? searchTerm = null, IMediator mediator = default!) =>
         {
-            var query = new GetUserCoursesQuery();
+            var query = new GetUserCoursesQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SearchTerm = searchTerm
+            };
             var result = await mediator.Send(query);
-
             return Results.Ok(result);
         }).RequireAuthorization();
 

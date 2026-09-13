@@ -67,8 +67,43 @@ public class GetUserCoursesQueryHandlerTests
 
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCount(2);
-        result.Data![0].IsCez.Should().BeTrue();
-        result.Data![1].IsCez.Should().BeFalse();
+        result.Data.Should().NotBeNull();
+        result.Data!.Items.Should().HaveCount(2);
+        result.Data.TotalCount.Should().Be(2);
+        result.Data.Items[0].Name.Should().Be("Data Structures");
+        result.Data.Items[0].IsCez.Should().BeTrue();
+        result.Data.Items[1].Name.Should().Be("My Custom Course");
+        result.Data.Items[1].IsCez.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Handle_ShouldFilterCoursesByNormalizedSearchTerm()
+    {
+        var userId = Guid.NewGuid();
+        var user = new UserEntity { Id = userId, UserName = "student" };
+        var course1 = new CourseEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "Matematyka Dyskretna",
+            Users = new List<UserEntity> { user }
+        };
+        var course2 = new CourseEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "Analiza Matematyczna Ł",
+            Users = new List<UserEntity> { user }
+        };
+
+        var mockDbSet = new List<CourseEntity> { course1, course2 }.BuildMockDbSet();
+        _courseRepository.Find(Arg.Any<Expression<Func<CourseEntity, bool>>>()).Returns(mockDbSet);
+
+        var query = new GetUserCoursesQuery { UserId = userId, SearchTerm = "analiza" };
+
+        var result = await _sut.Handle(query, CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Data!.Items.Should().HaveCount(1);
+        result.Data.Items[0].Name.Should().Be("Analiza Matematyczna Ł");
     }
 }

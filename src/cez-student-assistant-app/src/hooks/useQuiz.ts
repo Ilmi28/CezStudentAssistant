@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { QuizContext } from "../contexts/QuizContext";
 import { quizService, UnauthorizedError } from "../services";
+import type { PagedQueryParams, PagedResultDto, QuizDto } from "../types";
 import { useAuth } from "./useAuth";
 import { useUI } from "./useUI";
 
@@ -15,18 +16,18 @@ export function useQuiz() {
   const { handleLogout } = useAuth();
   const { setError } = useUI();
 
-
-
-  const refreshQuizzes = async () => {
+  const refreshQuizzes = async (params?: PagedQueryParams): Promise<PagedResultDto<QuizDto> | null> => {
     try {
-      const quizList = await quizService.getQuizzes();
-      ctx.setQuizzes(quizList);
-    } catch (err: any) {
+      const result = await quizService.getQuizzes(params);
+      ctx.setQuizzes(result.items);
+      return result;
+    } catch (err: unknown) {
       if (err instanceof UnauthorizedError) {
         handleLogout();
         throw err;
       }
       setError(t("common.errorConnection"));
+      return null;
     }
   };
 

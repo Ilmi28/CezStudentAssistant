@@ -5,20 +5,32 @@ import type {
   QuizDetailsDto,
   QuizAttemptDetailsDto,
   SubmitAnswerResponseDto,
+  PagedResultDto,
+  PagedQueryParams,
 } from "../types";
 
 export const quizService = {
-  async getQuizzes(courseId?: string): Promise<QuizDto[]> {
-    const url = courseId
-      ? `${API_BASE_URL}/quiz?courseId=${encodeURIComponent(courseId)}`
-      : `${API_BASE_URL}/quiz`;
+  async getQuizzes(params?: PagedQueryParams | string): Promise<PagedResultDto<QuizDto>> {
+    let url = `${API_BASE_URL}/quiz`;
+    if (typeof params === "string") {
+      url += `?courseId=${encodeURIComponent(params)}&pageSize=100`;
+    } else if (params) {
+      const queryParts: string[] = [];
+      if (params.pageNumber) queryParts.push(`pageNumber=${params.pageNumber}`);
+      if (params.pageSize) queryParts.push(`pageSize=${params.pageSize}`);
+      if (params.searchTerm) queryParts.push(`searchTerm=${encodeURIComponent(params.searchTerm)}`);
+      if (params.courseId) queryParts.push(`courseId=${encodeURIComponent(params.courseId)}`);
+      if (queryParts.length > 0) {
+        url += `?${queryParts.join("&")}`;
+      }
+    }
     const res = await customFetch(
       url,
       { method: "GET" },
       false,
       authService.refreshToken
     );
-    return handleResponse<QuizDto[]>(res);
+    return handleResponse<PagedResultDto<QuizDto>>(res);
   },
 
   async getQuizDetails(id: string): Promise<QuizDetailsDto> {

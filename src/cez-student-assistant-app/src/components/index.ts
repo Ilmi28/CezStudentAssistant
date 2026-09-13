@@ -18,6 +18,8 @@ export { default as TokenEstimationWidget } from './ui/TokenEstimationWidget';
 export { default as DifficultyControlsGroup } from './ui/DifficultyControlsGroup';
 export { Toggle } from './ui/Toggle';
 export type { ToggleProps } from './ui/Toggle';
+export { default as Pagination } from './ui/Pagination';
+export type { PaginationProps } from './ui/Pagination';
 
 export { default as Navbar } from './layout/Navbar';
 export { default as Topbar } from './layout/Topbar';
