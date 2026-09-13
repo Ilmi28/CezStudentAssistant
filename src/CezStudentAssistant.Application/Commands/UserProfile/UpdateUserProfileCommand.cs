@@ -50,15 +50,16 @@ public class UpdateUserProfileCommandHandler(IUnitOfWork unitOfWork)
         await userRepo.UpdateAsync(user, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
+        var activeCezUser = user.CezUser != null && !user.CezUser.IsDisabled ? user.CezUser : null;
         return new UserProfileDto
         {
             UserName = user.UserName,
-            FullName = user.FullName ?? user.CezUser?.FullName,
-            Email = user.Email ?? user.CezUser?.Email,
-            IsCezConnected = user.CezUser != null,
-            CezUsername = user.CezUser != null ? user.UserName : null,
-            CezFullName = user.CezUser?.FullName,
-            CezEmail = user.CezUser?.Email
+            FullName = user.FullName ?? activeCezUser?.FullName,
+            Email = user.Email ?? activeCezUser?.Email,
+            IsCezConnected = activeCezUser != null,
+            CezUsername = activeCezUser?.UserName,
+            CezFullName = activeCezUser?.FullName,
+            CezEmail = activeCezUser?.Email
         };
     }
 }

@@ -334,7 +334,7 @@
         "syncNow": "Sync now",
         "connectCez": "Connect CEZ Account",
         "relinkCez": "Relink CEZ Account",
-        "disconnectCez": "Disconnect CEZ Account",
+        "disconnectCez": "Disconnect",
         "disconnectConfirmTitle": "Disconnect CEZ Account",
         "disconnectConfirmMsg": "Are you sure you want to disconnect your CEZ account? Synchronization will be paused, while previously imported courses will remain on your account.",
         "disconnectPureCezWarning": "To disconnect your CEZ account, you must first set a local password for your account.",

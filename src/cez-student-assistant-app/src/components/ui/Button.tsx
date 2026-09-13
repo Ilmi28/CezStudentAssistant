@@ -147,7 +147,7 @@ export const DangerButton: React.FC<BaseButtonProps> = ({
       disabled={disabled || loading}
       className={`
         group btn-app-spring rounded-xl cursor-pointer select-none
-        bg-destructive text-destructive-foreground shadow-xs
+        bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/85 active:bg-destructive/75 transition-all
         focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40
         inline-flex items-center justify-center gap-2
         disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none

@@ -192,8 +192,8 @@ public class AuthEndpointsTests
                 Data = new CezTokens { Token = "t", PrivateToken = "pt" }
             });
 
-        _factory.CezApiClientMock.GetSiteInfo(Arg.Any<CezBaseRequest>())
-            .Returns(new CezGetSiteInfoResponse
+        _factory.CezApiClientMock.GetUser(Arg.Any<CezGetUserRequest>())
+            .Returns(new CezGetUserResponse
             {
                 Success = true,
                 Data = new CezSiteInfo { UserName = username, FullName = "Sync User", ExternalUserId = 1000 }
@@ -257,8 +257,8 @@ public class AuthEndpointsTests
                 Data = new CezTokens { Token = token, PrivateToken = ptoken }
             });
 
-        _factory.CezApiClientMock.GetSiteInfo(Arg.Any<CezBaseRequest>())
-            .Returns(new CezGetSiteInfoResponse
+        _factory.CezApiClientMock.GetUser(Arg.Any<CezGetUserRequest>())
+            .Returns(new CezGetUserResponse
             {
                 Success = true,
                 Data = new CezSiteInfo { UserName = username, FullName = fullName, ExternalUserId = externalId }

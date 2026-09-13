@@ -401,8 +401,8 @@ public class CezEndpointsTests
         _factory.CezApiClientMock.LoginToCez(Arg.Is<CezLoginRequest>(r => r.UserName == "cezuser"))
             .Returns(new CezLoginResponse { Success = true, Data = new CezTokens { Token = "token123", PrivateToken = "pt123" } });
 
-        _factory.CezApiClientMock.GetSiteInfo(Arg.Is<CezBaseRequest>(r => r.Token == "token123"))
-            .Returns(new CezGetSiteInfoResponse { Success = true, Data = new CezSiteInfo { UserName = "cezuser", FullName = "CEZ Connect User", ExternalUserId = 9988 } });
+        _factory.CezApiClientMock.GetUser(Arg.Is<CezGetUserRequest>(r => r.Token == "token123"))
+            .Returns(new CezGetUserResponse { Success = true, Data = new CezSiteInfo { UserName = "cezuser", FullName = "CEZ Connect User", ExternalUserId = 9988 } });
 
         // Act
         var response = await _client.PostAsJsonAsync("/cez/connect", new ConnectCezCommand("cezuser", "cezpass"));
@@ -459,7 +459,8 @@ public class CezEndpointsTests
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
         var cezUser = await db.CezUsers.FirstOrDefaultAsync(cu => cu.UserId == userId);
-        cezUser.Should().BeNull();
+        cezUser.Should().NotBeNull();
+        cezUser!.IsDisabled.Should().BeTrue();
     }
 
     [Test]
@@ -473,8 +474,8 @@ public class CezEndpointsTests
                 Success = true,
                 Data = new CezTokens { Token = "puretoken", PrivateToken = "purept" }
             });
-        _factory.CezApiClientMock.GetSiteInfo(Arg.Any<CezBaseRequest>())
-            .Returns(new CezGetSiteInfoResponse
+        _factory.CezApiClientMock.GetUser(Arg.Any<CezGetUserRequest>())
+            .Returns(new CezGetUserResponse
             {
                 Success = true,
                 Data = new CezSiteInfo { UserName = username, FullName = "Pure CEZ User", ExternalUserId = 555 }

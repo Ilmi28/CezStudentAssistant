@@ -34,7 +34,7 @@ public class GetCezStatusQueryHandler(IUnitOfWork unitOfWork)
             x => x.CezUser!
         ) ?? throw new NotFoundException(UserMessageConsts.UserNotFound);
 
-        var isConnected = user.CezUser != null;
+        var isConnected = user.CezUser != null && !user.CezUser.IsDisabled;
         DateTime? lastSyncAt = null;
         JobStatus? lastSyncStatus = null;
 

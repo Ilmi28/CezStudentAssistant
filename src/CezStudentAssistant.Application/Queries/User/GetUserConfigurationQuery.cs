@@ -35,7 +35,7 @@ public class GetUserConfigurationQueryHandler(IUnitOfWork unitOfWork)
             x => x.Configuration!
         ) ?? throw new NotFoundException(UserMessageConsts.UserNotFound);
 
-        var isCezConnected = user.CezUser != null;
+        var isCezConnected = user.CezUser != null && !user.CezUser.IsDisabled;
         DateTime? lastCezSync = null;
 
         if (isCezConnected)

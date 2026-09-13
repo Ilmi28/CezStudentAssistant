@@ -1,4 +1,4 @@
-﻿namespace CezStudentAssistant.Application.Requests.Cez;
+namespace CezStudentAssistant.Application.Requests.Cez;
 
 public class CezUserRequest : CezBaseRequest
 {

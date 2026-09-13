@@ -19,7 +19,10 @@ export function useAuth() {
     try {
       const storedUser = localStorage.getItem("username") || "Student";
       ctx.setUsername(storedUser);
-      const profile = await userService.getUserProfile().catch(() => null);
+      const [profile, cezStatus] = await Promise.all([
+        userService.getUserProfile().catch(() => null),
+        cezService.getCezStatus().catch(() => null),
+      ]);
       if (profile) {
         if (profile.userName) {
           ctx.setUsername(profile.userName);
@@ -27,10 +30,16 @@ export function useAuth() {
         }
         ctx.setFullName(profile.fullName || null);
       }
+      if (cezStatus) {
+        ctx.setIsCezConnected(cezStatus.isConnected);
+        ctx.setLastCezSync(cezStatus.lastSyncAt ?? null);
+      }
     } catch (err: any) {
       if (err instanceof UnauthorizedError) {
         ctx.setUsername(null);
         ctx.setFullName(null);
+        ctx.setIsCezConnected(false);
+        ctx.setLastCezSync(null);
       } else {
         setError(t("common.errorConnection"));
       }

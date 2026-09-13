@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "../ui/Alert";
-import { PrimaryButton, SecondaryButton } from "../ui/Button";
+import { PrimaryButton, SecondaryButton, DangerButton } from "../ui/Button";
+import { Flex } from "../ui/LayoutPrimitives";
 import Modal from "../ui/Modal";
 
 interface ConfirmModalProps {
@@ -52,27 +53,31 @@ export default function ConfirmModal({
 
         <p className="text-sm text-muted-foreground">{message}</p>
 
-        <div className="pt-2 flex gap-3">
+        <Flex justify="end" gap={3} className="pt-2">
           <SecondaryButton
             type="button"
             onClick={handleClose}
-            className="flex-1"
           >
             {t("common.cancel")}
           </SecondaryButton>
-          <PrimaryButton
-            type="button"
-            onClick={handleConfirm}
-            loading={loading}
-            className={`flex-1 ${
-              isDestructive
-                ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground border-none"
-                : ""
-            }`}
-          >
-            {confirmBtnText || t("common.confirm")}
-          </PrimaryButton>
-        </div>
+          {isDestructive ? (
+            <DangerButton
+              type="button"
+              onClick={handleConfirm}
+              loading={loading}
+            >
+              {confirmBtnText || t("common.confirm")}
+            </DangerButton>
+          ) : (
+            <PrimaryButton
+              type="button"
+              onClick={handleConfirm}
+              loading={loading}
+            >
+              {confirmBtnText || t("common.confirm")}
+            </PrimaryButton>
+          )}
+        </Flex>
       </div>
     </Modal>
   );

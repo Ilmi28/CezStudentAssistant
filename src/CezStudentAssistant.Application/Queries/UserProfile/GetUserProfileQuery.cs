@@ -25,15 +25,16 @@ public class GetUserProfileQueryHandler(IUnitOfWork unitOfWork)
         var user = await userRepo.GetByIdAsync(query.UserId, ct, true, u => u.CezUser!)
             ?? throw new NotFoundException(UserMessageConsts.UserNotFound);
 
+        var activeCezUser = user.CezUser != null && !user.CezUser.IsDisabled ? user.CezUser : null;
         return new UserProfileDto
         {
             UserName = user.UserName,
-            FullName = user.FullName ?? user.CezUser?.FullName,
-            Email = user.Email ?? user.CezUser?.Email,
-            IsCezConnected = user.CezUser != null,
-            CezUsername = user.CezUser?.UserName,
-            CezFullName = user.CezUser?.FullName,
-            CezEmail = user.CezUser?.Email
+            FullName = user.FullName ?? activeCezUser?.FullName,
+            Email = user.Email ?? activeCezUser?.Email,
+            IsCezConnected = activeCezUser != null,
+            CezUsername = activeCezUser?.UserName,
+            CezFullName = activeCezUser?.FullName,
+            CezEmail = activeCezUser?.Email
         };
     }
 }

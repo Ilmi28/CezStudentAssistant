@@ -1,4 +1,5 @@
 using AutoMapper;
+using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses.Cez;
@@ -53,23 +54,44 @@ internal class CezApiClient(ICezRequestService requestService, IMapper mapper) :
         return mapper.Map<CezGetUserCoursesResponse>(requestResult);
     }
 
-    public async Task<CezGetSiteInfoResponse> GetSiteInfo(CezBaseRequest request)
+    public async Task<CezGetUserResponse> GetUser(CezGetUserRequest request)
     {
-        var externalRequest = new ExternalCezBaseRequest
-        {
-            Token = request.Token,
-            Function = CezFunctionConsts.GetSiteInfo,
-        };
-        var requestResult = await requestService.SendGetAsync<ExternalGetSiteInfoResponse>(
+        var requestResult = await requestService.SendGetAsync<List<ExternalCezGetUserResponse>>(
             CezBaseConsts.FunctionsPath,
             [
-                new(CezParamsConsts.Token, externalRequest.Token),
-                new(CezParamsConsts.Function, externalRequest.Function),
-                new(CezParamsConsts.RestFormat, externalRequest.RestFormat)
+                new(CezParamsConsts.Token, request.Token),
+                new(CezParamsConsts.Function, CezFunctionConsts.GetUserByField),
+                new(CezParamsConsts.RestFormat, "json"),
+                new("field", request.Field),
+                new("values[0]", request.Value)
             ]
         );
 
-        return mapper.Map<CezGetSiteInfoResponse>(requestResult);
+        if (requestResult.Error != null)
+        {
+            return new CezGetUserResponse
+            {
+                Success = false,
+                ErrorCode = requestResult.Error.ErrorCode,
+                Message = requestResult.Error.Message ?? requestResult.Error.Error
+            };
+        }
+
+        var userDetail = requestResult.Data != null && requestResult.Data.Count > 0 ? requestResult.Data[0] : null;
+        if (userDetail == null)
+        {
+            return new CezGetUserResponse
+            {
+                Success = false,
+                Message = CezResponseMessageConsts.UnexpectedError
+            };
+        }
+
+        return new CezGetUserResponse
+        {
+            Success = true,
+            Data = mapper.Map<CezSiteInfo>(userDetail)
+        };
     }
 
     public async Task<CezCourseContentResponse> GetCourseContent(CezCourseRequest request)

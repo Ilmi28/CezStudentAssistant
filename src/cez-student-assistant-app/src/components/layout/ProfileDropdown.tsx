@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Settings, LogOut, ChevronDown } from "lucide-react";
-import { Card, Flex, Text, SecondaryButton } from "../index";
+import { Card, Flex, Text } from "../index";
 
 interface ProfileDropdownProps {
   username: string | null;
@@ -82,62 +82,62 @@ export default function ProfileDropdown({ username, fullName, onLogout }: Profil
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="group btn-app-spring flex items-center gap-2.5 px-3.5 py-2.5 text-white rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 shadow-xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 select-none"
+        className="group btn-app-spring flex items-center gap-2.5 px-3 py-2 text-white rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 shadow-xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 select-none"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         <Flex align="center" justify="center" className="w-7 h-7 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold shrink-0 uppercase">
           {avatarText}
         </Flex>
-        <Text size="sm" className="font-semibold text-white truncate max-w-[140px] inline-block transition-transform duration-200 group-hover:scale-[1.03]" title={displayName}>
+        <Text size="sm" className="font-semibold text-white truncate max-w-[140px] inline-block">
           {displayName}
         </Text>
         <ChevronDown
-          size={16}
+          size={15}
           className={`text-white/70 group-hover:text-white transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {shouldRender && (
         <Card
-          className={`absolute right-0 mt-2 w-56 shadow-xl p-2 z-50 ${
+          className={`absolute right-0 mt-2 w-60 shadow-2xl p-1.5 z-50 border-border/80 ${
             isClosing ? "animate-dropdown-exit" : "animate-dropdown-enter"
           }`}
         >
-          <div className="px-3 py-2 border-b border-border/60 mb-2">
-            <Text variant="subtitle" size="xs">
-              {t("profile.signedInAs")}
-            </Text>
-            <Text size="sm" className="font-semibold text-foreground truncate mt-0.5">
-              {displayName}
-            </Text>
-            {fullName?.trim() && username && (
-              <Text size="xs" variant="muted" className="truncate block mt-0.5">
-                @{username}
+          <div className="flex items-center gap-3 px-3 py-2.5 border-b border-border/60 mb-1">
+            <Flex align="center" justify="center" className="w-9 h-9 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold shrink-0 uppercase">
+              {avatarText}
+            </Flex>
+            <div className="min-w-0 flex-1">
+              <Text size="sm" className="font-bold text-foreground truncate block">
+                {displayName}
               </Text>
-            )}
+              {fullName?.trim() && username && (
+                <Text size="xs" variant="muted" className="truncate block">
+                  @{username}
+                </Text>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <SecondaryButton
+          <div className="space-y-0.5">
+            <button
               type="button"
-              fullWidth
               onClick={handlePreferencesClick}
-              icon={<Settings size={16} className="text-primary shrink-0 group-hover:scale-110 transition-transform duration-200" />}
-              className="justify-start px-3 py-2 text-foreground hover:bg-muted font-medium bg-transparent border-none shadow-none"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-foreground rounded-lg hover:bg-muted/70 active:bg-muted transition-colors cursor-pointer select-none text-left"
             >
-              {t("profile.preferences")}
-            </SecondaryButton>
+              <Settings size={15} className="text-primary shrink-0" />
+              <span>{t("profile.preferences")}</span>
+            </button>
 
-            <SecondaryButton
+            <button
               type="button"
-              fullWidth
               onClick={handleLogoutClick}
-              icon={<LogOut size={16} className="text-destructive shrink-0 group-hover:scale-110 transition-transform duration-200" />}
-              className="justify-start px-3 py-2 text-destructive hover:bg-destructive/10 font-medium bg-transparent border-none shadow-none"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-destructive rounded-lg hover:bg-destructive/10 active:bg-destructive/15 transition-colors cursor-pointer select-none text-left"
             >
-              {t("common.logout")}
-            </SecondaryButton>
+              <LogOut size={15} className="text-destructive shrink-0" />
+              <span>{t("common.logout")}</span>
+            </button>
           </div>
         </Card>
       )}

@@ -38,6 +38,7 @@ export const Input: React.FC<InputProps> = ({
           transition-all focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary
           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
           border-border hover:border-border/80
+          read-only:opacity-75 read-only:cursor-default read-only:focus:ring-0 read-only:focus:border-border
           ${className}
         `.trim()}
         {...props}

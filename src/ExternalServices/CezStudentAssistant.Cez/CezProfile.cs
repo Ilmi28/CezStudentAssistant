@@ -18,8 +18,11 @@ internal class CezProfile : Profile
                 opt => opt.MapFrom(src => src.Id)
             );
 
-        CreateMap<ExternalGetSiteInfoResponse, CezSiteInfo>()
-            .ForMember(dest => dest.ExternalUserId, opt => opt.MapFrom(src => src.UserId));
+        CreateMap<ExternalCezGetUserResponse, CezSiteInfo>()
+            .ForMember(dest => dest.ExternalUserId, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.EffectiveFullName))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
         CreateMap<ExternalCezLoginResponse, CezTokens>()
             .ForMember(dest => dest.Token, opt => opt.MapFrom(src => src.Token))
@@ -41,7 +44,7 @@ internal class CezProfile : Profile
             .ForMember(dest => dest.Data, opt => opt.MapFrom(src => src.Data))
             .ForMember(dest => dest.UserId, opt => opt.Ignore());
 
-        CreateMap<CezRequestResult<ExternalGetSiteInfoResponse>, CezGetSiteInfoResponse>()
+        CreateMap<CezRequestResult<ExternalCezGetUserResponse>, CezGetUserResponse>()
             .ForMember(dest => dest.Success, opt => opt.MapFrom(src => src.Error == null && src.Data != null))
             .ForMember(dest => dest.ErrorCode, opt => opt.MapFrom(src => src.Error != null ? src.Error.ErrorCode : null))
             .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Error != null ? src.Error.Message ?? src.Error.Error : null))

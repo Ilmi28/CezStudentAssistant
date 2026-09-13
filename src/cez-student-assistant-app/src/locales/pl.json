@@ -334,7 +334,7 @@
         "syncNow": "Synchronizuj teraz",
         "connectCez": "Połącz konto CEZ",
         "relinkCez": "Połącz ponownie konto CEZ",
-        "disconnectCez": "Odłącz konto CEZ",
+        "disconnectCez": "Odłącz",
         "disconnectConfirmTitle": "Odłączenie konta CEZ",
         "disconnectConfirmMsg": "Czy na pewno chcesz odłączyć konto CEZ? Synchronizacja zostanie wstrzymana, a dotychczas pobrane przedmioty pozostaną na Twoim koncie.",
         "disconnectPureCezWarning": "Aby odłączyć konto CEZ, musisz najpierw ustawić hasło lokalne do swojego konta.",

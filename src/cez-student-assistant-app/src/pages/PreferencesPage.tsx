@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Pencil } from "lucide-react";
 import { useAuth, useUI, useCourse, useUser } from "../hooks";
 import {
   PrimaryButton,
@@ -35,6 +36,7 @@ export default function PreferencesPage() {
   const [profileFullName, setProfileFullName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
   const {
@@ -140,6 +142,7 @@ export default function PreferencesPage() {
         await checkAuthStatus();
       }
       setSuccess(t("editProfileModal.successMessage", "Profil został pomyślnie zaktualizowany."));
+      setIsEditingProfile(false);
     } catch (err: any) {
       setProfileError(err.message || t("common.genericError"));
     } finally {
@@ -177,50 +180,79 @@ export default function PreferencesPage() {
 
       {/* Section 1: User Profile */}
       <section className="space-y-4">
-        <div className="border-b border-border pb-2.5">
+        <div className="flex items-center justify-between border-b border-border pb-2.5">
           <Heading level={2} size="base" className="font-bold tracking-wide">
             {t("preferences.profileSection")}
           </Heading>
+          {!isEditingProfile && (
+            <SecondaryButton
+              type="button"
+              size="sm"
+              icon={<Pencil size={14} />}
+              onClick={() => setIsEditingProfile(true)}
+            >
+              {t("common.edit", "Edytuj")}
+            </SecondaryButton>
+          )}
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-4 py-1">
           <Alert message={profileError} />
 
-          <Grid cols={1} smCols={2} gap={4}>
-            <Input
-              label={t("editProfileModal.username", "Nazwa użytkownika")}
-              value={profileUserName}
-              onChange={(e) => {
-                setProfileUserName(e.target.value);
-                if (profileError) setProfileError(null);
-              }}
-            />
+          <Input
+            label={t("editProfileModal.username", "Nazwa użytkownika")}
+            value={profileUserName}
+            readOnly={!isEditingProfile}
+            onChange={(e) => {
+              setProfileUserName(e.target.value);
+              if (profileError) setProfileError(null);
+            }}
+          />
 
-            <Input
-              label={t("editProfileModal.fullName", "Imię i nazwisko")}
-              value={profileFullName}
-              onChange={(e) => {
-                setProfileFullName(e.target.value);
-                if (profileError) setProfileError(null);
-              }}
-            />
-          </Grid>
+          <Input
+            label={t("editProfileModal.fullName", "Imię i nazwisko")}
+            value={profileFullName}
+            readOnly={!isEditingProfile}
+            onChange={(e) => {
+              setProfileFullName(e.target.value);
+              if (profileError) setProfileError(null);
+            }}
+          />
 
           <Input
             type="email"
             label={t("editProfileModal.email", "Adres e-mail")}
             value={profileEmail}
+            readOnly={!isEditingProfile}
             onChange={(e) => {
               setProfileEmail(e.target.value);
               if (profileError) setProfileError(null);
             }}
           />
 
-          <Flex justify="end" className="pt-1">
-            <PrimaryButton type="submit" loading={savingProfile}>
-              {t("common.save", "Zapisz")}
-            </PrimaryButton>
-          </Flex>
+          {isEditingProfile && (
+            <Flex justify="end" gap={3} className="pt-2 animate-in fade-in duration-150">
+              <SecondaryButton
+                type="button"
+                onClick={() => {
+                  setIsEditingProfile(false);
+                  setProfileError(null);
+                  if (userProfile) {
+                    setProfileUserName(userProfile.userName || "");
+                    setProfileFullName(userProfile.fullName || "");
+                    setProfileEmail(userProfile.email || "");
+                  } else if (username) {
+                    setProfileUserName(username);
+                  }
+                }}
+              >
+                {t("common.cancel", "Anuluj")}
+              </SecondaryButton>
+              <PrimaryButton type="submit" loading={savingProfile}>
+                {t("common.save", "Zapisz")}
+              </PrimaryButton>
+            </Flex>
+          )}
         </form>
       </section>
 

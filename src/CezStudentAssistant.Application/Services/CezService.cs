@@ -37,13 +37,15 @@ public class CezService(
         if (!loginResponse.Success || loginResponse.Data is null)
             throw new BadRequestException(loginResponse.Message ?? CezMessagesConsts.LoginError);
 
-        var userInfoResponse = await cezApiClient.GetSiteInfo(new CezBaseRequest
+        var userInfoResponse = await cezApiClient.GetUser(new CezGetUserRequest
         {
-            Token = loginResponse.Data.Token
+            Token = loginResponse.Data.Token,
+            Field = "username",
+            Value = userName
         });
 
         if (!userInfoResponse.Success || userInfoResponse.Data is null)
-            throw new BadRequestException(userInfoResponse.Message ?? CezMessagesConsts.GetSiteInfoError);
+            throw new BadRequestException(userInfoResponse.Message ?? CezMessagesConsts.GetUserError);
 
         var cezUserInfo = new CezUserInfo
         {
@@ -58,7 +60,8 @@ public class CezService(
     {
         var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
         var existingCezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == userId, ct);
-        if (existingCezUser != null)
+
+        if (existingCezUser != null && !existingCezUser.IsDisabled)
         {
             throw new ConflictException(CezMessagesConsts.AlreadyConnectedToCez);
         }
@@ -72,32 +75,59 @@ public class CezService(
         if (!loginResponse.Success || loginResponse.Data is null)
             throw new BadRequestException(loginResponse.Message ?? CezMessagesConsts.LoginError);
 
-        var userInfoResponse = await cezApiClient.GetSiteInfo(new CezBaseRequest
+        var userInfoResponse = await cezApiClient.GetUser(new CezGetUserRequest
         {
-            Token = loginResponse.Data.Token
+            Token = loginResponse.Data.Token,
+            Field = "username",
+            Value = userName
         });
 
         if (!userInfoResponse.Success || userInfoResponse.Data is null)
-            throw new BadRequestException(userInfoResponse.Message ?? CezMessagesConsts.GetSiteInfoError);
+            throw new BadRequestException(userInfoResponse.Message ?? CezMessagesConsts.GetUserError);
 
         var externalUserConnected = await cezUserRepo.GetSingleAsync(cu => cu.ExternalUserId == userInfoResponse.Data.ExternalUserId, ct);
-        if (externalUserConnected != null)
+
+        if (externalUserConnected != null && externalUserConnected.UserId != userId && !externalUserConnected.IsDisabled)
         {
             throw new ConflictException(CezMessagesConsts.CezAccountAlreadyLinkedToAnotherUser);
         }
 
-        var cezUser = new CezUser
+        var userRepo = unitOfWork.Repository<IUserRepository>();
+        var user = await userRepo.GetByIdAsync(userId, ct);
+        if (user != null)
         {
-            UserId = userId,
-            UserName = userInfoResponse.Data.UserName ?? userName,
-            FullName = userInfoResponse.Data.FullName,
-            Email = userInfoResponse.Data.Email,
-            Token = loginResponse.Data.Token ?? string.Empty,
-            PrivateToken = loginResponse.Data.PrivateToken ?? string.Empty,
-            ExternalUserId = userInfoResponse.Data.ExternalUserId
-        };
+            if (string.IsNullOrWhiteSpace(user.FullName) && !string.IsNullOrWhiteSpace(userInfoResponse.Data.FullName))
+                user.FullName = userInfoResponse.Data.FullName;
+            if (string.IsNullOrWhiteSpace(user.Email) && !string.IsNullOrWhiteSpace(userInfoResponse.Data.Email))
+                user.Email = userInfoResponse.Data.Email;
+        }
 
-        await cezUserRepo.AddAsync(cezUser, ct);
+        if (existingCezUser != null)
+        {
+            existingCezUser.IsDisabled = false;
+            existingCezUser.UserName = userInfoResponse.Data.UserName ?? userName;
+            existingCezUser.FullName = userInfoResponse.Data.FullName;
+            existingCezUser.Email = userInfoResponse.Data.Email;
+            existingCezUser.Token = loginResponse.Data.Token ?? string.Empty;
+            existingCezUser.PrivateToken = loginResponse.Data.PrivateToken ?? string.Empty;
+            existingCezUser.ExternalUserId = userInfoResponse.Data.ExternalUserId;
+        }
+        else
+        {
+            var cezUser = new CezUser
+            {
+                UserId = userId,
+                UserName = userInfoResponse.Data.UserName ?? userName,
+                FullName = userInfoResponse.Data.FullName,
+                Email = userInfoResponse.Data.Email,
+                Token = loginResponse.Data.Token ?? string.Empty,
+                PrivateToken = loginResponse.Data.PrivateToken ?? string.Empty,
+                ExternalUserId = userInfoResponse.Data.ExternalUserId,
+                IsDisabled = false
+            };
+            await cezUserRepo.AddAsync(cezUser, ct);
+        }
+
         await unitOfWork.SaveChangesAsync(ct);
     }
 
@@ -107,7 +137,7 @@ public class CezService(
         var user = await userRepo.GetByIdAsync(userId, ct, includes: u => u.CezUser!)
             ?? throw new NotFoundException(UserMessageConsts.UserNotFound);
 
-        if (user.CezUser == null)
+        if (user.CezUser == null || user.CezUser.IsDisabled)
         {
             throw new BadRequestException(CezMessagesConsts.NotConnectedToCez);
         }
@@ -117,8 +147,7 @@ public class CezService(
             throw new BadRequestException(CezMessagesConsts.CannotDisconnectPureCezAccount);
         }
 
-        var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
-        await cezUserRepo.DeleteAsync(user.CezUser, ct);
+        user.CezUser.IsDisabled = true;
         await unitOfWork.SaveChangesAsync(ct);
     }
 
@@ -132,8 +161,34 @@ public class CezService(
         try
         {
             var cezUser = await GetCezUserAsync(userId, ct);
+
+            var userInfoResponse = await cezApiClient.GetUser(new CezGetUserRequest
+            {
+                Token = cezUser.Token,
+                Field = "id",
+                Value = cezUser.ExternalUserId.ToString()
+            });
+
+            if (userInfoResponse != null && userInfoResponse.Success && userInfoResponse.Data != null)
+            {
+                if (!string.IsNullOrWhiteSpace(userInfoResponse.Data.FullName))
+                    cezUser.FullName = userInfoResponse.Data.FullName;
+                if (!string.IsNullOrWhiteSpace(userInfoResponse.Data.Email))
+                    cezUser.Email = userInfoResponse.Data.Email;
+                if (!string.IsNullOrWhiteSpace(userInfoResponse.Data.UserName))
+                    cezUser.UserName = userInfoResponse.Data.UserName;
+            }
+
             var externalCourses = await FetchExternalCoursesAsync(cezUser, ct);
             var localUser = await GetUserWithCoursesAsync(userId, ct);
+
+            if (userInfoResponse != null && userInfoResponse.Success && userInfoResponse.Data != null)
+            {
+                if (string.IsNullOrWhiteSpace(localUser.FullName) && !string.IsNullOrWhiteSpace(userInfoResponse.Data.FullName))
+                    localUser.FullName = userInfoResponse.Data.FullName;
+                if (string.IsNullOrWhiteSpace(localUser.Email) && !string.IsNullOrWhiteSpace(userInfoResponse.Data.Email))
+                    localUser.Email = userInfoResponse.Data.Email;
+            }
 
             await SynchronizeCoursesAsync(localUser, externalCourses, ct);
 
@@ -151,7 +206,7 @@ public class CezService(
     private async Task<CezUser> GetCezUserAsync(Guid userId, CancellationToken ct)
     {
         var repo = unitOfWork.Repository<ICezUserRepository>();
-        return await repo.GetSingleAsync(cu => cu.UserId == userId, ct)
+        return await repo.GetSingleAsync(cu => cu.UserId == userId && !cu.IsDisabled, ct)
             ?? throw new NotFoundException(CezMessagesConsts.CezUserNotFound);
     }
 
@@ -314,9 +369,9 @@ public class CezService(
             var user = new User
             {
                 UserName = siteInfoData.UserName
-                    ?? throw new BadRequestException(CezMessagesConsts.GetSiteInfoError),
-                FullName = null,
-                Email = null
+                    ?? throw new BadRequestException(CezMessagesConsts.GetUserError),
+                FullName = siteInfoData.FullName,
+                Email = siteInfoData.Email
             };
 
             await cezUserRepo.AddAsync(
@@ -336,7 +391,13 @@ public class CezService(
             return user.Id;
         }
 
+        if (string.IsNullOrWhiteSpace(existingUser.FullName) && !string.IsNullOrWhiteSpace(siteInfoData.FullName))
+            existingUser.FullName = siteInfoData.FullName;
+        if (string.IsNullOrWhiteSpace(existingUser.Email) && !string.IsNullOrWhiteSpace(siteInfoData.Email))
+            existingUser.Email = siteInfoData.Email;
+
         var existingCezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == existingUser.Id, ct);
+
         if (existingCezUser == null)
         {
             existingCezUser = new CezUser
@@ -347,12 +408,14 @@ public class CezService(
                 Token = tokensData.Token ?? string.Empty,
                 PrivateToken = tokensData.PrivateToken ?? string.Empty,
                 ExternalUserId = siteInfoData.ExternalUserId,
-                UserId = existingUser.Id
+                UserId = existingUser.Id,
+                IsDisabled = false
             };
             await cezUserRepo.AddAsync(existingCezUser, ct);
             return existingUser.Id;
         }
 
+        existingCezUser.IsDisabled = false;
         existingCezUser.UserName = siteInfoData.UserName;
         existingCezUser.FullName = siteInfoData.FullName;
         existingCezUser.Email = siteInfoData.Email;

@@ -94,23 +94,27 @@ public class CezApiClientTests
     }
 
     [Test]
-    public async Task GetSiteInfo_ShouldReturnSiteInfo_WhenSuccessful()
+    public async Task GetUser_ShouldReturnUserInfo_WhenSuccessful()
     {
         // Arrange
-        var request = new CezBaseRequest { Token = "token" };
-        var externalResponse = new ExternalGetSiteInfoResponse { UserId = 123, FullName = "Site" };
-        var requestResult = new CezRequestResult<ExternalGetSiteInfoResponse>(externalResponse, null);
+        var request = new CezGetUserRequest { Token = "token", Field = "username", Value = "testuser" };
+        var externalResponse = new List<ExternalCezGetUserResponse>
+        {
+            new() { UserId = 123, FullName = "Site", Email = "test@example.com" }
+        };
+        var requestResult = new CezRequestResult<List<ExternalCezGetUserResponse>>(externalResponse, null);
 
-        _requestService.SendGetAsync<ExternalGetSiteInfoResponse>(Arg.Any<string>(), Arg.Any<IEnumerable<KeyValuePair<string, string>>>())
+        _requestService.SendGetAsync<List<ExternalCezGetUserResponse>>(Arg.Any<string>(), Arg.Any<IEnumerable<KeyValuePair<string, string>>>())
             .Returns(requestResult);
 
         // Act
-        var result = await _sut.GetSiteInfo(request);
+        var result = await _sut.GetUser(request);
 
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Data!.ExternalUserId.Should().Be(123);
+        result.Data!.Email.Should().Be("test@example.com");
     }
     [Test]
     public async Task GetCourseContent_ShouldReturnCourseContent_WhenSuccessful()
