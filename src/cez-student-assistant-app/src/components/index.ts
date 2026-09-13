@@ -42,6 +42,8 @@ export { default as EditFlashcardDeckModal } from './modals/EditFlashcardDeckMod
 export { default as GenerateFlashcardsModal } from './modals/GenerateFlashcardsModal';
 export { default as StartFlashcardStudyModal } from './modals/StartFlashcardStudyModal';
 export { default as UploadFileModal } from './modals/UploadFileModal';
+export { default as SetPasswordModal } from './modals/SetPasswordModal';
+export { default as ChangePasswordModal } from './modals/ChangePasswordModal';
 
 export { default as CourseList } from './domain/course/CourseList';
 export { default as CoursePreparationCard } from './domain/course/CoursePreparationCard';

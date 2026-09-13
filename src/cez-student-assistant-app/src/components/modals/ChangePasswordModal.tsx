@@ -4,45 +4,57 @@ import { Input } from "../ui/Input";
 import { Alert } from "../ui/Alert";
 import { PrimaryButton, SecondaryButton } from "../ui/Button";
 import Modal from "../ui/Modal";
-import cezLogo from "../../assets/cez-logo.png";
 
-interface CezModalProps {
+interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (cezUser: string, cezPass: string) => Promise<void>;
-  loading: boolean;
+  onSubmit: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
-export default function CezModal({
+export default function ChangePasswordModal({
   isOpen,
   onClose,
   onSubmit,
-  loading
-}: CezModalProps) {
+}: ChangePasswordModalProps) {
   const { t } = useTranslation();
-  const [cezUser, setCezUser] = useState("");
-  const [cezPass, setCezPass] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cezUser.trim() || !cezPass) {
+    if (!currentPassword || !newPassword || !confirmPassword) {
       setModalError(t("auth.emptyFields"));
       return;
     }
 
+    if (newPassword !== confirmPassword) {
+      setModalError(t("changePasswordModal.passwordsDoNotMatch"));
+      return;
+    }
+
     setModalError(null);
+    setLoading(true);
     try {
-      await onSubmit(cezUser.trim(), cezPass);
-      setCezUser("");
-      setCezPass("");
+      await onSubmit(currentPassword, newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      onClose();
     } catch (err: any) {
       setModalError(err.message || t("auth.genericError"));
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
     setModalError(null);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
     onClose();
   };
 
@@ -50,35 +62,41 @@ export default function CezModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={t("cezModal.title")}
-      icon={
-        <div className="w-6 h-6 rounded-full bg-white p-0.5 flex items-center justify-center shrink-0 shadow-xs">
-          <img src={cezLogo} alt="CEZ" className="w-full h-full object-contain" />
-        </div>
-      }
+      title={t("changePasswordModal.title")}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-[12px] text-muted-foreground leading-relaxed">
-          {t("cezModal.desc")}
+          {t("changePasswordModal.desc")}
         </p>
 
         <Alert message={modalError} />
 
         <Input
-          label={t("cezModal.username")}
-          value={cezUser}
+          type="password"
+          label={t("changePasswordModal.currentPassword")}
+          value={currentPassword}
           onChange={(e) => {
-            setCezUser(e.target.value);
+            setCurrentPassword(e.target.value);
             if (modalError) setModalError(null);
           }}
         />
 
         <Input
           type="password"
-          label={t("cezModal.password")}
-          value={cezPass}
+          label={t("changePasswordModal.newPassword")}
+          value={newPassword}
           onChange={(e) => {
-            setCezPass(e.target.value);
+            setNewPassword(e.target.value);
+            if (modalError) setModalError(null);
+          }}
+        />
+
+        <Input
+          type="password"
+          label={t("changePasswordModal.confirmPassword")}
+          value={confirmPassword}
+          onChange={(e) => {
+            setConfirmPassword(e.target.value);
             if (modalError) setModalError(null);
           }}
         />
@@ -89,14 +107,14 @@ export default function CezModal({
             onClick={handleClose}
             className="flex-1"
           >
-            {t("cezModal.cancel")}
+            {t("common.cancel")}
           </SecondaryButton>
           <PrimaryButton
             type="submit"
             loading={loading}
             className="flex-1"
           >
-            {t("cezModal.submit")}
+            {t("changePasswordModal.submit")}
           </PrimaryButton>
         </div>
       </form>

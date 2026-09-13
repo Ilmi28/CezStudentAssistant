@@ -18,14 +18,15 @@ export default function RegisterPage({}: RegisterPageProps) {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regUser || !regPass) {
+    if (!regUser.trim() || !regPass) {
       setFormError(t("auth.emptyFields"));
       return;
     }
+
     setFormError(null);
     setLoading(true);
     try {
-      await authService.register(regUser, regPass);
+      await authService.register(regUser.trim(), regPass);
       navigate("/login");
     } catch (err: any) {
       setFormError(err.message || t("auth.genericError"));

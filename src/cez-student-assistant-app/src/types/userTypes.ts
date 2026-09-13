@@ -8,6 +8,7 @@ export interface UserConfigurationDto {
   theme: UserTheme;
   language: UserLanguage;
   isCezConnected: boolean;
+  hasPassword?: boolean;
   lastCezSync?: string | null;
 }
 

@@ -294,4 +294,68 @@ public class AuthEndpointsTests
         var command = new RegisterUserCommand(username, "Password123!");
         await _client.PostAsJsonAsync("/auth/register", command);
     }
+
+    [Test]
+    public async Task SetPassword_ShouldSetPassword_WhenPureCezUserHasNoPassword()
+    {
+        var username = "setpassuser";
+        SetupCezMock(username, "Set Pass User", 888);
+
+        var loginRes = await _client.PostAsJsonAsync("/auth/login-cez", new LoginWithCezCommand(username, "password"));
+        loginRes.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.PostAsJsonAsync("/auth/set-password", new SetPasswordCommand("NewPass123!"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+
+        // Verify login works with new password via standard login
+        var stdLoginRes = await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, "NewPass123!"));
+        stdLoginRes.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Test]
+    public async Task SetPassword_ShouldReturnConflict_WhenUserAlreadyHasPassword()
+    {
+        var username = "stduserforSetPass";
+        await SeedUser(username);
+        await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, "Password123!"));
+
+        var response = await _client.PostAsJsonAsync("/auth/set-password", new SetPasswordCommand("NewPass123!"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Test]
+    public async Task ChangePassword_ShouldChangePassword_WhenCurrentPasswordIsValid()
+    {
+        var username = "changepassuser";
+        await SeedUser(username);
+        await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, "Password123!"));
+
+        var response = await _client.PostAsJsonAsync("/auth/change-password", new ChangePasswordCommand("Password123!", "NewPass123!"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+
+        // Verify login with new password
+        var newLoginRes = await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, "NewPass123!"));
+        newLoginRes.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Test]
+    public async Task ChangePassword_ShouldReturnBadRequest_WhenCurrentPasswordIsWrong()
+    {
+        var username = "wrongpassuser";
+        await SeedUser(username);
+        await _client.PostAsJsonAsync("/auth/login", new LoginUserCommand(username, "Password123!"));
+
+        var response = await _client.PostAsJsonAsync("/auth/change-password", new ChangePasswordCommand("WrongPass123!", "NewPass123!"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

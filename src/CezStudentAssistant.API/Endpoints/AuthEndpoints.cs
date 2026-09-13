@@ -53,5 +53,21 @@ public static class AuthEndpoints
                 currentUserService.ClearSession();
                 return Results.Ok();
             });
+
+        group.MapPost(
+            "/set-password",
+            async (SetPasswordCommand command, IMediator mediator) =>
+            {
+                var response = await mediator.Send(command);
+                return Results.Ok(response);
+            }).RequireAuthorization();
+
+        group.MapPost(
+            "/change-password",
+            async (ChangePasswordCommand command, IMediator mediator) =>
+            {
+                var response = await mediator.Send(command);
+                return Results.Ok(response);
+            }).RequireAuthorization();
     }
 }

@@ -60,6 +60,7 @@ public class UpdateUserConfigurationCommandHandler(IUnitOfWork unitOfWork)
         return new UserConfigurationDto
         {
             IsCezConnected = user.CezUser != null,
+            HasPassword = user.PasswordHash != null,
             Theme = user.Configuration.Theme,
             Language = user.Configuration.Language
         };

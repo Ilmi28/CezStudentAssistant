@@ -22,4 +22,28 @@ export const cezService = {
     );
     return handleResponse<CezSyncResponseDto>(res);
   },
+
+  async connectCez(username: string, password: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/cez/connect`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      },
+      false,
+      authService.refreshToken
+    );
+    await handleResponse<void>(res);
+  },
+
+  async disconnectCez(): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/cez/disconnect`,
+      { method: "POST" },
+      false,
+      authService.refreshToken
+    );
+    await handleResponse<void>(res);
+  },
 };

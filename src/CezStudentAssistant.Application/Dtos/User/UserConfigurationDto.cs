@@ -6,6 +6,7 @@ namespace CezStudentAssistant.Application.Dtos.User;
 public class UserConfigurationDto
 {
     public bool IsCezConnected { get; set; }
+    public bool HasPassword { get; set; }
     public DateTime? LastCezSync { get; set; }
     public UserTheme Theme { get; set; }
     public UserLanguage Language { get; set; }

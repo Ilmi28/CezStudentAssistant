@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AuthContext } from "../contexts/AuthContext";
-import { authService, UnauthorizedError } from "../services";
+import { authService, cezService, UnauthorizedError } from "../services";
 import { useUI } from "./useUI";
 
 export function useAuth() {
@@ -58,7 +58,16 @@ export function useAuth() {
   const handleCezLinkSubmit = async (cezUser: string, cezPass: string) => {
     setLoading(true);
     try {
-      await authService.loginCez(cezUser, cezPass);
+      if (ctx.username) {
+        if (ctx.isCezConnected) {
+          throw new Error(t("preferences.alreadyConnectedError"));
+        }
+        await cezService.connectCez(cezUser, cezPass);
+      } else {
+        await authService.loginCez(cezUser, cezPass);
+        localStorage.setItem("username", cezUser);
+        ctx.setUsername(cezUser);
+      }
       ctx.setIsCezConnected(true);
       setShowCezModal(false);
     } catch (err: any) {
@@ -66,7 +75,23 @@ export function useAuth() {
         handleLogout();
         return;
       }
-      setError(err.message || t("common.errorConnection"));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCezDisconnect = async () => {
+    setLoading(true);
+    try {
+      await cezService.disconnectCez();
+      ctx.setIsCezConnected(false);
+    } catch (err: any) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+        return;
+      }
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -83,6 +108,7 @@ export function useAuth() {
     handleLoginSuccess,
     handleLogout,
     handleCezLinkSubmit,
+    handleCezDisconnect,
     checkAuthStatus,
   };
 }

@@ -54,6 +54,72 @@ public class CezService(
         return await SyncCezUser(cezUserInfo, ct);
     }
 
+    public async Task ConnectCezAsync(Guid userId, string userName, string password, CancellationToken ct = default)
+    {
+        var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
+        var existingCezUser = await cezUserRepo.GetSingleAsync(cu => cu.UserId == userId, ct);
+        if (existingCezUser != null)
+        {
+            throw new ConflictException(CezMessagesConsts.AlreadyConnectedToCez);
+        }
+
+        var loginResponse = await cezApiClient.LoginToCez(new CezLoginRequest
+        {
+            UserName = userName,
+            Password = password,
+        });
+
+        if (!loginResponse.Success || loginResponse.Data is null)
+            throw new BadRequestException(loginResponse.Message ?? CezMessagesConsts.LoginError);
+
+        var userInfoResponse = await cezApiClient.GetSiteInfo(new CezBaseRequest
+        {
+            Token = loginResponse.Data.Token
+        });
+
+        if (!userInfoResponse.Success || userInfoResponse.Data is null)
+            throw new BadRequestException(userInfoResponse.Message ?? CezMessagesConsts.GetSiteInfoError);
+
+        var externalUserConnected = await cezUserRepo.GetSingleAsync(cu => cu.ExternalUserId == userInfoResponse.Data.ExternalUserId, ct);
+        if (externalUserConnected != null)
+        {
+            throw new ConflictException(CezMessagesConsts.CezAccountAlreadyLinkedToAnotherUser);
+        }
+
+        var cezUser = new CezUser
+        {
+            UserId = userId,
+            FullName = userInfoResponse.Data.FullName,
+            Token = loginResponse.Data.Token ?? string.Empty,
+            PrivateToken = loginResponse.Data.PrivateToken ?? string.Empty,
+            ExternalUserId = userInfoResponse.Data.ExternalUserId
+        };
+
+        await cezUserRepo.AddAsync(cezUser, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task DisconnectCezAsync(Guid userId, CancellationToken ct = default)
+    {
+        var userRepo = unitOfWork.Repository<IUserRepository>();
+        var user = await userRepo.GetByIdAsync(userId, ct, includes: u => u.CezUser!)
+            ?? throw new NotFoundException(UserMessageConsts.UserNotFound);
+
+        if (user.CezUser == null)
+        {
+            throw new BadRequestException(CezMessagesConsts.NotConnectedToCez);
+        }
+
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            throw new BadRequestException(CezMessagesConsts.CannotDisconnectPureCezAccount);
+        }
+
+        var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
+        await cezUserRepo.DeleteAsync(user.CezUser, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
     public async Task SyncUserCourses(Guid userId, CancellationToken ct = default)
     {
         var job = await jobService.GetLatestJobAsync(userId, JobType.CezSync, ct);

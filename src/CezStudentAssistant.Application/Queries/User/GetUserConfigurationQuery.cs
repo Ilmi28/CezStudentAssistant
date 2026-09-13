@@ -57,6 +57,7 @@ public class GetUserConfigurationQueryHandler(IUnitOfWork unitOfWork)
         return new UserConfigurationDto
         {
             IsCezConnected = isCezConnected,
+            HasPassword = user.PasswordHash != null,
             LastCezSync = lastCezSync,
             Theme = theme,
             Language = language

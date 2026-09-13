@@ -22,15 +22,16 @@ export default function CezLoginPage({
 
   const handleCezLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cezUser || !cezPass) {
+    if (!cezUser.trim() || !cezPass) {
       setFormError(t("auth.emptyFields"));
       return;
     }
+
     setFormError(null);
     setLoading(true);
     try {
-      await authService.loginCez(cezUser, cezPass);
-      onLoginSuccess(cezUser);
+      await authService.loginCez(cezUser.trim(), cezPass);
+      onLoginSuccess(cezUser.trim());
     } catch (err: any) {
       setFormError(err.message || t("auth.genericError"));
     } finally {

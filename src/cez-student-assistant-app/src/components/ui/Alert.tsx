@@ -1,5 +1,4 @@
 import React from "react";
-import { AlertCircle, CheckCircle, Info, AlertTriangle } from "lucide-react";
 
 export interface AlertProps {
   variant?: "error" | "success" | "info" | "warning";
@@ -18,28 +17,21 @@ export const Alert: React.FC<AlertProps> = ({
   if (!content) return null;
 
   const variantStyles = {
-    error: "bg-red-500/10 border-red-500/30 text-red-500 dark:text-red-400",
-    success: "bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400",
-    warning: "bg-amber-500/10 border-amber-500/30 text-amber-500 dark:text-amber-400",
-    info: "bg-blue-500/10 border-blue-500/30 text-blue-500 dark:text-blue-400",
-  };
-
-  const icons = {
-    error: <AlertCircle size={15} className="shrink-0" />,
-    success: <CheckCircle size={15} className="shrink-0" />,
-    warning: <AlertTriangle size={15} className="shrink-0" />,
-    info: <Info size={15} className="shrink-0" />,
+    error: "bg-red-500/10 dark:bg-red-500/15 border border-red-500/20 text-red-600 dark:text-red-300",
+    success: "bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300",
+    warning: "bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-300",
+    info: "bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-blue-600 dark:text-blue-300",
   };
 
   return (
     <div
       className={`
-        border p-3 rounded text-[12px] font-medium flex items-center gap-2.5 animate-in fade-in duration-150
+        px-4 py-2.5 rounded-xl text-[12px] font-medium leading-relaxed
+        animate-in fade-in duration-150
         ${variantStyles[variant]}
         ${className}
       `.trim()}
     >
-      {icons[variant]}
       <span>{content}</span>
     </div>
   );

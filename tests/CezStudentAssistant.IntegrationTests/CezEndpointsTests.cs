@@ -1,4 +1,5 @@
 using CezStudentAssistant.Application.Commands.Auth;
+using CezStudentAssistant.Application.Commands.Cez;
 using CezStudentAssistant.Application.Dtos.Cez;
 using CezStudentAssistant.Application.Requests.Cez;
 using CezStudentAssistant.Application.Responses;
@@ -386,5 +387,116 @@ public class CezEndpointsTests
             var uploadedBytes = downloadStream.ToArray();
             uploadedBytes.Should().Equal(new byte[] { 10, 11, 12 });
         }
+    }
+
+    [Test]
+    public async Task ConnectCez_ShouldConnectUser_WhenNotAlreadyConnected()
+    {
+        // Arrange
+        var username = "connectuser";
+        var password = "Password123!";
+        await RegisterAndLogin(username, password);
+        var userId = await GetCurrentUserIdFromDb(username);
+
+        _factory.CezApiClientMock.LoginToCez(Arg.Is<CezLoginRequest>(r => r.UserName == "cezuser"))
+            .Returns(new CezLoginResponse { Success = true, Data = new CezTokens { Token = "token123", PrivateToken = "pt123" } });
+
+        _factory.CezApiClientMock.GetSiteInfo(Arg.Is<CezBaseRequest>(r => r.Token == "token123"))
+            .Returns(new CezGetSiteInfoResponse { Success = true, Data = new CezSiteInfo { UserName = "cezuser", FullName = "CEZ Connect User", ExternalUserId = 9988 } });
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/cez/connect", new ConnectCezCommand("cezuser", "cezpass"));
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+        var cezUser = await db.CezUsers.FirstOrDefaultAsync(cu => cu.UserId == userId);
+        cezUser.Should().NotBeNull();
+        cezUser!.ExternalUserId.Should().Be(9988);
+    }
+
+    [Test]
+    public async Task ConnectCez_ShouldReturnConflict_WhenAlreadyConnected()
+    {
+        // Arrange
+        var username = "alreadyconnecteduser";
+        var password = "Password123!";
+        await RegisterAndLogin(username, password);
+        var userId = await GetCurrentUserIdFromDb(username);
+        await LinkCezUser(userId, 777);
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/cez/connect", new ConnectCezCommand("cezuser", "cezpass"));
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Test]
+    public async Task DisconnectCez_ShouldDisconnectUser_WhenConnectedAndHasPassword()
+    {
+        // Arrange
+        var username = "disconnectuser";
+        var password = "Password123!";
+        await RegisterAndLogin(username, password);
+        var userId = await GetCurrentUserIdFromDb(username);
+        await LinkCezUser(userId, 888);
+
+        // Act
+        var response = await _client.PostAsync("/cez/disconnect", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeTrue();
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CezStudentAssistant.Infrastructure.Persistence.Data.AppDbContext>();
+        var cezUser = await db.CezUsers.FirstOrDefaultAsync(cu => cu.UserId == userId);
+        cezUser.Should().BeNull();
+    }
+
+    [Test]
+    public async Task DisconnectCez_ShouldReturnBadRequest_WhenPureCezAccountHasNoPassword()
+    {
+        // Arrange
+        var username = "purecezuser";
+        _factory.CezApiClientMock.LoginToCez(Arg.Is<CezLoginRequest>(r => r.UserName == username))
+            .Returns(new CezLoginResponse
+            {
+                Success = true,
+                Data = new CezTokens { Token = "puretoken", PrivateToken = "purept" }
+            });
+        _factory.CezApiClientMock.GetSiteInfo(Arg.Any<CezBaseRequest>())
+            .Returns(new CezGetSiteInfoResponse
+            {
+                Success = true,
+                Data = new CezSiteInfo { UserName = username, FullName = "Pure CEZ User", ExternalUserId = 555 }
+            });
+        _factory.CezApiClientMock.GetUserCourses(Arg.Any<CezUserRequest>())
+            .Returns(new CezGetUserCoursesResponse
+            {
+                Success = true,
+                Data = new List<CezCourse>()
+            });
+
+        // Log in via CEZ endpoint to obtain session cookies for a pure CEZ user
+        var loginResponse = await _client.PostAsJsonAsync("/auth/login-cez", new CezStudentAssistant.Application.Commands.Auth.LoginWithCezCommand(username, "password"));
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        var response = await _client.PostAsync("/cez/disconnect", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse>(_jsonOptions);
+        content.Should().NotBeNull();
+        content!.Success.Should().BeFalse();
     }
 }

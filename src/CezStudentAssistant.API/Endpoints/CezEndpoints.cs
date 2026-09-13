@@ -23,5 +23,18 @@ public static class CezEndpoints
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).WithName("SyncCezCourses").RequireAuthorization();
+
+        group.MapPost("/connect", async (ConnectCezCommand command, IMediator mediator) =>
+        {
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).WithName("ConnectCez").RequireAuthorization();
+
+        group.MapPost("/disconnect", async (IMediator mediator) =>
+        {
+            var command = new DisconnectCezCommand();
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).WithName("DisconnectCez").RequireAuthorization();
     }
 }

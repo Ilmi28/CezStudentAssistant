@@ -22,15 +22,16 @@ export default function LoginPage({
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginUser || !loginPass) {
+    if (!loginUser.trim() || !loginPass) {
       setFormError(t("auth.emptyFields"));
       return;
     }
+
     setFormError(null);
     setLoading(true);
     try {
-      await authService.login(loginUser, loginPass);
-      onLoginSuccess(loginUser);
+      await authService.login(loginUser.trim(), loginPass);
+      onLoginSuccess(loginUser.trim());
     } catch (err: any) {
       setFormError(err.message || t("auth.genericError"));
     } finally {

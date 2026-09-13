@@ -114,6 +114,17 @@ export const customFetch = async (
   return res;
 };
 
+const getTranslatedErrorMessage = (serverMessage: string | null | undefined): string => {
+  if (!serverMessage) return i18n.t("common.genericError");
+
+  const key = `apiErrors.${serverMessage}`;
+  if (i18n.exists(key)) {
+    return i18n.t(key);
+  }
+
+  return serverMessage;
+};
+
 export const handleResponse = async <T>(res: Response, isAuthEndpoint = false): Promise<T> => {
   const body = await parseJsonResponse<T>(res);
 
@@ -142,11 +153,13 @@ export const handleResponse = async <T>(res: Response, isAuthEndpoint = false): 
         throw new ApiError(i18n.t("auth.invalidCredentials"), res.status, body?.errors);
       }
 
-      throw new ApiError(i18n.t("auth.genericError"), res.status, body?.errors);
+      const translatedMessage = getTranslatedErrorMessage(serverMessage);
+      throw new ApiError(translatedMessage, res.status, body?.errors);
     }
 
     if (serverMessage) {
-      throw new ApiError(serverMessage, res.status, body?.errors);
+      const translatedMessage = getTranslatedErrorMessage(serverMessage);
+      throw new ApiError(translatedMessage, res.status, body?.errors);
     }
 
     throw new ApiError(i18n.t("common.serverError", "Wystąpił błąd podczas przetwarzania żądania."), res.status);

@@ -597,4 +597,93 @@ public class CezServiceTests
 
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
+
+    [Test]
+    public async Task ConnectCezAsync_ShouldThrowConflictException_WhenUserAlreadyConnected()
+    {
+        var userId = Guid.NewGuid();
+        _cezUserRepository.GetSingleAsync(Arg.Any<Expression<Func<CezUser, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns(new CezUser { UserId = userId, Token = "token", PrivateToken = "pt" });
+
+        Func<Task> act = () => _sut.ConnectCezAsync(userId, "username", "password", CancellationToken.None);
+
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Test]
+    public async Task ConnectCezAsync_ShouldThrowConflictException_WhenCezAccountLinkedToAnotherUser()
+    {
+        var userId = Guid.NewGuid();
+        var otherUserId = Guid.NewGuid();
+
+        _cezUserRepository.GetSingleAsync(Arg.Is<Expression<Func<CezUser, bool>>>(e => e.Compile().Invoke(new CezUser { UserId = userId, Token = "t", PrivateToken = "pt" })), Arg.Any<CancellationToken>())
+            .Returns((CezUser?)null);
+
+        SetupCezApiMocks("username", new CezTokens { Token = "t", PrivateToken = "pt" }, new CezSiteInfo { UserName = "username", FullName = "Full Name", ExternalUserId = 123 });
+
+        _cezUserRepository.GetSingleAsync(Arg.Is<Expression<Func<CezUser, bool>>>(e => e.Compile().Invoke(new CezUser { ExternalUserId = 123, Token = "t", PrivateToken = "pt" })), Arg.Any<CancellationToken>())
+            .Returns(new CezUser { UserId = otherUserId, ExternalUserId = 123, Token = "t", PrivateToken = "pt" });
+
+        Func<Task> act = () => _sut.ConnectCezAsync(userId, "username", "password", CancellationToken.None);
+
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    [Test]
+    public async Task ConnectCezAsync_ShouldAddCezUser_WhenValid()
+    {
+        var userId = Guid.NewGuid();
+
+        _cezUserRepository.GetSingleAsync(Arg.Any<Expression<Func<CezUser, bool>>>(), Arg.Any<CancellationToken>())
+            .Returns((CezUser?)null);
+
+        SetupCezApiMocks("username", new CezTokens { Token = "t", PrivateToken = "pt" }, new CezSiteInfo { UserName = "username", FullName = "Full Name", ExternalUserId = 123 });
+
+        await _sut.ConnectCezAsync(userId, "username", "password", CancellationToken.None);
+
+        await _cezUserRepository.Received(1).AddAsync(Arg.Is<CezUser>(cu => cu.UserId == userId && cu.ExternalUserId == 123), Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task DisconnectCezAsync_ShouldThrowBadRequestException_WhenUserNotConnected()
+    {
+        var userId = Guid.NewGuid();
+        var user = new User { Id = userId, UserName = "user", CezUser = null };
+        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), Arg.Any<bool>(), Arg.Any<Expression<Func<User, object>>[]>())
+            .Returns(user);
+
+        Func<Task> act = () => _sut.DisconnectCezAsync(userId, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Test]
+    public async Task DisconnectCezAsync_ShouldThrowBadRequestException_WhenPureCezAccount()
+    {
+        var userId = Guid.NewGuid();
+        var cezUser = new CezUser { UserId = userId, Token = "t", PrivateToken = "pt" };
+        var user = new User { Id = userId, UserName = "cezuser", PasswordHash = null, CezUser = cezUser };
+        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), Arg.Any<bool>(), Arg.Any<Expression<Func<User, object>>[]>())
+            .Returns(user);
+
+        Func<Task> act = () => _sut.DisconnectCezAsync(userId, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Test]
+    public async Task DisconnectCezAsync_ShouldRemoveCezUser_WhenValid()
+    {
+        var userId = Guid.NewGuid();
+        var cezUser = new CezUser { UserId = userId, Token = "t", PrivateToken = "pt" };
+        var user = new User { Id = userId, UserName = "user", PasswordHash = "hashedpassword", CezUser = cezUser };
+        _userRepository.GetByIdAsync(userId, Arg.Any<CancellationToken>(), Arg.Any<bool>(), Arg.Any<Expression<Func<User, object>>[]>())
+            .Returns(user);
+
+        await _sut.DisconnectCezAsync(userId, CancellationToken.None);
+
+        await _cezUserRepository.Received(1).DeleteAsync(cezUser, Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
 }

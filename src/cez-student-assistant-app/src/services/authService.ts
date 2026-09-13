@@ -75,4 +75,32 @@ export const authService = {
     );
     return handleResponse<void>(res, true);
   },
+
+  async setPassword(newPassword: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/auth/set-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword }),
+      },
+      false,
+      authService.refreshToken
+    );
+    await handleResponse<void>(res);
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/auth/change-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      },
+      false,
+      authService.refreshToken
+    );
+    await handleResponse<void>(res);
+  },
 };

@@ -9,17 +9,36 @@ import {
   Text,
   Flex,
   Grid,
+  SetPasswordModal,
+  ChangePasswordModal,
+  ConfirmModal,
+  Alert,
 } from "../components";
-import { userService } from "../services";
+import { authService, userService } from "../services";
 import { UserTheme, UserLanguage } from "../types";
 
 export default function PreferencesPage() {
   const [theme, setThemeState] = useState<UserTheme>(UserTheme.Dark);
   const [language, setLanguageState] = useState<UserLanguage>(UserLanguage.Polish);
+  const [hasPassword, setHasPassword] = useState<boolean>(false);
   const [fetchingConfig, setFetchingConfig] = useState(true);
 
-  const { username, isCezConnected, lastCezSync, handleLogout, setIsCezConnected, setLastCezSync } = useAuth();
-  const { applyTheme, updateTheme, updateUserLanguage, setShowCezModal, syncing } = useUI();
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showDisconnectCezModal, setShowDisconnectCezModal] = useState(false);
+  const [cezError, setCezError] = useState<string | null>(null);
+
+  const {
+    username,
+    isCezConnected,
+    lastCezSync,
+    handleLogout,
+    handleCezDisconnect,
+    setIsCezConnected,
+    setLastCezSync,
+  } = useAuth();
+
+  const { applyTheme, updateTheme, updateUserLanguage, setShowCezModal, syncing, setSuccess } = useUI();
   const { handleSyncCourses } = useCourse();
   const { usage, loadingUsage } = useUser();
   const { t, i18n } = useTranslation();
@@ -32,6 +51,7 @@ export default function PreferencesPage() {
         applyTheme(config.theme);
         setLanguageState(config.language);
         setIsCezConnected(config.isCezConnected);
+        setHasPassword(!!config.hasPassword);
         if (config.lastCezSync !== undefined) {
           setLastCezSync(config.lastCezSync);
         }
@@ -58,6 +78,28 @@ export default function PreferencesPage() {
     localStorage.setItem("language", code);
     await i18n.changeLanguage(code);
     await updateUserLanguage(newLang);
+  };
+
+  const handleSetPassword = async (newPassword: string) => {
+    await authService.setPassword(newPassword);
+    setHasPassword(true);
+    setCezError(null);
+    setSuccess(t("preferences.passwordSetSuccess"));
+  };
+
+  const handleChangePassword = async (currentPassword: string, newPassword: string) => {
+    await authService.changePassword(currentPassword, newPassword);
+    setSuccess(t("preferences.passwordChangeSuccess"));
+  };
+
+  const handleDisconnectCezConfirm = async () => {
+    if (!hasPassword) {
+      setCezError(t("preferences.disconnectPureCezWarning"));
+      return;
+    }
+    setCezError(null);
+    await handleCezDisconnect();
+    setSuccess(t("preferences.cezDisconnectSuccess"));
   };
 
   const formattedSyncDate = lastCezSync
@@ -145,7 +187,7 @@ export default function PreferencesPage() {
         )}
       </section>
 
-      {/* Section 3: Limit Dzienny */}
+      {/* Section 3: Daily Limit */}
       <section className="space-y-4">
         <div className="border-b border-border pb-2.5">
           <Heading level={2} size="base" className="font-bold tracking-wide">
@@ -217,18 +259,36 @@ export default function PreferencesPage() {
             {isCezConnected ? t("preferences.connected") : t("preferences.notConnected")}
           </span>
         </Flex>
+
+        <Alert message={cezError} />
+
         <div className="space-y-3.5">
           <Text size="sm" variant="muted">
             {t("courses.syncSubtitleDate", { date: formattedSyncDate })}
           </Text>
-          <div>
+          <Flex gap={3}>
             <SecondaryButton
               onClick={() => (isCezConnected ? handleSyncCourses() : setShowCezModal(true))}
               loading={syncing}
             >
               {isCezConnected ? t("preferences.syncNow") : t("courses.connectCezBtn")}
             </SecondaryButton>
-          </div>
+
+            {isCezConnected && (
+              <SecondaryButton
+                onClick={() => {
+                  setCezError(null);
+                  if (!hasPassword) {
+                    setCezError(t("preferences.disconnectPureCezWarning"));
+                  } else {
+                    setShowDisconnectCezModal(true);
+                  }
+                }}
+              >
+                {t("preferences.disconnectCez")}
+              </SecondaryButton>
+            )}
+          </Flex>
         </div>
       </section>
 
@@ -239,19 +299,62 @@ export default function PreferencesPage() {
             {t("preferences.securitySection")}
           </Heading>
         </div>
-        <div className="space-y-3.5">
-          <Text size="sm" variant="muted">
-            {t("preferences.logoutDesc")}
-          </Text>
-          <div>
-            <SecondaryButton
-              onClick={handleLogout}
-            >
-              {t("common.logout")}
-            </SecondaryButton>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Text size="xs" variant="default" className="font-semibold block">
+              {t("preferences.passwordSection")}
+            </Text>
+            <div>
+              <SecondaryButton
+                onClick={() => {
+                  if (hasPassword) {
+                    setShowChangePasswordModal(true);
+                  } else {
+                    setShowSetPasswordModal(true);
+                  }
+                }}
+              >
+                {hasPassword ? t("preferences.changePasswordBtn") : t("preferences.setPasswordBtn")}
+              </SecondaryButton>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Text size="xs" variant="default" className="font-semibold block">
+              {t("preferences.logoutDesc")}
+            </Text>
+            <div>
+              <SecondaryButton onClick={handleLogout}>
+                {t("common.logout")}
+              </SecondaryButton>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Modals */}
+      <SetPasswordModal
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        onSubmit={handleSetPassword}
+      />
+
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSubmit={handleChangePassword}
+      />
+
+      <ConfirmModal
+        isOpen={showDisconnectCezModal}
+        onClose={() => setShowDisconnectCezModal(false)}
+        onConfirm={handleDisconnectCezConfirm}
+        title={t("preferences.disconnectConfirmTitle")}
+        message={t("preferences.disconnectConfirmMsg")}
+        confirmBtnText={t("preferences.disconnectCez")}
+        isDestructive={true}
+      />
     </div>
   );
 }
