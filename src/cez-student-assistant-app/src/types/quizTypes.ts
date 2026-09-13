@@ -46,6 +46,7 @@ export interface QuizAttemptDto {
   timeLimitMinutes?: number | null;
   startedAt: string;
   expiresAt?: string | null;
+  completedAt?: string | null;
   answers: QuestionAnswerDto[];
 }
 

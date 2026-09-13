@@ -213,7 +213,7 @@ public class ArchitectureTests
             .ToList();
 
         var failingTypes = commandTypes
-            .Where(t => !t.Name.EndsWith("Command"))
+            .Where(t => !(t.Name.Contains('`') ? t.Name[..t.Name.IndexOf('`')] : t.Name).EndsWith("Command"))
             .Select(t => t.FullName)
             .ToList();
 
@@ -238,7 +238,7 @@ public class ArchitectureTests
             .ToList();
 
         var failingTypes = queryTypes
-            .Where(t => !t.Name.EndsWith("Query"))
+            .Where(t => !(t.Name.Contains('`') ? t.Name[..t.Name.IndexOf('`')] : t.Name).EndsWith("Query"))
             .Select(t => t.FullName)
             .ToList();
 

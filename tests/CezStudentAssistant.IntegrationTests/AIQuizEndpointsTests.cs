@@ -1,5 +1,6 @@
 using CezStudentAssistant.Application.Commands.Auth;
 using CezStudentAssistant.Application.Commands.Quiz;
+using CezStudentAssistant.Application.Dtos.Common;
 using CezStudentAssistant.Application.Dtos.Quiz;
 using CezStudentAssistant.Application.Queries.Quiz;
 using CezStudentAssistant.Application.Requests.AI;
@@ -242,13 +243,13 @@ public class AIQuizEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var content = await response.Content.ReadFromJsonAsync<ApiResponse<List<QuizDto>>>(_jsonOptions);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResultDto<QuizDto>>>(_jsonOptions);
         content.Should().NotBeNull();
         content!.Success.Should().BeTrue();
         content.Data.Should().NotBeNull();
-        content.Data.Should().HaveCount(1);
-        content.Data![0].Id.Should().Be(quizId);
-        content.Data[0].CourseName.Should().Be("Course 10");
+        content.Data!.Items.Should().HaveCount(1);
+        content.Data.Items[0].Id.Should().Be(quizId);
+        content.Data.Items[0].CourseName.Should().Be("Course 10");
     }
 
     [Test]

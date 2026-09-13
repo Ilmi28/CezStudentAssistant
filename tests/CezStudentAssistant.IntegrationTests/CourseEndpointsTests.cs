@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using CezStudentAssistant.Application.Commands.Auth;
+using CezStudentAssistant.Application.Dtos.Common;
 using CezStudentAssistant.Application.Dtos.Course;
 using CezStudentAssistant.Application.Responses;
 using CezStudentAssistant.Domain.Entities;
@@ -106,13 +107,13 @@ public class CourseEndpointsTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         
-        var content = await response.Content.ReadFromJsonAsync<ApiResponse<List<CourseDto>>>(_jsonOptions);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResultDto<CourseDto>>>(_jsonOptions);
         content.Should().NotBeNull();
         content!.Success.Should().BeTrue();
         content.Data.Should().NotBeNull();
-        content.Data.Should().HaveCount(2);
+        content.Data!.Items.Should().HaveCount(2);
         
-        var courseNames = content.Data!.Select(c => c.Name).ToList();
+        var courseNames = content.Data.Items.Select(c => c.Name).ToList();
         courseNames.Should().Contain("Test Course 1");
         courseNames.Should().Contain("Test Course 2");
     }
@@ -130,10 +131,10 @@ public class CourseEndpointsTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         
-        var content = await response.Content.ReadFromJsonAsync<ApiResponse<List<CourseDto>>>(_jsonOptions);
+        var content = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResultDto<CourseDto>>>(_jsonOptions);
         content.Should().NotBeNull();
         content!.Success.Should().BeTrue();
         content.Data.Should().NotBeNull();
-        content.Data.Should().BeEmpty();
+        content.Data!.Items.Should().BeEmpty();
     }
 }

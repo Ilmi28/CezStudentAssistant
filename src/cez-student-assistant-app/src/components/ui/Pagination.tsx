@@ -8,6 +8,7 @@ import { PrimaryButton, SecondaryButton } from "./Button";
 export interface PaginationProps {
   pageNumber: number;
   totalPages: number;
+  totalCount?: number;
   onPageChange: (newPage: number) => void;
   showLabels?: boolean;
   className?: string;
@@ -16,38 +17,44 @@ export interface PaginationProps {
 export const Pagination: React.FC<PaginationProps> = ({
   pageNumber,
   totalPages,
+  totalCount,
   onPageChange,
   showLabels = false,
   className = "",
 }) => {
   const { t } = useTranslation();
 
-  if (totalPages <= 1) return null;
+  if (totalCount !== undefined && totalCount === 0) {
+    return null;
+  }
+
+  const safeTotalPages = Math.max(1, totalPages);
+  const safePageNumber = Math.max(1, Math.min(pageNumber, safeTotalPages));
 
   const getVisiblePages = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 5;
 
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
+    if (safeTotalPages <= maxVisible) {
+      for (let i = 1; i <= safeTotalPages; i++) {
         pages.push(i);
       }
     } else {
       pages.push(1);
-      if (pageNumber > 3) {
+      if (safePageNumber > 3) {
         pages.push("...");
       }
-      const start = Math.max(2, pageNumber - 1);
-      const end = Math.min(totalPages - 1, pageNumber + 1);
+      const start = Math.max(2, safePageNumber - 1);
+      const end = Math.min(safeTotalPages - 1, safePageNumber + 1);
 
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
 
-      if (pageNumber < totalPages - 2) {
+      if (safePageNumber < safeTotalPages - 2) {
         pages.push("...");
       }
-      pages.push(totalPages);
+      pages.push(safeTotalPages);
     }
     return pages;
   };
@@ -59,15 +66,15 @@ export const Pagination: React.FC<PaginationProps> = ({
       className={`flex-col sm:flex-row gap-3 pt-5 border-t border-border ${className}`}
     >
       <Text size="xs" variant="muted" className="order-2 sm:order-1 font-medium">
-        {t("common.paginationInfo", { current: pageNumber, total: totalPages })}
+        {t("common.paginationInfo", { current: safePageNumber, total: safeTotalPages })}
       </Text>
 
       <Flex align="center" gap={1.5} className="order-1 sm:order-2">
         <SecondaryButton
           type="button"
           size="sm"
-          onClick={() => onPageChange(pageNumber - 1)}
-          disabled={pageNumber <= 1}
+          onClick={() => onPageChange(safePageNumber - 1)}
+          disabled={safePageNumber <= 1}
           aria-label={t("common.previous")}
           title={t("common.previous")}
           icon={<ChevronLeft size={16} />}
@@ -79,7 +86,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <Flex align="center" gap={1}>
           {getVisiblePages().map((page, idx) =>
             typeof page === "number" ? (
-              page === pageNumber ? (
+              page === safePageNumber ? (
                 <PrimaryButton
                   key={page}
                   type="button"
@@ -111,8 +118,8 @@ export const Pagination: React.FC<PaginationProps> = ({
         <SecondaryButton
           type="button"
           size="sm"
-          onClick={() => onPageChange(pageNumber + 1)}
-          disabled={pageNumber >= totalPages}
+          onClick={() => onPageChange(safePageNumber + 1)}
+          disabled={safePageNumber >= safeTotalPages}
           aria-label={t("common.next")}
           title={t("common.next")}
           icon={showLabels ? undefined : <ChevronRight size={16} />}

@@ -222,7 +222,7 @@
         "attemptsHistory": "Attempt History",
         "noAttempts": "No previous attempts for this quiz.",
         "noAttemptsSubtitle": "Solve the quiz to test your knowledge!",
-        "attemptNumber": "Attempt #{{number}}",
+        "attemptNumber": "Attempt",
         "status": {
             "notStarted": "Not Started",
             "inProgress": "IN PROGRESS",
@@ -408,7 +408,7 @@
         "attemptHistory": "Attempt History ({{count}})",
         "noAttempts": "No previous study attempts for this deck.",
         "noAttemptsSubtitle": "Start studying to practice and reinforce your knowledge!",
-        "attemptNum": "Attempt #{{num}}",
+        "attemptNum": "Attempt",
         "startedAt": "Started: {{date}}",
         "cardsCount": "{{count}} cards",
         "cardsCount_one": "1 card",

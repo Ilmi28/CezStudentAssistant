@@ -222,7 +222,7 @@
         "attemptsHistory": "Historia podejść",
         "noAttempts": "Brak wcześniejszych podejść do tego quizu.",
         "noAttemptsSubtitle": "Rozwiąż quiz, aby sprawdzić swoją wiedzę!",
-        "attemptNumber": "Podejście #{{number}}",
+        "attemptNumber": "Podejście",
         "status": {
             "notStarted": "Nierozpoczęty",
             "inProgress": "W TOKU",
@@ -408,7 +408,7 @@
         "attemptHistory": "Historia podejść ({{count}})",
         "noAttempts": "Brak wcześniejszych podejść do nauki tego zestawu.",
         "noAttemptsSubtitle": "Rozpocznij naukę, aby przećwiczyć i utrwalić wiedzę!",
-        "attemptNum": "Podejście #{{num}}",
+        "attemptNum": "Podejście",
         "startedAt": "Rozpoczęto: {{date}}",
         "cardsCount": "{{count}} fiszek",
         "cardsCount_one": "1 fiszka",

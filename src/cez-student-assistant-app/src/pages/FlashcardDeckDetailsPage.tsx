@@ -30,6 +30,25 @@ import {
   Clock
 } from "lucide-react";
 
+function formatDuration(startedAt: string, completedAt?: string | null): string | null {
+  if (!completedAt) return null;
+  const start = new Date(startedAt).getTime();
+  const end = new Date(completedAt).getTime();
+  const diffSec = Math.max(0, Math.floor((end - start) / 1000));
+  if (diffSec === 0) return null;
+
+  const mins = Math.floor(diffSec / 60);
+  const secs = diffSec % 60;
+
+  if (mins === 0) {
+    return `${secs} s`;
+  }
+  if (secs === 0) {
+    return `${mins} min`;
+  }
+  return `${mins} min ${secs} s`;
+}
+
 export default function FlashcardDeckDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -401,13 +420,23 @@ export default function FlashcardDeckDetailsPage() {
 
                       <div className="min-w-0">
                         <span className="text-xs font-bold text-foreground block tile-title-scale">
-                          {t("flashcardDetails.attemptNum", { num: attemptNumber })}
+                          {new Date(attempt.startedAt).toLocaleString(i18n.language || "pl", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
 
                         <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                          <span>{t("flashcardDetails.startedAt", { date: new Date(attempt.startedAt).toLocaleString(i18n.language) })}</span>
-                          <span>•</span>
                           <span>{t("flashcardDetails.cardsCount", { count: attempt.cardCount })}</span>
+                          {formatDuration(attempt.startedAt, attempt.completedAt) && (
+                            <>
+                              <span>•</span>
+                              <span>{formatDuration(attempt.startedAt, attempt.completedAt)}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>

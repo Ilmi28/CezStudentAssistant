@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Layers, Plus, Search, X } from "lucide-react";
-import { Card, Badge, Heading, Text, Flex, SecondaryButton, Tooltip, Input, Pagination } from "../../index";
+import { Plus, Search, X } from "lucide-react";
+import { Card, Badge, Heading, Text, Flex, SecondaryButton, Tooltip, Input, Pagination, EmptyState } from "../../index";
 import type { CourseDto } from "../../../services";
 
 interface CourseListProps {
@@ -81,41 +81,63 @@ export default function CourseList({
         </Flex>
       </Flex>
 
-      {courses.length === 0 ? (
-        <Card className="p-8 text-center shadow-sm">
-          <Layers size={32} className="mx-auto text-muted-foreground/30 mb-2" />
-          <Text size="sm" variant="muted">{t("courses.noCourses")}</Text>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {courses.map((c) => (
-            <Card
-              key={c.id}
-              hoverEffect
-              onClick={() => navigate(`/course/${c.id}`)}
-              className="px-5.5 py-4 cursor-pointer flex-row items-center justify-between shadow-xs"
-            >
-              <div className="min-w-0 pr-4">
-                <Text size="sm" className="font-medium text-foreground line-clamp-2 break-words tile-title-scale" title={c.name}>
-                  {c.name}
-                </Text>
-              </div>
-              {c.isCez && (
-                <Badge variant="secondary" className="shrink-0">
-                  {t("courses.tagCez")}
-                </Badge>
-              )}
-            </Card>
-          ))}
-        </div>
-      )}
+      <div>
+        {courses.length === 0 ? (
+          searchTerm ? (
+            <EmptyState
+              title="Brak wyników wyszukiwania"
+              description={`Nie znaleziono przedmiotów pasujących do frazy "${searchTerm}".`}
+              action={
+                <SecondaryButton onClick={onClearSearch} size="sm">
+                  Wyczyść wyszukiwanie
+                </SecondaryButton>
+              }
+            />
+          ) : (
+            <EmptyState
+              title="Brak przedmiotów"
+              description="Nie masz jeszcze żadnych przedmiotów w systemie. Uruchom synchronizację z CEZ lub dodaj nowy przedmiot ręcznie."
+              action={
+                onOpenAddModal ? (
+                  <SecondaryButton onClick={onOpenAddModal} size="sm" icon={<Plus size={16} />}>
+                    Dodaj nowy przedmiot
+                  </SecondaryButton>
+                ) : undefined
+              }
+            />
+          )
+        ) : (
+          <div className="space-y-2.5">
+            {courses.map((c) => (
+              <Card
+                key={c.id}
+                hoverEffect
+                onClick={() => navigate(`/course/${c.id}`)}
+                className="px-5 py-3.5 cursor-pointer flex-row items-center justify-between shadow-xs"
+              >
+                <div className="min-w-0 pr-4">
+                  <Text size="sm" className="font-medium text-foreground line-clamp-2 break-words tile-title-scale" title={c.name}>
+                    {c.name}
+                  </Text>
+                </div>
+                {c.isCez && (
+                  <Badge variant="secondary" className="shrink-0">
+                    {t("courses.tagCez")}
+                  </Badge>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
 
-      <Pagination
-        pageNumber={pageNumber}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-        className="mt-6"
-      />
+        <Pagination
+          pageNumber={pageNumber}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          onPageChange={onPageChange}
+          className="mt-4"
+        />
+      </div>
     </div>
   );
 }

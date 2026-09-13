@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Search, X } from "lucide-react";
-import { Card, FlashcardDeckCard, Flex, Heading, Text, Input, Pagination, Badge } from "../components";
+import { Search, X } from "lucide-react";
+import { FlashcardDeckCard, Flex, Heading, Input, Pagination, Badge, EmptyState, PrimaryButton, SecondaryButton } from "../components";
 import { useFlashcards } from "../hooks";
 import { signalRService } from "../services/signalRService";
 
 export default function FlashcardsPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { decks, refreshDecks } = useFlashcards();
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,28 +89,45 @@ export default function FlashcardsPage() {
           </div>
         </Flex>
 
-        {decks.length === 0 ? (
-          <Card className="p-8 text-center shadow-sm">
-            <div>
-              <BookOpen size={32} className="mx-auto text-muted-foreground/30 mb-2" />
-              <Text size="sm" variant="muted">{t("flashcards.noDecks")}</Text>
-              <Text size="xs" variant="subtle" className="mt-1">{t("flashcards.noDecksSubtitle")}</Text>
+        <div>
+          {decks.length === 0 ? (
+            searchTerm ? (
+              <EmptyState
+                title="Brak wyników wyszukiwania"
+                description={`Nie znaleziono zestawów fiszek pasujących do frazy "${searchTerm}".`}
+                action={
+                  <SecondaryButton onClick={handleClearSearch} size="sm">
+                    Wyczyść wyszukiwanie
+                  </SecondaryButton>
+                }
+              />
+            ) : (
+              <EmptyState
+                title="Brak fiszek"
+                description="Wejdź w zakładkę Przedmioty, wybierz przedmiot i wygeneruj swój pierwszy zestaw fiszek."
+                action={
+                  <PrimaryButton onClick={() => navigate("/courses")} size="sm">
+                    Przejdź do przedmiotów
+                  </PrimaryButton>
+                }
+              />
+            )
+          ) : (
+            <div className="space-y-2.5">
+              {decks.map((deck, idx) => (
+                <FlashcardDeckCard key={deck.id} deck={deck} index={(pageNumber - 1) * 10 + idx + 1} />
+              ))}
             </div>
-          </Card>
-        ) : (
-          <div className="space-y-2.5">
-            {decks.map((deck, idx) => (
-              <FlashcardDeckCard key={deck.id} deck={deck} index={(pageNumber - 1) * 10 + idx + 1} />
-            ))}
-          </div>
-        )}
+          )}
 
-        <Pagination
-          pageNumber={pageNumber}
-          totalPages={totalPages}
-          onPageChange={setPageNumber}
-          className="mt-6"
-        />
+          <Pagination
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={setPageNumber}
+            className="mt-4"
+          />
+        </div>
       </div>
     </div>
   );

@@ -20,6 +20,8 @@ export { Toggle } from './ui/Toggle';
 export type { ToggleProps } from './ui/Toggle';
 export { default as Pagination } from './ui/Pagination';
 export type { PaginationProps } from './ui/Pagination';
+export { default as EmptyState } from './ui/EmptyState';
+export type { EmptyStateProps } from './ui/EmptyState';
 
 export { default as Navbar } from './layout/Navbar';
 export { default as Topbar } from './layout/Topbar';

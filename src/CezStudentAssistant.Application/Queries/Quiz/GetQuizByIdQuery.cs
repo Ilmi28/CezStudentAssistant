@@ -96,6 +96,7 @@ public class GetQuizByIdQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHandler<
                     TimeLimitMinutes = a.TimeLimitMinutes,
                     StartedAt = a.StartedAt,
                     ExpiresAt = a.ExpiresAt,
+                    CompletedAt = a.Status == QuizAttemptStatus.Completed ? a.LastModifiedAt : null,
                     Answers = a.Answers.Select(ans => new QuestionAnswerDto
                     {
                         Id = ans.Id,
