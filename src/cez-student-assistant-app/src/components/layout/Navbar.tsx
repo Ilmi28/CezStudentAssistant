@@ -49,6 +49,11 @@ export default function Navbar() {
       label: t("nav.flashcards", "Fiszki"),
       isActive: pathname === "/flashcards" || pathname.startsWith("/flashcard"),
     },
+    {
+      path: "/chats",
+      label: t("nav.chats", "Czaty"),
+      isActive: pathname === "/chats" || pathname.startsWith("/chat"),
+    },
   ];
 
   return (

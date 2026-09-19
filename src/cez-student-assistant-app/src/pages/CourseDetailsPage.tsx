@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Brain, Eye, EyeOff } from "lucide-react";
+import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
 import { courseService, type CourseDetailsDto, type CourseResourceDto } from "../services";
 import { quizService } from "../services/quizService";
 import { flashcardService } from "../services/flashcardService";
@@ -16,11 +16,13 @@ import {
   GenerateFlashcardsModal,
   QuizCard,
   FlashcardDeckCard,
+  ChatThreadCard,
   LoadingScreen,
   SecondaryButton,
   Badge,
   CoursePreparationCard,
 } from "../components";
+import { useCourseChat } from "../hooks/useCourseChat";
 
 interface CourseDetailsPageProps {
   setError: (msg: string) => void;
@@ -93,6 +95,7 @@ export default function CourseDetailsPage({
   const [isFilesExpanded, setIsFilesExpanded] = useState(false);
   const [isQuizzesExpanded, setIsQuizzesExpanded] = useState(false);
   const [isFlashcardsExpanded, setIsFlashcardsExpanded] = useState(false);
+  const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteFileModalOpen, setIsDeleteFileModalOpen] = useState(false);
@@ -100,6 +103,12 @@ export default function CourseDetailsPage({
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isGenerateQuizModalOpen, setIsGenerateQuizModalOpen] = useState(false);
   const [isGenerateFlashcardsModalOpen, setIsGenerateFlashcardsModalOpen] = useState(false);
+
+  const { threads, deleteThread } = useCourseChat(id || "");
+
+  const handleCreateChatThread = () => {
+    navigate(`/chats/new?courseId=${id}`, { state: { fromPath: location.pathname } });
+  };
 
   useEffect(() => {
     loadCourseDetailsAndQuizzes();
@@ -252,7 +261,7 @@ export default function CourseDetailsPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+    <div className="w-full space-y-6 pb-8 animate-in fade-in duration-300">
       {/* Header & Title */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -319,9 +328,10 @@ export default function CourseDetailsPage({
           <div className="overflow-hidden p-1 -m-1">
             <div className="pt-3.5 border-t border-border mt-3.5 px-0.5">
               {courseFiles.length === 0 ? (
-                <div className="py-8 text-center">
-                  <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
-                  <p className="text-xs text-muted-foreground">{t("courseDetails.noFiles")}</p>
+                <div className="py-4 text-center">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("courseDetails.noFiles")}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -420,15 +430,59 @@ export default function CourseDetailsPage({
           <div className="overflow-hidden p-1 -m-1">
             <div className="pt-3.5 border-t border-border mt-3.5 px-0.5">
               {courseQuizzes.length === 0 ? (
-                <div className="py-8 text-center">
-                  <Brain size={28} className="mx-auto text-muted-foreground/35 mb-2" />
-                  <p className="text-xs text-muted-foreground">{t("quizzes.noQuizzes")}</p>
-                  <p className="text-[11px] text-muted-foreground/60 mt-1">{t("quizzes.noQuizzesSubtitle")}</p>
+                <div className="py-4 text-center">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("quizzes.noQuizzesShort", "Brak quizów")}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {courseQuizzes.map((quiz, idx) => (
                     <QuizCard key={quiz.id} quiz={quiz} index={idx + 1} showCourseName={false} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-card rounded-xl border border-border p-5 shadow-sm">
+        <AccordionHeader
+          title={t("chat.title")}
+          count={threads.length}
+          isExpanded={isChatExpanded}
+          onToggle={() => setIsChatExpanded(!isChatExpanded)}
+          onAddClick={handleCreateChatThread}
+          addTitle={t("chat.newThreadBtn", "Nowy wątek")}
+        />
+
+        <div
+          className={`grid transition-all duration-300 ease-in-out ${
+            isChatExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="overflow-hidden p-1 -m-1">
+            <div className="pt-3.5 border-t border-border mt-3.5 px-0.5">
+              {threads.length === 0 ? (
+                <div className="py-4 text-center">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("chat.noThreadsShort", "Brak czatów")}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {threads.map((thread, idx) => (
+                    <ChatThreadCard
+                      key={thread.id}
+                      thread={thread}
+                      index={idx + 1}
+                      showCourseName={false}
+                      onDelete={(e) => {
+                        e.stopPropagation();
+                        deleteThread(thread.id);
+                      }}
+                    />
                   ))}
                 </div>
               )}
@@ -456,10 +510,10 @@ export default function CourseDetailsPage({
           <div className="overflow-hidden p-1 -m-1">
             <div className="pt-3.5 border-t border-border mt-3.5 px-0.5">
               {decks.length === 0 ? (
-                <div className="py-8 text-center">
-                  <FileText size={28} className="mx-auto text-muted-foreground/35 mb-2" />
-                  <p className="text-xs text-muted-foreground">{t("flashcards.noCourseDecks")}</p>
-                  <p className="text-[11px] text-muted-foreground/60 mt-1">{t("flashcards.noCourseDecksSubtitle")}</p>
+                <div className="py-4 text-center">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t("flashcards.noCourseDecksShort", "Brak fiszek")}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">

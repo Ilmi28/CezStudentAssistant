@@ -9,12 +9,14 @@ import HomePage from "./pages/HomePage";
 import CoursesPage from "./pages/CoursesPage";
 import QuizzesPage from "./pages/QuizzesPage";
 import FlashcardsPage from "./pages/FlashcardsPage";
+import ChatsPage from "./pages/ChatsPage";
 import CourseDetailsPage from "./pages/CourseDetailsPage";
 import QuizDetailsPage from "./pages/QuizDetailsPage";
 import QuizSolverPage from "./pages/QuizSolverPage";
 import PreferencesPage from "./pages/PreferencesPage";
 import FlashcardDeckDetailsPage from "./pages/FlashcardDeckDetailsPage";
 import FlashcardStudyPage from "./pages/FlashcardStudyPage";
+import ChatThreadDetailsPage from "./pages/ChatThreadDetailsPage";
 
 export default function AppRoutes() {
   const { isAuthenticated, isCezConnected, lastCezSync, handleLoginSuccess } = useAuth();
@@ -32,6 +34,8 @@ export default function AppRoutes() {
         <Route path="/courses"    element={<CoursesPage courses={courses} syncing={syncing} onSyncCourses={handleSyncCourses} onCreateCourse={createCourse} isCezConnected={isCezConnected} lastCezSync={lastCezSync} />} />
         <Route path="/quizzes"    element={<QuizzesPage />} />
         <Route path="/flashcards" element={<FlashcardsPage />} />
+        <Route path="/chats"      element={<ChatsPage />} />
+        <Route path="/chats/:id"  element={<ChatThreadDetailsPage />} />
         <Route path="/course/:id" element={<CourseDetailsPage setError={setError} />} />
         <Route path="/quiz/:id"   element={<QuizDetailsPage setError={setError} />} />
         <Route path="/quiz/:id/solve" element={<QuizSolverPage setError={setError} />} />

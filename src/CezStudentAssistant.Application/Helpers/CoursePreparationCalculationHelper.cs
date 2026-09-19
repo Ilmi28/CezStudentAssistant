@@ -22,13 +22,13 @@ public static class CoursePreparationCalculationHelper
         var deckList = decks?.ToList() ?? new List<FlashcardDeck>();
 
         int? quizProgressPercentage = null;
-        var quizzesWithAttempts = quizList
-            .Where(q => q.Questions.Count > 0 && q.Attempts.Any(a => a.Status == QuizAttemptStatus.Completed))
+        var quizzesWithQuestions = quizList
+            .Where(q => q.Questions.Count > 0)
             .ToList();
 
-        if (quizzesWithAttempts.Count > 0)
+        if (quizzesWithQuestions.Count > 0)
         {
-            var quizPercentages = quizzesWithAttempts.Select(q =>
+            var quizPercentages = quizzesWithQuestions.Select(q =>
             {
                 var mastery = QuizMasteryCalculationHelper.CalculateMastery(q.Questions, q.Attempts);
                 return mastery.ProgressPercentage;

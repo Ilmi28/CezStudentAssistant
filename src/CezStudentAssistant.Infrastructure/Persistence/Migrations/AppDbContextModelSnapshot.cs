@@ -71,6 +71,75 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.ToTable("CezUsers");
                 });
 
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatThreadId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TokenCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatThreadId");
+
+                    b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.ChatThread", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatThreads");
+                });
+
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Course", b =>
                 {
                     b.Property<Guid>("Id")
@@ -720,6 +789,21 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.ToTable("UserConfigurations");
                 });
 
+            modelBuilder.Entity("ChatThreadResources", b =>
+                {
+                    b.Property<Guid>("AttachedResourcesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatThreadId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("AttachedResourcesId", "ChatThreadId");
+
+                    b.HasIndex("ChatThreadId");
+
+                    b.ToTable("ChatThreadResources");
+                });
+
             modelBuilder.Entity("CourseUser", b =>
                 {
                     b.Property<Guid>("CoursesId")
@@ -742,6 +826,36 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CezStudentAssistant.Domain.Entities.CezUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("CezStudentAssistant.Domain.Entities.ChatThread", "ChatThread")
+                        .WithMany("Messages")
+                        .HasForeignKey("ChatThreadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChatThread");
+                });
+
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.ChatThread", b =>
+                {
+                    b.HasOne("CezStudentAssistant.Domain.Entities.Course", "Course")
+                        .WithMany("ChatThreads")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CezStudentAssistant.Domain.Entities.User", "User")
+                        .WithMany("ChatThreads")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
 
                     b.Navigation("User");
                 });
@@ -968,6 +1082,21 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ChatThreadResources", b =>
+                {
+                    b.HasOne("CezStudentAssistant.Domain.Entities.Resource", null)
+                        .WithMany()
+                        .HasForeignKey("AttachedResourcesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CezStudentAssistant.Domain.Entities.ChatThread", null)
+                        .WithMany()
+                        .HasForeignKey("ChatThreadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CourseUser", b =>
                 {
                     b.HasOne("CezStudentAssistant.Domain.Entities.Course", null)
@@ -983,8 +1112,15 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CezStudentAssistant.Domain.Entities.ChatThread", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.Course", b =>
                 {
+                    b.Navigation("ChatThreads");
+
                     b.Navigation("FlashcardDecks");
 
                     b.Navigation("Questions");
@@ -1029,6 +1165,8 @@ namespace CezStudentAssistant.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("CezStudentAssistant.Domain.Entities.User", b =>
                 {
                     b.Navigation("CezUser");
+
+                    b.Navigation("ChatThreads");
 
                     b.Navigation("Configuration");
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Pencil } from "lucide-react";
 import { useAuth, useUI, useCourse, useUser } from "../hooks";
+import { formatDateTime } from "../helpers/dateHelper";
 import {
   PrimaryButton,
   SecondaryButton,
@@ -161,14 +162,14 @@ export default function PreferencesPage() {
   };
 
   const formattedSyncDate = lastCezSync
-    ? new Date(lastCezSync).toLocaleString(i18n.language === "pl" ? "pl-PL" : "en-US", {
+    ? formatDateTime(lastCezSync, {
         dateStyle: "medium",
         timeStyle: "short",
       })
     : t("courses.syncSubtitleNoDate");
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="w-full space-y-8 pb-12 animate-in fade-in duration-300">
       <div>
         <Heading level={1} size="2xl" className="font-black tracking-tight">
           {t("preferences.title")}

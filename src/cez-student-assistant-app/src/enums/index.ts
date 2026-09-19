@@ -4,3 +4,4 @@ export * from './jobEnums';
 export * from './userEnums';
 export * from './flashcardEnums';
 export * from './activityEnums';
+export * from './chatEnums';

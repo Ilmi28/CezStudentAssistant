@@ -21,7 +21,8 @@
         "home": "Home",
         "courses": "Courses",
         "quizzes": "Quizzes",
-        "flashcards": "Flashcards"
+        "flashcards": "Flashcards",
+        "chats": "Chats"
     },
     "auth": {
         "loginTitle": "Login",
@@ -114,6 +115,7 @@
         "title": "My Quizzes",
         "searchPlaceholder": "Search...",
         "noQuizzes": "No quizzes yet.",
+        "noQuizzesShort": "No quizzes",
         "noQuizzesSubtitle": "Go to the Courses tab, select a course, and generate a quiz from your educational files.",
         "statusGenerating": "Generating...",
         "btnGenerating": "Generating..."
@@ -417,6 +419,7 @@
         "noDecks": "No flashcards generated yet.",
         "noDecksSubtitle": "Generate a flashcard deck from your course page.",
         "noCourseDecks": "No flashcards generated for this course yet.",
+        "noCourseDecksShort": "No flashcards",
         "noCourseDecksSubtitle": "Click \"+\" to generate a flashcard deck using AI.",
         "generateModalTitle": "Generate Flashcards",
         "generateModalDesc": "The algorithm will analyze uploaded learning materials and generate concept flashcards.",
@@ -494,6 +497,31 @@
         "startModalSubmit": "Start ({{count}})",
         "cardsUnit": "cards",
         "tooltipMastered": "Mastered: {{mastered}} / {{total}} ({{pct}}%)"
+    },
+    "chat": {
+        "title": "Chats",
+        "subtitle": "Interactive AI study assistant for your course",
+        "newThreadBtn": "New Thread",
+        "createModalTitle": "Create New Chat Thread",
+        "createModalDesc": "Enter a thread title and optional custom instructions for the AI assistant.",
+        "threadTitleLabel": "Thread Title",
+        "systemPromptLabel": "Context Instructions / Focus",
+        "selectResourcesLabel": "Attached Resources (RAG Context)",
+        "noThreads": "No chat threads.",
+        "noThreadsShort": "No chats",
+        "noThreadsSubtitle": "Create a new thread to start chatting with your AI study assistant for this course!",
+        "inputPlaceholder": "Ask the AI assistant a question...",
+        "sendBtn": "Send",
+        "thinking": "AI is typing response...",
+        "deleteThreadConfirm": "Are you sure you want to delete this chat thread?",
+        "resourcesSelected": "Selected resources: {{count}}",
+        "dailyLimitInfo": "Daily limit: {{used}} / {{limit}} tokens ({{pct}}%)",
+        "dailyTokenLimitTitle": "Daily token limit",
+        "usageLabel": "Usage:",
+        "usedToday": "Used today",
+        "remaining": "Remaining",
+        "resetTime": "Resets at 00:00 UTC",
+        "accountActive": "Account active"
     }
 }
 

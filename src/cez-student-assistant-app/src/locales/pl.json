@@ -21,7 +21,8 @@
         "home": "Główna",
         "courses": "Przedmioty",
         "quizzes": "Quizy",
-        "flashcards": "Fiszki"
+        "flashcards": "Fiszki",
+        "chats": "Czaty"
     },
     "auth": {
         "loginTitle": "Logowanie",
@@ -114,6 +115,7 @@
         "title": "Moje quizy",
         "searchPlaceholder": "Szukaj...",
         "noQuizzes": "Brak quizów.",
+        "noQuizzesShort": "Brak quizów",
         "noQuizzesSubtitle": "Wejdź w zakładkę Kursy, wybierz przedmiot i wygeneruj quiz ze swoich plików dydaktycznych.",
         "statusGenerating": "Generowanie...",
         "btnGenerating": "Generowanie..."
@@ -417,6 +419,7 @@
         "noDecks": "Brak wygenerowanych fiszek.",
         "noDecksSubtitle": "Wygeneruj zestaw fiszek z poziomu wybranego przedmiotu.",
         "noCourseDecks": "Brak wygenerowanych fiszek dla tego przedmiotu.",
+        "noCourseDecksShort": "Brak fiszek",
         "noCourseDecksSubtitle": "Kliknij \"+\", aby wygenerować zestaw fiszek przy pomocy AI.",
         "generateModalTitle": "Generowanie Fiszek",
         "generateModalDesc": "Algorytm przeanalizuje wgrane zasoby dydaktyczne dla tego przedmiotu i automatycznie wygeneruje zestaw fiszek pojęciowych.",
@@ -494,6 +497,31 @@
         "startModalSubmit": "Rozpocznij ({{count}})",
         "cardsUnit": "fiszek",
         "tooltipMastered": "Opanowane: {{mastered}} / {{total}} ({{pct}}%)"
+    },
+    "chat": {
+        "title": "Czaty",
+        "subtitle": "Interaktywny asystent nauki dla Twojego przedmiotu",
+        "newThreadBtn": "Nowy wątek",
+        "createModalTitle": "Utwórz nowy wątek czatu",
+        "createModalDesc": "Wprowadź tytuł wątku oraz opcjonalne instrukcje dla asystenta AI.",
+        "threadTitleLabel": "Tytuł wątku",
+        "systemPromptLabel": "Instrukcje kontekstowe / Skupienie",
+        "selectResourcesLabel": "Załączone materiały (RAG Context)",
+        "noThreads": "Brak wątków czatu.",
+        "noThreadsShort": "Brak czatów",
+        "noThreadsSubtitle": "Utwórz nowy wątek, aby rozpocząć konwersację z asystentem AI dla tego przedmiotu!",
+        "inputPlaceholder": "Zadaj pytanie asystentowi AI...",
+        "sendBtn": "Wyślij",
+        "thinking": "AI pisze odpowiedź...",
+        "deleteThreadConfirm": "Czy na pewno chcesz usunąć ten wątek czatu?",
+        "resourcesSelected": "Wybrane materiały: {{count}}",
+        "dailyLimitInfo": "Limit dzienny: {{used}} / {{limit}} tokenów ({{pct}}%)",
+        "dailyTokenLimitTitle": "Dzienny limit tokenów",
+        "usageLabel": "Wykorzystanie:",
+        "usedToday": "Zużyto dzisiaj",
+        "remaining": "Pozostało",
+        "resetTime": "Reset o 00:00 UTC",
+        "accountActive": "Konto aktywne"
     }
 }
 

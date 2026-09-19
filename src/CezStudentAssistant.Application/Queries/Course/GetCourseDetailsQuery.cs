@@ -37,19 +37,16 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
         }
 
         var quizRepo = unitOfWork.Repository<IQuizRepository>();
-        var quizzes = await quizRepo.Find(
-            q => q.CourseId == query.CourseId && q.UserId == query.UserId,
-            true,
-            q => q.Questions,
-            q => q.Attempts
-        ).ToListAsync(ct);
+        var quizzes = await quizRepo.Find(q => q.CourseId == query.CourseId && q.UserId == query.UserId, true)
+            .Include(q => q.Questions)
+                .ThenInclude(qn => qn.Options)
+            .ToListAsync(ct);
 
         var quizAttemptRepo = unitOfWork.Repository<IQuizAttemptRepository>();
-        var attemptsWithAnswers = await quizAttemptRepo.Find(
-            a => a.UserId == query.UserId && a.Quiz.CourseId == query.CourseId,
-            true,
-            a => a.Answers
-        ).ToListAsync(ct);
+        var attemptsWithAnswers = await quizAttemptRepo.Find(a => a.UserId == query.UserId && a.Quiz.CourseId == query.CourseId, true)
+            .Include(a => a.Answers)
+                .ThenInclude(ans => ans.SelectedOptions)
+            .ToListAsync(ct);
 
         foreach (var quiz in quizzes)
         {
@@ -58,12 +55,11 @@ public class GetCourseDetailsQueryHandler(IUnitOfWork unitOfWork) : BaseQueryHan
         }
 
         var deckRepo = unitOfWork.Repository<IFlashcardDeckRepository>();
-        var decks = await deckRepo.Find(
-            d => d.CourseId == query.CourseId && d.UserId == query.UserId,
-            true,
-            d => d.Cards,
-            d => d.Attempts
-        ).ToListAsync(ct);
+        var decks = await deckRepo.Find(d => d.CourseId == query.CourseId && d.UserId == query.UserId, true)
+            .Include(d => d.Cards)
+            .Include(d => d.Attempts)
+                .ThenInclude(a => a.Cards)
+            .ToListAsync(ct);
 
         var prepResult = CoursePreparationCalculationHelper.CalculatePreparation(quizzes, decks);
 

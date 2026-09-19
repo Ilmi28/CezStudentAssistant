@@ -221,7 +221,7 @@ export default function FlashcardStudyPage() {
 
   if (errorMsg || !deck || sessionCards.length === 0) {
     return (
-      <div className="flex-1 p-6 max-w-3xl mx-auto space-y-4">
+      <div className="flex-1 p-6 w-full space-y-4">
         <button
           onClick={() => navigate(fromPath)}
           className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
@@ -256,7 +256,7 @@ export default function FlashcardStudyPage() {
     const scorePct = maxAttemptPoints > 0 ? Math.round((earnedAttemptPoints / maxAttemptPoints) * 100) : 0;
 
     return (
-      <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+      <div className="w-full space-y-5 animate-in fade-in duration-300">
         {/* Top Header */}
         <div className="flex items-center gap-3.5 min-w-0">
           <SecondaryButton
@@ -421,7 +421,7 @@ export default function FlashcardStudyPage() {
   const diffTextColor = easyCard ? "text-emerald-400" : hardCard ? "text-rose-400" : "text-amber-400";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+    <div className="w-full space-y-5 animate-in fade-in duration-300">
       {/* Top Header */}
       <div>
         <SecondaryButton

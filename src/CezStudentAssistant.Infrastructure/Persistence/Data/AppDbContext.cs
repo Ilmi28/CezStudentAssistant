@@ -18,6 +18,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                   .HasForeignKey(q => q.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
+        modelBuilder.Entity<ChatThread>(entity =>
+        {
+            entity.HasOne(t => t.User)
+                  .WithMany(u => u.ChatThreads)
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(t => t.Course)
+                  .WithMany(c => c.ChatThreads)
+                  .HasForeignKey(t => t.CourseId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(t => t.AttachedResources)
+                  .WithMany()
+                  .UsingEntity("ChatThreadResources");
+        });
+
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasOne(m => m.ChatThread)
+                  .WithMany(t => t.Messages)
+                  .HasForeignKey(m => m.ChatThreadId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
@@ -65,4 +89,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Flashcard> Flashcards { get; set; }
     public DbSet<FlashcardAttempt> FlashcardAttempts { get; set; }
     public DbSet<FlashcardAttemptCard> FlashcardAttemptCards { get; set; }
+    public DbSet<ChatThread> ChatThreads { get; set; }
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 }

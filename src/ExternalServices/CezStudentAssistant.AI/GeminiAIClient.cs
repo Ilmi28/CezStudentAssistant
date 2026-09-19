@@ -1,4 +1,5 @@
 using CezStudentAssistant.AI.Consts;
+using CezStudentAssistant.AI.Consts.Chat;
 using CezStudentAssistant.AI.Services;
 using CezStudentAssistant.Application.Interfaces.External;
 using CezStudentAssistant.Application.Interfaces.Services;
@@ -8,8 +9,11 @@ using Google.GenAI;
 using Google.GenAI.Types;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 
 using CezStudentAssistant.Application.Responses.AI.Flashcard;
+
+using CezStudentAssistant.Domain.Enums;
 
 namespace CezStudentAssistant.AI;
 
@@ -116,6 +120,120 @@ public class GeminiAIClient(
 
         var response = await client.Models.CountTokensAsync(_model, content);
         return response.TotalTokens ?? 0;
+    }
+
+    public async IAsyncEnumerable<string> StreamChatResponseAsync(
+        IEnumerable<CezStudentAssistant.Domain.Entities.ChatMessage> history,
+        string userPrompt,
+        IEnumerable<AIFile>? files = null,
+        string? courseName = null,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var contents = new List<Content>();
+
+        foreach (var msg in history)
+        {
+            var role = msg.Role == ChatMessageRole.Assistant ? "model" : "user";
+
+            contents.Add(new Content
+            {
+                Role = role,
+                Parts = [new Part { Text = msg.Content }]
+            });
+        }
+
+        var userParts = new List<Part>
+        {
+            Part.FromText(userPrompt)
+        };
+
+        if (files != null)
+        {
+            foreach (var file in files)
+            {
+                var processed = await fileContentProcessor.ProcessFileAsync(file);
+                if (processed != null)
+                {
+                    if (processed.IsTextFormat && processed.Text != null)
+                    {
+                        userParts.Add(Part.FromText(processed.Text));
+                    }
+                    else if (processed.Bytes != null)
+                    {
+                        userParts.Add(Part.FromBytes(processed.Bytes, processed.MimeType, null));
+                    }
+                }
+            }
+        }
+
+        contents.Add(new Content
+        {
+            Role = "user",
+            Parts = userParts
+        });
+
+        var systemInstructionText = !string.IsNullOrWhiteSpace(courseName)
+            ? $"{ChatPrompts.DefaultSystemInstruction}\n\n[CONTEXT - UNIVERSITY COURSE]:\nYou are assisting the student specifically with the university course: \"{courseName}\". Tailor your explanations, terminology, examples, and context to this course."
+            : ChatPrompts.DefaultSystemInstruction;
+
+        var config = new GenerateContentConfig
+        {
+            SystemInstruction = new Content
+            {
+                Parts = [new Part { Text = systemInstructionText }]
+            }
+        };
+
+        IAsyncEnumerable<GenerateContentResponse>? stream = null;
+        try
+        {
+            stream = client.Models.GenerateContentStreamAsync(_model, contents, config);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[GEMINI] Failed to initiate stream.");
+            throw;
+        }
+
+        if (stream != null)
+        {
+            await foreach (var responseChunk in stream.WithCancellation(ct))
+            {
+                if (!string.IsNullOrEmpty(responseChunk.Text))
+                {
+                    yield return responseChunk.Text;
+                }
+            }
+        }
+    }
+
+    public async Task<string> GenerateChatTitleAsync(string userMessage, string assistantResponse, CancellationToken ct = default)
+    {
+        var prompt = string.Format(ChatPrompts.GenerateTitlePrompt, userMessage, assistantResponse);
+        try
+        {
+            var content = Part.FromText(prompt);
+            var response = await client.Models.GenerateContentAsync(_model, new Content { Parts = [content] });
+            var rawTitle = response.Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(rawTitle))
+            {
+                return string.Empty;
+            }
+
+            var cleanTitle = rawTitle.Trim('"', '\'', '`', ' ', '\n', '\r');
+            if (cleanTitle.StartsWith("Title:", StringComparison.OrdinalIgnoreCase))
+            {
+                cleanTitle = cleanTitle["Title:".Length..].Trim();
+            }
+
+            return cleanTitle.Length > 50 ? cleanTitle[..50] + "..." : cleanTitle;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "[GEMINI] Failed to generate AI chat title.");
+            return string.Empty;
+        }
     }
 
     private async Task<GenerateContentResponse> GenerateContentWithRetryAsync(Content content, GenerateContentConfig config)

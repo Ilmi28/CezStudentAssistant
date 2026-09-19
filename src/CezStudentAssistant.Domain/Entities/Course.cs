@@ -13,4 +13,5 @@ public class Course : BaseEntity
     public ICollection<Question> Questions { get; set; } = new List<Question>();
     public ICollection<Resource> Resources { get; set; } = new List<Resource>();
     public ICollection<FlashcardDeck> FlashcardDecks { get; set; } = new List<FlashcardDeck>();
+    public ICollection<ChatThread> ChatThreads { get; set; } = new List<ChatThread>();
 }

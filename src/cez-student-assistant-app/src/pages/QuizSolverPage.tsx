@@ -224,7 +224,7 @@ export default function QuizSolverPage({
     };
 
     return (
-      <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+      <div className="w-full space-y-5 animate-in fade-in duration-300">
         {/* Top Header */}
         <div className="flex items-center gap-3.5 min-w-0">
           <SecondaryButton
@@ -411,7 +411,7 @@ export default function QuizSolverPage({
   const currentQuestionSelected = selectedAnswers[question.id] || [];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in duration-300">
+    <div className="w-full space-y-5 animate-in fade-in duration-300">
       {/* Top Header */}
       <div>
         <SecondaryButton

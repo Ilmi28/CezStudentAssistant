@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IQuizGenerationService, QuizGenerationService>();
         services.AddScoped<IFlashcardGenerationService, FlashcardGenerationService>();
         services.AddScoped<IJobService, JobService>();
+        services.AddScoped<Commands.Chat.SendChatMessageStreamCommandHandler>();
         return services;
     }
 }

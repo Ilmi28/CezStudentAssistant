@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { formatDateTime } from "../helpers/dateHelper";
 import { flashcardService } from "../services/flashcardService";
 import type { FlashcardDeckDetailsDto } from "../types/flashcardTypes";
 import { FlashcardStateEnum } from "../enums/flashcardEnums";
@@ -53,7 +54,7 @@ export default function FlashcardDeckDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const [deck, setDeck] = useState<FlashcardDeckDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -159,7 +160,7 @@ export default function FlashcardDeckDetailsPage() {
 
   if (errorMsg || !deck) {
     return (
-      <div className="flex-1 p-6 md:p-8 max-w-4xl mx-auto space-y-4">
+      <div className="flex-1 p-6 md:p-8 w-full space-y-4">
         <SecondaryButton
           onClick={handleGoBack}
           icon={<ArrowLeft size={14} />}
@@ -204,7 +205,7 @@ export default function FlashcardDeckDetailsPage() {
   const masteredPct = totalDeckMaxPoints > 0 ? Math.round((totalDeckEarnedPoints / totalDeckMaxPoints) * 100) : deck.progressPercentage;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -420,7 +421,7 @@ export default function FlashcardDeckDetailsPage() {
 
                       <div className="min-w-0">
                         <span className="text-xs font-bold text-foreground block tile-title-scale">
-                          {new Date(attempt.startedAt).toLocaleString(i18n.language || "pl", {
+                          {formatDateTime(attempt.startedAt, {
                             day: "numeric",
                             month: "short",
                             year: "numeric",

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 import { Card, Heading, Text, Flex, PrimaryButton } from "../index";
+import { formatDateTime } from "../../helpers/dateHelper";
 
 interface SyncBannerProps {
   syncing: boolean;
@@ -20,7 +21,7 @@ export default function SyncBanner({
   if (!isCezConnected) return null;
 
   const formattedDate = lastCezSync
-    ? new Date(lastCezSync).toLocaleString("pl-PL", { dateStyle: "short", timeStyle: "short" })
+    ? formatDateTime(lastCezSync, { dateStyle: "short", timeStyle: "short" })
     : null;
 
   return (

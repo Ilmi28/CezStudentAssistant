@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { formatDateTime } from "../helpers/dateHelper";
 import {
   ChevronLeft,
   Play,
@@ -91,7 +92,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const [quiz, setQuiz] = useState<QuizDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -244,7 +245,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
     ? (easyAttemptCount * 1 + mediumAttemptCount * 2 + hardAttemptCount * 3)
     : totalPointsMax;
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Header & Actions */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
@@ -458,7 +459,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
 
                       <div className="min-w-0">
                         <span className="text-xs font-bold text-foreground block tile-title-scale">
-                          {new Date(attempt.startedAt).toLocaleString(i18n.language || "pl", {
+                          {formatDateTime(attempt.startedAt, {
                             day: "numeric",
                             month: "short",
                             year: "numeric",
