@@ -121,9 +121,9 @@ export default function CourseList({
                   </Text>
                 </div>
                 {c.isCez && (
-                  <Badge variant="secondary" className="shrink-0">
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider shrink-0">
                     {t("courses.tagCez")}
-                  </Badge>
+                  </span>
                 )}
               </Card>
             ))}

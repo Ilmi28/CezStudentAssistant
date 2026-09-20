@@ -447,7 +447,7 @@ export default function FlashcardStudyPage() {
           {/* 3D Flip Card Container */}
           <div
             onClick={() => setIsFlipped((prev) => !prev)}
-            className="w-full h-[320px] md:h-[380px] cursor-pointer perspective-1000 select-none group"
+            className="relative z-20 w-full h-[320px] md:h-[380px] cursor-pointer perspective-1000 select-none group"
           >
             <div
               className={`relative w-full h-full duration-500 transform-style-3d transition-transform ${
@@ -455,7 +455,7 @@ export default function FlashcardStudyPage() {
               }`}
             >
               {/* FRONT side (Term / Key) */}
-              <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-border p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden shadow-2xl group-hover:border-primary/50 transition-colors">
+              <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-border p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden shadow-sm group-hover:border-primary/50 transition-colors">
                 <div className="flex items-center justify-between w-full">
                   <span className={`text-[11px] font-extrabold uppercase tracking-wider ${diffTextColor}`}>
                     {diffLabel}
@@ -477,7 +477,7 @@ export default function FlashcardStudyPage() {
               </div>
 
               {/* BACK side (Definition / Value) */}
-              <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-primary/40 p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden rotate-y-180 shadow-2xl">
+              <div className="absolute inset-0 w-full h-full rounded-2xl bg-card border-2 border-primary/40 p-6 md:p-8 flex flex-col justify-between items-center text-center backface-hidden rotate-y-180 shadow-sm">
                 <div className="flex items-center justify-between w-full">
                   <span className={`text-[11px] font-extrabold uppercase tracking-wider ${diffTextColor}`}>
                     {diffLabel}

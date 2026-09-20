@@ -65,14 +65,21 @@
             "quizzes": "Liczba quizów",
             "quizzesNote": "zestawy pytań AI",
             "flashcards": "Liczba fiszek",
-            "flashcardsNote": "wszystkie karty"
+            "flashcardsNote": "wszystkie karty",
+            "chats": "Liczba czatów"
         },
         "recentActivity": "Ostatnia aktywność",
         "recentActivityTag": "OSTATNIE PRÓBY",
         "noActivity": "Brak zarejestrowanej aktywności.",
-        "noActivitySubtitle": "Rozwiąż quiz lub uruchom naukę fiszek, aby zobaczyć swoje próby!",
+        "noActivitySubtitle": "Rozwiąż quiz, uruchom naukę fiszek lub zacznij czatować z AI, aby zobaczyć swoją aktywność!",
         "badgeQuiz": "QUIZ",
         "badgeFlashcard": "FISZKI",
+        "badgeChat": "CZAT",
+        "messagesCount": "{{count}} wiadomości",
+        "messagesCount_one": "1 wiadomość",
+        "messagesCount_few": "{{count}} wiadomości",
+        "messagesCount_many": "{{count}} wiadomości",
+        "messagesCount_other": "{{count}} wiadomości",
         "scoreLabel": "Wynik",
         "inProgressTag": "W TOKU",
         "viewAllQuizzes": "Zobacz wszystkie quizy ({{count}})",
@@ -521,7 +528,14 @@
         "usedToday": "Zużyto dzisiaj",
         "remaining": "Pozostało",
         "resetTime": "Reset o 00:00 UTC",
-        "accountActive": "Konto aktywne"
+        "accountActive": "Konto aktywne",
+        "streamError": "*Coś poszło nie tak. Spróbuj ponownie później.*",
+        "fetchThreadsError": "Nie udało się pobrać wątków czatu.",
+        "fetchMessagesError": "Nie udało się pobrać wiadomości.",
+        "selectCourseError": "Wybierz przedmiot, dla którego chcesz utworzyć czat.",
+        "createThreadError": "Nie udało się utworzyć nowego wątku czatu.",
+        "deleteThreadError": "Nie udało się usunąć wątku czatu.",
+        "updateResourcesError": "Nie udało się zaktualizować materiałów wątku."
     }
 }
 

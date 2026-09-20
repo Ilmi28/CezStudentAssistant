@@ -65,14 +65,19 @@
             "quizzes": "Quizzes Count",
             "quizzesNote": "AI question sets",
             "flashcards": "Flashcards Count",
-            "flashcardsNote": "all study cards"
+            "flashcardsNote": "all study cards",
+            "chats": "Chats Count"
         },
         "recentActivity": "Recent Activity",
         "recentActivityTag": "LATEST ATTEMPTS",
         "noActivity": "No recorded activity yet.",
-        "noActivitySubtitle": "Solve a quiz or start studying flashcards to view your attempts!",
+        "noActivitySubtitle": "Solve a quiz, start studying flashcards or chat with AI to view your activity!",
         "badgeQuiz": "QUIZ",
         "badgeFlashcard": "FLASHCARDS",
+        "badgeChat": "CHAT",
+        "messagesCount": "{{count}} messages",
+        "messagesCount_one": "1 message",
+        "messagesCount_other": "{{count}} messages",
         "scoreLabel": "Score",
         "inProgressTag": "IN PROGRESS",
         "viewAllQuizzes": "View all quizzes ({{count}})",
@@ -521,7 +526,14 @@
         "usedToday": "Used today",
         "remaining": "Remaining",
         "resetTime": "Resets at 00:00 UTC",
-        "accountActive": "Account active"
+        "accountActive": "Account active",
+        "streamError": "*Something went wrong. Please try again later.*",
+        "fetchThreadsError": "Failed to fetch chat threads.",
+        "fetchMessagesError": "Failed to fetch messages.",
+        "selectCourseError": "Select a course to create a chat for.",
+        "createThreadError": "Failed to create a new chat thread.",
+        "deleteThreadError": "Failed to delete chat thread.",
+        "updateResourcesError": "Failed to update thread resources."
     }
 }
 

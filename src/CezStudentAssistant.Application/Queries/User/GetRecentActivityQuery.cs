@@ -30,6 +30,7 @@ public class GetRecentActivityQueryHandler(IUnitOfWork unitOfWork)
     {
         var quizAttemptRepo = unitOfWork.Repository<IQuizAttemptRepository>();
         var flashcardAttemptRepo = unitOfWork.Repository<IFlashcardAttemptRepository>();
+        var chatThreadRepo = unitOfWork.Repository<IChatThreadRepository>();
 
         var recentQuizAttempts = await quizAttemptRepo
             .Find(q => q.UserId == query.UserId, asNoTracking: true, includes: [x => x.Quiz, x => x.Course, x => x.Answers])
@@ -37,6 +38,10 @@ public class GetRecentActivityQueryHandler(IUnitOfWork unitOfWork)
 
         var recentFlashcardAttempts = await flashcardAttemptRepo
             .Find(f => f.UserId == query.UserId, asNoTracking: true, includes: [x => x.Deck, x => x.Deck.Course, x => x.Deck.Cards, x => x.Cards])
+            .ToListAsync(ct);
+
+        var recentChatThreads = await chatThreadRepo
+            .Find(t => t.UserId == query.UserId, asNoTracking: true, includes: [x => x.Course, x => x.Messages])
             .ToListAsync(ct);
 
         var quizActivities = recentQuizAttempts.Select(qa =>
@@ -101,8 +106,28 @@ public class GetRecentActivityQueryHandler(IUnitOfWork unitOfWork)
             };
         });
 
+        var chatActivities = recentChatThreads.Select(ct =>
+        {
+            var lastMessage = ct.Messages?.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
+            var lastActivityDate = lastMessage?.CreatedAt ?? (ct.LastModifiedAt != default ? ct.LastModifiedAt : ct.CreatedAt);
+            var messageCount = ct.Messages?.Count ?? 0;
+
+            return new RecentActivityDto
+            {
+                Id = ct.Id,
+                EntityId = ct.Id,
+                Type = ActivityType.Chat,
+                Title = string.IsNullOrWhiteSpace(ct.Title) ? "Nowy wątek czatu" : ct.Title,
+                CourseName = ct.Course?.Name ?? string.Empty,
+                TotalCount = messageCount,
+                AttemptDate = lastActivityDate,
+                Status = "Completed"
+            };
+        });
+
         var combinedActivities = quizActivities
             .Concat(flashcardActivities)
+            .Concat(chatActivities)
             .GroupBy(a => a.EntityId)
             .Select(g => g.OrderByDescending(a => a.AttemptDate).First())
             .OrderByDescending(a => a.AttemptDate)

@@ -38,6 +38,12 @@ public class GetRecentActivityQueryHandlerTests
         _unitOfWork.Repository<IQuizAttemptRepository>().Returns(_quizAttemptRepo);
         _unitOfWork.Repository<IFlashcardAttemptRepository>().Returns(_flashcardAttemptRepo);
 
+        var chatRepo = Substitute.For<IChatThreadRepository>();
+        var chats = new List<ChatThread>().AsAsyncQueryable();
+        chatRepo.Find(Arg.Any<Expression<Func<ChatThread, bool>>>(), Arg.Any<bool>(), Arg.Any<Expression<Func<ChatThread, object>>[]>())
+            .Returns(chats);
+        _unitOfWork.Repository<IChatThreadRepository>().Returns(chatRepo);
+
         _sut = new GetRecentActivityQueryHandler(_unitOfWork);
     }
 

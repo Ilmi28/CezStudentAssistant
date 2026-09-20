@@ -6,4 +6,5 @@ public class DashboardStatsDto
     public int QuizCount { get; set; }
     public int FlashcardDeckCount { get; set; }
     public int FlashcardCount { get; set; }
+    public int ChatCount { get; set; }
 }

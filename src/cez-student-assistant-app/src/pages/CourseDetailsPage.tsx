@@ -19,7 +19,6 @@ import {
   ChatThreadCard,
   LoadingScreen,
   SecondaryButton,
-  Badge,
   CoursePreparationCard,
 } from "../components";
 import { useCourseChat } from "../hooks/useCourseChat";
@@ -274,9 +273,9 @@ export default function CourseDetailsPage({
           />
           <div className="flex flex-col justify-center min-w-0">
             {selectedCourse.isCez && (
-              <Badge variant="secondary" className="self-start mb-1">
+              <span className="text-xs font-bold text-primary uppercase tracking-wider self-start mb-1">
                 {t("courses.tagCez")}
-              </Badge>
+              </span>
             )}
             <h1 className="text-xl font-bold text-foreground break-words leading-tight">
               {selectedCourse.name}

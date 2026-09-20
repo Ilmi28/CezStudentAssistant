@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Layers, Trophy, Brain, Activity } from "lucide-react";
+import { Layers, Trophy, Brain, MessageSquare, Activity } from "lucide-react";
 import { Card, Heading, Text, Flex, Grid } from "../components";
 import { useDashboard } from "../hooks";
 import { getScoreColorClass } from "../utils/scoreUtils";
@@ -21,15 +21,17 @@ export default function HomePage() {
   const handleActivityClick = (item: RecentActivityDto) => {
     if (item.type === ActivityTypeEnum.Quiz) {
       navigate(`/quiz/${item.entityId}`, { state: { fromPath: location.pathname } });
-    } else {
+    } else if (item.type === ActivityTypeEnum.Flashcard) {
       navigate(`/flashcards/${item.entityId}`, { state: { fromPath: location.pathname } });
+    } else if (item.type === ActivityTypeEnum.Chat) {
+      navigate(`/chats/${item.entityId}`, { state: { fromPath: location.pathname } });
     }
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <Card className="p-4 sm:p-5">
-        <Grid cols={1} smCols={3} gap={4} className="divide-y sm:divide-y-0 sm:divide-x divide-border/50">
+        <Grid cols={1} smCols={2} lgCols={4} gap={4} className="divide-y sm:divide-y-0 sm:divide-x divide-border/50">
           <Flex align="center" gap={3} className="pt-1 sm:pt-0">
             <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
               <Layers size={20} strokeWidth={2} />
@@ -71,6 +73,20 @@ export default function HomePage() {
               </Text>
             </div>
           </Flex>
+
+          <Flex align="center" gap={3} className="pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
+            <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
+              <MessageSquare size={20} strokeWidth={2} />
+            </div>
+            <div className="min-w-0">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
+                {t("home.stats.chats")}
+              </Text>
+              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
+                {loadingStats ? "..." : (stats?.chatCount ?? 0)}
+              </Text>
+            </div>
+          </Flex>
         </Grid>
       </Card>
 
@@ -98,7 +114,8 @@ export default function HomePage() {
             {recentActivity.map((act) => {
               const isInProgress = act.status === "InProgress";
               const isQuiz = act.type === ActivityTypeEnum.Quiz;
-              const displayTitle = act.title || (isQuiz ? "Quiz" : "Fiszki");
+              const isChat = act.type === ActivityTypeEnum.Chat;
+              const displayTitle = act.title || (isQuiz ? "Quiz" : isChat ? "Czat" : "Fiszki");
 
               return (
                 <Card
@@ -118,32 +135,41 @@ export default function HomePage() {
                     )}
                   </div>
 
-                  {isInProgress ? (
-                    <Flex direction="col" align="end" justify="center" className="text-right shrink-0">
+                  <Flex direction="col" align="end" justify="center" gap={1} className="shrink-0 text-right">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                      {isQuiz
+                        ? t("home.badgeQuiz", "QUIZ")
+                        : isChat
+                        ? t("home.badgeChat", "CZAT")
+                        : t("home.badgeFlashcard", "FISZKI")}
+                    </span>
+
+                    {isInProgress ? (
                       <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
                         {t("quizDetails.status.inProgress", "W TOKU")}
                       </span>
-                    </Flex>
-                  ) : (
-                    <Flex direction="col" align="end" justify="center" gap={1} className="shrink-0 text-right">
-                      <span
-                        className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(
-                          act.scorePercentage
-                        )}`}
-                      >
-                        {act.scorePercentage ?? 0}%
-                      </span>
-                      {isQuiz ? (
-                        <Text size="xs" variant="muted" className="font-medium tabular-nums">
-                          {formatScore(act.earnedPoints ?? 0)} / {formatScore(act.maxPoints ?? 0)}
-                        </Text>
-                      ) : (
-                        <Text size="xs" variant="muted" className="font-medium tabular-nums">
-                          {act.masteredCount ?? 0} / {act.totalCount ?? 0}
-                        </Text>
-                      )}
-                    </Flex>
-                  )}
+                    ) : isChat ? (
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                        {t("home.messagesCount", { count: act.totalCount ?? 0 })}
+                      </Text>
+                    ) : isQuiz ? (
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                        <span className={`font-bold ${getScoreColorClass(act.scorePercentage)}`}>
+                          {act.scorePercentage ?? 0}%
+                        </span>
+                        {" • "}
+                        {formatScore(act.earnedPoints ?? 0)} / {formatScore(act.maxPoints ?? 0)}
+                      </Text>
+                    ) : (
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                        <span className={`font-bold ${getScoreColorClass(act.scorePercentage)}`}>
+                          {act.scorePercentage ?? 0}%
+                        </span>
+                        {" • "}
+                        {act.masteredCount ?? 0} / {act.totalCount ?? 0}
+                      </Text>
+                    )}
+                  </Flex>
                 </Card>
               );
             })}

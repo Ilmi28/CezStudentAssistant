@@ -6,5 +6,6 @@ namespace CezStudentAssistant.Application.Enums;
 public enum ActivityType
 {
     Quiz,
-    Flashcard
+    Flashcard,
+    Chat
 }

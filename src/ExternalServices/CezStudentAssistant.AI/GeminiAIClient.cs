@@ -184,26 +184,125 @@ public class GeminiAIClient(
             }
         };
 
-        IAsyncEnumerable<GenerateContentResponse>? stream = null;
-        try
-        {
-            stream = client.Models.GenerateContentStreamAsync(_model, contents, config);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "[GEMINI] Failed to initiate stream.");
-            throw;
-        }
+        var attempts = 0;
+        var hasYielded = false;
+        Exception? caughtException = null;
 
-        if (stream != null)
+        while (true)
         {
-            await foreach (var responseChunk in stream.WithCancellation(ct))
+            attempts++;
+            IAsyncEnumerator<GenerateContentResponse>? enumerator = null;
+
+            try
             {
-                if (!string.IsNullOrEmpty(responseChunk.Text))
+                var stream = client.Models.GenerateContentStreamAsync(_model, contents, config);
+                enumerator = stream.GetAsyncEnumerator(ct);
+            }
+            catch (ClientError ex) when (!hasYielded && attempts < _maxAttempts)
+            {
+                if (ex.StatusCode != 429 && ex.StatusCode != 500 && ex.StatusCode != 503 && ex.StatusCode != 504)
                 {
-                    yield return responseChunk.Text;
+                    caughtException = ex;
+                    break;
+                }
+
+                var delayIndex = Math.Min(attempts - 1, _retryDelaysMs.Length - 1);
+                var delay = _retryDelaysMs[delayIndex];
+                logger.LogWarning("[GEMINI] Chat stream attempt {Attempt} failed with status {StatusCode}: {Message}. Retrying in {Delay}ms...", attempts, ex.StatusCode, ex.Message, delay);
+                await Task.Delay(delay, ct);
+                continue;
+            }
+            catch (Exception ex) when (!hasYielded && attempts < _maxAttempts)
+            {
+                var delayIndex = Math.Min(attempts - 1, _retryDelaysMs.Length - 1);
+                var delay = _retryDelaysMs[delayIndex];
+                logger.LogWarning(ex, "[GEMINI] Chat stream attempt {Attempt} failed: {Message}. Retrying in {Delay}ms...", attempts, ex.Message, delay);
+                await Task.Delay(delay, ct);
+                continue;
+            }
+            catch (Exception ex)
+            {
+                caughtException = ex;
+                break;
+            }
+
+            var retryRequested = false;
+
+            try
+            {
+                while (true)
+                {
+                    bool hasNext;
+                    try
+                    {
+                        hasNext = await enumerator.MoveNextAsync();
+                    }
+                    catch (ClientError ex) when (!hasYielded && attempts < _maxAttempts)
+                    {
+                        if (ex.StatusCode != 429 && ex.StatusCode != 500 && ex.StatusCode != 503 && ex.StatusCode != 504)
+                        {
+                            caughtException = ex;
+                            break;
+                        }
+
+                        var delayIndex = Math.Min(attempts - 1, _retryDelaysMs.Length - 1);
+                        var delay = _retryDelaysMs[delayIndex];
+                        logger.LogWarning("[GEMINI] Chat stream MoveNextAsync attempt {Attempt} failed with status {StatusCode}: {Message}. Retrying in {Delay}ms...", attempts, ex.StatusCode, ex.Message, delay);
+                        await Task.Delay(delay, ct);
+                        retryRequested = true;
+                        break;
+                    }
+                    catch (Exception ex) when (!hasYielded && attempts < _maxAttempts)
+                    {
+                        var delayIndex = Math.Min(attempts - 1, _retryDelaysMs.Length - 1);
+                        var delay = _retryDelaysMs[delayIndex];
+                        logger.LogWarning(ex, "[GEMINI] Chat stream MoveNextAsync attempt {Attempt} failed: {Message}. Retrying in {Delay}ms...", attempts, ex.Message, delay);
+                        await Task.Delay(delay, ct);
+                        retryRequested = true;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        caughtException = ex;
+                        break;
+                    }
+
+                    if (!hasNext)
+                    {
+                        yield break;
+                    }
+
+                    var responseChunk = enumerator.Current;
+                    if (!string.IsNullOrEmpty(responseChunk.Text))
+                    {
+                        hasYielded = true;
+                        yield return responseChunk.Text;
+                    }
                 }
             }
+            finally
+            {
+                if (enumerator != null)
+                {
+                    await enumerator.DisposeAsync();
+                }
+            }
+
+            if (retryRequested)
+            {
+                continue;
+            }
+
+            break;
+        }
+
+        if (caughtException != null)
+        {
+            logger.LogError(caughtException, "[GEMINI] Chat stream encountered unrecoverable error.");
+            var fallback = hasYielded
+                ? "\n\n*Coś poszło nie tak. Spróbuj ponownie później.*"
+                : "*Coś poszło nie tak. Spróbuj ponownie później.*";
+            yield return fallback;
         }
     }
 

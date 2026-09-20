@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -16,6 +16,20 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
   isUser = false,
 }: MarkdownRendererProps) {
   const { darkMode } = useUI();
+  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(() =>
+    typeof document !== "undefined" ? document.documentElement.classList.contains("dark") : darkMode
+  );
+
+  useEffect(() => {
+    const checkDark = () => {
+      setIsDarkTheme(document.documentElement.classList.contains("dark"));
+    };
+    checkDark();
+
+    const observer = new MutationObserver(checkDark);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [darkMode]);
 
   return (
     <div className={`markdown-content text-sm leading-relaxed ${className}`}>
@@ -58,7 +72,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
                   className={
                     isUser
                       ? "px-1.5 py-0.5 rounded bg-white/20 text-white font-mono text-[0.85em]"
-                      : "px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground dark:bg-sidebar dark:text-sky-300 border border-border/60 font-mono text-[0.85em]"
+                      : "px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 dark:bg-sidebar dark:text-sky-300 border border-slate-200 dark:border-border/60 font-mono text-[0.85em]"
                   }
                   {...props}
                 >
@@ -74,13 +88,14 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
               <div className="my-3 rounded-xl overflow-hidden border border-border/80 shadow-2xs">
                 <SyntaxHighlighter
                   language={language}
-                  style={darkMode ? vscDarkPlus : vs}
+                  style={isDarkTheme ? vscDarkPlus : vs}
                   customStyle={{
                     margin: 0,
                     padding: "0.875rem 1rem",
                     fontSize: "0.775rem",
                     lineHeight: "1.5",
-                    background: darkMode ? "#182238" : "#f8fafc",
+                    background: isDarkTheme ? "#141e30" : "#f8fafc",
+                    color: isDarkTheme ? "#f8fafc" : "#0f172a",
                   }}
                   codeTagProps={{
                     style: {

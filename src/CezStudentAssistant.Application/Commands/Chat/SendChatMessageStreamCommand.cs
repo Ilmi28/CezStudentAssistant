@@ -116,8 +116,11 @@ public class SendChatMessageStreamCommandHandler(
                 var tokenUsageRepo = unitOfWork.Repository<ITokenUsageRepository>();
                 var totalTokens = userMsg.TokenCount + assistantTokenCount;
 
+                var startOfDay = DateTime.UtcNow.Date;
+                var endOfDay = startOfDay.AddDays(1);
+
                 var existingUsage = await tokenUsageRepo
-                    .Find(u => u.UserId == command.UserId && u.UsageType == UsageTokenType.ChatGeneration)
+                    .Find(u => u.UserId == command.UserId && u.UsageType == UsageTokenType.ChatGeneration && u.CreatedAt >= startOfDay && u.CreatedAt < endOfDay)
                     .FirstOrDefaultAsync(ct);
 
                 if (existingUsage != null)

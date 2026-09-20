@@ -108,10 +108,10 @@ export default function ChatThreadDetailsPage() {
     if (!id) return;
     if (isNew) {
       initNewThread();
-    } else {
+    } else if (thread?.id !== id) {
       loadExistingThread(id);
     }
-  }, [id, isNew, initNewThread, loadExistingThread]);
+  }, [id, isNew, initNewThread, loadExistingThread, thread?.id]);
 
   const handleGoBack = () => {
     navigate(fromPath);

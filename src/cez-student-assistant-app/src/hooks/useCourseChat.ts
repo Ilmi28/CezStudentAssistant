@@ -1,8 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { chatService, courseService } from "../services";
 import type { ChatThreadDto, ChatMessageDto, PagedQueryParams, PagedResultDto } from "../types";
 
 export function useCourseChat(courseId?: string) {
+  const { t } = useTranslation();
   const [threads, setThreads] = useState<ChatThreadDto[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
@@ -30,13 +32,13 @@ export function useCourseChat(courseId?: string) {
         return data;
       } catch (err: unknown) {
         console.warn("[useCourseChat] Failed to fetch threads:", err);
-        setError("Nie udało się pobrać wątków czatu.");
+        setError(t("chat.fetchThreadsError"));
         return null;
       } finally {
         setLoadingThreads(false);
       }
     },
-    [courseId, activeThreadId]
+    [courseId, activeThreadId, t]
   );
 
   const fetchMessages = useCallback(async (threadId: string) => {
@@ -48,11 +50,11 @@ export function useCourseChat(courseId?: string) {
       setMessages(data);
     } catch (err: unknown) {
       console.warn("[useCourseChat] Failed to fetch messages:", err);
-      setError("Nie udało się pobrać wiadomości.");
+      setError(t("chat.fetchMessagesError"));
     } finally {
       setLoadingMessages(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchThreads();
@@ -74,7 +76,7 @@ export function useCourseChat(courseId?: string) {
     async (request: { courseId?: string; title?: string; attachedResourceIds?: string[] }): Promise<ChatThreadDto | null> => {
       const targetCourseId = request.courseId || courseId;
       if (!targetCourseId) {
-        setError("Wybierz przedmiot, dla którego chcesz utworzyć czat.");
+        setError(t("chat.selectCourseError"));
         return null;
       }
       setError(null);
@@ -99,11 +101,11 @@ export function useCourseChat(courseId?: string) {
         return newThread;
       } catch (err: unknown) {
         console.warn("[useCourseChat] Failed to create thread:", err);
-        setError("Nie udało się utworzyć nowego wątku czatu.");
+        setError(t("chat.createThreadError"));
         return null;
       }
     },
-    [courseId]
+    [courseId, t]
   );
 
   const deleteThread = useCallback(
@@ -118,10 +120,10 @@ export function useCourseChat(courseId?: string) {
         }
       } catch (err: unknown) {
         console.warn("[useCourseChat] Failed to delete thread:", err);
-        setError("Nie udało się usunąć wątku czatu.");
+        setError(t("chat.deleteThreadError"));
       }
     },
-    [activeThreadId, threads]
+    [activeThreadId, threads, t]
   );
 
   const updateThreadResources = useCallback(
@@ -135,10 +137,10 @@ export function useCourseChat(courseId?: string) {
         );
       } catch (err: unknown) {
         console.warn("[useCourseChat] Failed to update thread resources:", err);
-        setError("Nie udało się zaktualizować materiałów wątku.");
+        setError(t("chat.updateResourcesError"));
       }
     },
-    [activeThreadId]
+    [activeThreadId, t]
   );
 
   const sendMessage = useCallback(
@@ -188,12 +190,18 @@ export function useCourseChat(courseId?: string) {
         await fetchThreads();
       } catch (err: unknown) {
         console.warn("[useCourseChat] Error during streaming:", err);
-        setError("Błąd podczas przesyłania odpowiedzi AI.");
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMsgId && !msg.content
+              ? { ...msg, content: t("chat.streamError") }
+              : msg
+          )
+        );
       } finally {
         setStreaming(false);
       }
     },
-    [activeThreadId, streaming, fetchThreads]
+    [activeThreadId, streaming, fetchThreads, t]
   );
 
   return {

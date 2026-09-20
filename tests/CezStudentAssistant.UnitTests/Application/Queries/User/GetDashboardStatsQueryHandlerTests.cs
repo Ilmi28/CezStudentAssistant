@@ -83,6 +83,16 @@ public class GetDashboardStatsQueryHandlerTests
             new EntityFlashcard { Id = Guid.NewGuid(), Front = "T3", Back = "D3", DeckId = deckId, Deck = new FlashcardDeck { Name = "D1", UserId = userId } }
         }.AsAsyncQueryable();
 
+        var chatRepo = Substitute.For<IChatThreadRepository>();
+        var chats = new List<ChatThread>
+        {
+            new ChatThread { Id = Guid.NewGuid(), Title = "Chat 1", UserId = userId }
+        }.AsAsyncQueryable();
+
+        chatRepo.Find(Arg.Any<Expression<Func<ChatThread, bool>>>(), Arg.Any<bool>(), Arg.Any<Expression<Func<ChatThread, object>>[]>())
+            .Returns(chats);
+        _unitOfWork.Repository<IChatThreadRepository>().Returns(chatRepo);
+
         _courseRepo.Find(Arg.Any<Expression<Func<EntityCourse, bool>>>(), Arg.Any<bool>(), Arg.Any<Expression<Func<EntityCourse, object>>[]>())
             .Returns(courses);
 
@@ -105,5 +115,6 @@ public class GetDashboardStatsQueryHandlerTests
         result.Data.QuizCount.Should().Be(2);
         result.Data.FlashcardDeckCount.Should().Be(1);
         result.Data.FlashcardCount.Should().Be(3);
+        result.Data.ChatCount.Should().Be(1);
     }
 }

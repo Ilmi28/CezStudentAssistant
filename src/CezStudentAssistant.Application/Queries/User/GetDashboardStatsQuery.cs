@@ -29,6 +29,7 @@ public class GetDashboardStatsQueryHandler(IUnitOfWork unitOfWork)
         var quizRepo = unitOfWork.Repository<IQuizRepository>();
         var deckRepo = unitOfWork.Repository<IFlashcardDeckRepository>();
         var cardRepo = unitOfWork.Repository<IFlashcardRepository>();
+        var chatRepo = unitOfWork.Repository<IChatThreadRepository>();
 
         var courseCount = await courseRepo
             .Find(c => c.Users.Any(u => u.Id == query.UserId), asNoTracking: true)
@@ -46,12 +47,17 @@ public class GetDashboardStatsQueryHandler(IUnitOfWork unitOfWork)
             .Find(c => c.Deck.UserId == query.UserId, asNoTracking: true)
             .CountAsync(ct);
 
+        var chatCount = await chatRepo
+            .Find(t => t.UserId == query.UserId, asNoTracking: true)
+            .CountAsync(ct);
+
         return new DashboardStatsDto
         {
             CourseCount = courseCount,
             QuizCount = quizCount,
             FlashcardDeckCount = flashcardDeckCount,
-            FlashcardCount = flashcardCount
+            FlashcardCount = flashcardCount,
+            ChatCount = chatCount
         };
     }
 }

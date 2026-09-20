@@ -43,8 +43,8 @@ export const TokenUsagePopover: React.FC<TokenUsagePopoverProps> = ({ usage }) =
       </button>
 
       {isOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2.5 px-3.5 py-2 bg-sidebar border border-border shadow-2xl rounded-xl space-y-0.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 text-center whitespace-nowrap select-none">
-          <div className="text-sm font-extrabold text-white leading-tight">
+        <div className="absolute right-0 bottom-full mb-2.5 px-3.5 py-2 bg-popover text-popover-foreground border border-border shadow-xl rounded-xl space-y-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 text-center whitespace-nowrap select-none">
+          <div className="text-xs font-bold text-foreground leading-tight">
             {pct}%
           </div>
           <div className="text-[11px] text-muted-foreground font-medium">

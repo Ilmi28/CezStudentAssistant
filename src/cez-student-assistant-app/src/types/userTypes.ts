@@ -48,6 +48,7 @@ export interface DashboardStatsDto {
   quizCount: number;
   flashcardDeckCount: number;
   flashcardCount: number;
+  chatCount: number;
 }
 
 export interface RecentActivityDto {
