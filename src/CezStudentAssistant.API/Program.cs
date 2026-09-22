@@ -34,8 +34,22 @@ public class Program
 
         ConfigureMiddleware(app);
         MapEndpoints(app);
+        ConfigureRecurringJobs(app);
 
         app.Run();
+    }
+
+    private static void ConfigureRecurringJobs(WebApplication app)
+    {
+        var cronSchedule = app.Configuration["CezSync:CronSchedule"]
+            ?? throw new InvalidOperationException("Configuration 'CezSync:CronSchedule' is missing or empty.");
+
+        using var scope = app.Services.CreateScope();
+        var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+        recurringJobManager.AddOrUpdate<ICezService>(
+            "sync-stale-cez-courses",
+            service => service.SyncStaleCezCoursesAsync(CancellationToken.None),
+            cronSchedule);
     }
 
     private static void ConfigureServices(WebApplicationBuilder builder)

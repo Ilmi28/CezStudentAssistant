@@ -203,6 +203,43 @@ public class CezService(
         }
     }
 
+    public async Task SyncStaleCezCoursesAsync(CancellationToken ct = default)
+    {
+        var thresholdStr = configuration["CezSync:StaleSyncDaysThreshold"]
+            ?? throw new InvalidOperationException("Configuration 'CezSync:StaleSyncDaysThreshold' is missing or empty.");
+
+        if (!int.TryParse(thresholdStr, out var staleDaysThreshold) || staleDaysThreshold < 0)
+        {
+            throw new InvalidOperationException("Configuration 'CezSync:StaleSyncDaysThreshold' must be a valid non-negative integer.");
+        }
+
+        var cezUserRepo = unitOfWork.Repository<ICezUserRepository>();
+        var activeCezUsers = await cezUserRepo.Find(cu => !cu.IsDisabled).ToListAsync(ct);
+
+        if (activeCezUsers.Count == 0)
+        {
+            return;
+        }
+
+        var cutoffDate = DateTime.UtcNow.AddDays(-staleDaysThreshold);
+        var jobRepo = unitOfWork.Repository<IJobRepository>();
+
+        foreach (var cezUser in activeCezUsers)
+        {
+            var latestSucceededJob = await jobRepo
+                .Find(j => j.UserId == cezUser.UserId && j.Type == JobType.CezSync && j.Status == JobStatus.Succeeded)
+                .OrderByDescending(j => j.CreatedAt)
+                .FirstOrDefaultAsync(ct);
+
+            if (latestSucceededJob == null || latestSucceededJob.CreatedAt <= cutoffDate)
+            {
+                var job = await jobService.CreateJobAsync(cezUser.UserId, JobType.CezSync, ct);
+                var jobId = jobScheduler.Enqueue<ICezService>(service => service.SyncUserCourses(cezUser.UserId, ct));
+                await jobService.UpdateJobAsync(job, JobStatus.Enqueued, jobId, ct);
+            }
+        }
+    }
+
     private async Task<CezUser> GetCezUserAsync(Guid userId, CancellationToken ct)
     {
         var repo = unitOfWork.Repository<ICezUserRepository>();

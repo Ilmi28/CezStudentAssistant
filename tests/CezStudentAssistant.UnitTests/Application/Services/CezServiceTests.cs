@@ -39,6 +39,7 @@ public class CezServiceTests
     private ICezUserRepository _cezUserRepository = null!;
     private ICourseRepository _courseRepository = null!;
     private ICezResourceRepository _cezResourceRepository = null!;
+    private IJobRepository _jobRepository = null!;
 
     private CezService _sut = null!;
     private Job _existingJob = null!;
@@ -55,18 +56,24 @@ public class CezServiceTests
         _cezUserRepository = Substitute.For<ICezUserRepository>();
         _courseRepository = Substitute.For<ICourseRepository>();
         _cezResourceRepository = Substitute.For<ICezResourceRepository>();
+        _jobRepository = Substitute.For<IJobRepository>();
         _jobService = Substitute.For<IJobService>();
 
         _unitOfWork.Repository<IUserRepository>().Returns(_userRepository);
         _unitOfWork.Repository<ICezUserRepository>().Returns(_cezUserRepository);
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_cezResourceRepository);
+        _unitOfWork.Repository<IJobRepository>().Returns(_jobRepository);
 
         _existingJob = new Job { JobId = "test-job-id", UserId = Guid.NewGuid(), Status = Domain.Enums.JobStatus.Enqueued };
         _jobService.GetLatestJobAsync(Arg.Any<Guid>(), JobType.CezSync, Arg.Any<CancellationToken>())
             .Returns(_existingJob);
 
-        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "BlobContainerSettings:CourseFilesContainer", "course-files" } }).Build();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            { "BlobContainerSettings:CourseFilesContainer", "course-files" },
+            { "CezSync:StaleSyncDaysThreshold", "1" }
+        }).Build();
         _sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _aiClient, _jobScheduler, _jobService, configuration);
     }
 
@@ -713,5 +720,84 @@ public class CezServiceTests
 
         cezUser.IsDisabled.Should().BeTrue();
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task SyncStaleCezCoursesAsync_ShouldThrowInvalidOperationException_WhenConfigMissing()
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            { "BlobContainerSettings:CourseFilesContainer", "course-files" }
+        }).Build();
+
+        var sut = new CezService(_cezApiClient, _unitOfWork, _fileService, _aiClient, _jobScheduler, _jobService, configuration);
+
+        Func<Task> act = () => sut.SyncStaleCezCoursesAsync(CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*CezSync:StaleSyncDaysThreshold*");
+    }
+
+    [Test]
+    public async Task SyncStaleCezCoursesAsync_ShouldDoNothing_WhenNoActiveCezUsers()
+    {
+        var emptyCezUsers = new List<CezUser>().BuildMockDbSet();
+        _cezUserRepository.Find(Arg.Any<Expression<Func<CezUser, bool>>>())
+            .Returns(emptyCezUsers);
+
+        await _sut.SyncStaleCezCoursesAsync(CancellationToken.None);
+
+        await _jobService.DidNotReceive().CreateJobAsync(Arg.Any<Guid>(), Arg.Any<JobType>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task SyncStaleCezCoursesAsync_ShouldEnqueueSync_WhenUserHasNoPreviousJobOrJobIsStale()
+    {
+        var staleUserId = Guid.NewGuid();
+        var freshUserId = Guid.NewGuid();
+
+        var activeCezUsers = new List<CezUser>
+        {
+            new CezUser { UserId = staleUserId, Token = "t1", PrivateToken = "pt1", IsDisabled = false },
+            new CezUser { UserId = freshUserId, Token = "t2", PrivateToken = "pt2", IsDisabled = false }
+        }.BuildMockDbSet();
+
+        _cezUserRepository.Find(Arg.Any<Expression<Func<CezUser, bool>>>())
+            .Returns(activeCezUsers);
+
+        var staleJob = new Job
+        {
+            UserId = staleUserId,
+            JobId = "old-job",
+            Status = JobStatus.Succeeded,
+            Type = JobType.CezSync,
+            CreatedAt = DateTime.UtcNow.AddDays(-2)
+        };
+
+        var freshJob = new Job
+        {
+            UserId = freshUserId,
+            JobId = "fresh-job",
+            Status = JobStatus.Succeeded,
+            Type = JobType.CezSync,
+            CreatedAt = DateTime.UtcNow.AddHours(-2)
+        };
+
+        var allJobs = new List<Job> { staleJob, freshJob }.BuildMockDbSet();
+        _jobRepository.Find(Arg.Any<Expression<Func<Job, bool>>>())
+            .Returns(ci => allJobs.Where(ci.Arg<Expression<Func<Job, bool>>>()));
+
+        var createdJob = new Job { UserId = staleUserId, JobId = "new-job", Status = JobStatus.Enqueued, Type = JobType.CezSync };
+        _jobService.CreateJobAsync(staleUserId, JobType.CezSync, Arg.Any<CancellationToken>())
+            .Returns(createdJob);
+
+        _jobScheduler.Enqueue<ICezService>(Arg.Any<Expression<Action<ICezService>>>())
+            .Returns("enqueued-job-id");
+
+        await _sut.SyncStaleCezCoursesAsync(CancellationToken.None);
+
+        await _jobService.Received(1).CreateJobAsync(staleUserId, JobType.CezSync, Arg.Any<CancellationToken>());
+        await _jobService.DidNotReceive().CreateJobAsync(freshUserId, JobType.CezSync, Arg.Any<CancellationToken>());
+        await _jobService.Received(1).UpdateJobAsync(createdJob, JobStatus.Enqueued, "enqueued-job-id", Arg.Any<CancellationToken>());
     }
 }

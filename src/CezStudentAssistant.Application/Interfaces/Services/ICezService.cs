@@ -8,5 +8,6 @@ public interface ICezService
     Task ConnectCezAsync(Guid userId, string userName, string password, CancellationToken ct = default);
     Task DisconnectCezAsync(Guid userId, CancellationToken ct = default);
     Task SyncUserCourses(Guid userId, CancellationToken ct = default);
+    Task SyncStaleCezCoursesAsync(CancellationToken ct = default);
     Task SyncCourseContent(CezCourseRequest courseRequest, CancellationToken cancellationToken);
 }
