@@ -67,5 +67,12 @@ public static class QuizEndpoints
             var result = await mediator.Send(command);
             return Results.Ok(result);
         }).RequireAuthorization();
+
+        group.MapDelete("/{id:guid}", async (Guid id, IMediator mediator) =>
+        {
+            var command = new DeleteQuizCommand { QuizId = id };
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
+        }).RequireAuthorization();
     }
 }

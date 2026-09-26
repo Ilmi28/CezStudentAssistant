@@ -19,12 +19,12 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({ message }: Ch
     : null;
 
   return (
-    <div className={`flex flex-col w-full mb-3 ${isUser ? "items-end" : "items-start"}`}>
+    <div className={`flex flex-col w-full mb-4 ${isUser ? "items-end" : "items-start"}`}>
       <div
-        className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3.5 py-2 border shadow-2xs ${
+        className={`rounded-2xl border shadow-2xs ${
           isUser
-            ? "bg-primary text-white border-primary"
-            : "bg-card text-foreground border-border"
+            ? "max-w-[85%] sm:max-w-[75%] px-3.5 py-2.5 bg-primary text-white border-primary"
+            : "w-full max-w-full px-3.5 py-3 sm:px-4 sm:py-3.5 bg-card text-foreground border-border/80"
         }`}
       >
         {message.content ? (
@@ -38,7 +38,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({ message }: Ch
         )}
       </div>
       {formattedTime && (
-        <span className="text-[10px] text-muted-foreground/60 tabular-nums mt-1 px-1 select-none">
+        <span className={`text-[10px] text-muted-foreground/60 tabular-nums mt-1 px-1 select-none ${isUser ? "text-right" : "text-left"}`}>
           {formattedTime}
         </span>
       )}

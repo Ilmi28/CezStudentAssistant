@@ -31,6 +31,45 @@ public class CreateChatThreadCommandHandler(IUnitOfWork unitOfWork)
 
         var threadRepo = unitOfWork.Repository<IChatThreadRepository>();
 
+        var existingEmptyThread = await threadRepo.Find(t =>
+            t.UserId == command.UserId &&
+            t.CourseId == command.CourseId &&
+            !t.Messages.Any())
+            .Include(t => t.AttachedResources)
+            .OrderByDescending(t => t.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+
+        if (existingEmptyThread != null)
+        {
+            if (command.AttachedResourceIds != null)
+            {
+                existingEmptyThread.AttachedResources.Clear();
+                if (command.AttachedResourceIds.Count > 0)
+                {
+                    var resourceRepo = unitOfWork.Repository<ICezResourceRepository>();
+                    var resources = await resourceRepo.Find(r => command.AttachedResourceIds.Contains(r.Id) && r.CourseId == command.CourseId).ToListAsync(ct);
+                    foreach (var resource in resources)
+                    {
+                        existingEmptyThread.AttachedResources.Add(resource);
+                    }
+                }
+                await unitOfWork.SaveChangesAsync(ct);
+            }
+
+            return new ChatThreadDto
+            {
+                Id = existingEmptyThread.Id,
+                CourseId = existingEmptyThread.CourseId,
+                CourseName = course.Name,
+                UserId = existingEmptyThread.UserId,
+                Title = existingEmptyThread.Title,
+                CreatedAt = existingEmptyThread.CreatedAt,
+                LastMessageAt = existingEmptyThread.CreatedAt,
+                LastMessageSnippet = null,
+                AttachedResourceIds = existingEmptyThread.AttachedResources.Select(r => r.Id).ToList()
+            };
+        }
+
         var thread = new ChatThread
         {
             Title = "Nowy czat",

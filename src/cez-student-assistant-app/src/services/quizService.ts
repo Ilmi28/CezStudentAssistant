@@ -119,5 +119,15 @@ export const quizService = {
     );
     return handleResponse<void>(res);
   },
+
+  async deleteQuiz(id: string): Promise<void> {
+    const res = await customFetch(
+      `${API_BASE_URL}/quiz/${id}`,
+      { method: "DELETE" },
+      false,
+      authService.refreshToken
+    );
+    return handleResponse<void>(res);
+  },
 };
 

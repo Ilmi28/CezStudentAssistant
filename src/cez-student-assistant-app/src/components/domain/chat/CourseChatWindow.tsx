@@ -169,7 +169,7 @@ export const CourseChatWindow: React.FC<CourseChatWindowProps> = ({
   const attachedResourceIds = activeThread.attachedResourceIds || [];
 
   return (
-    <Card className="flex flex-col flex-1 h-full border border-border bg-card overflow-hidden">
+    <Card className="flex flex-col flex-1 h-full border-y sm:border border-border bg-card overflow-hidden -mx-4 sm:mx-0 rounded-none sm:rounded-2xl">
       {error && (
         <div className="p-3 shrink-0">
           <Alert variant="error" message={error} />
@@ -179,7 +179,7 @@ export const CourseChatWindow: React.FC<CourseChatWindowProps> = ({
       <div
         ref={chatContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4"
+        className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4"
       >
         {loadingMessages ? (
           <div className="flex items-center justify-center py-8 text-xs text-muted-foreground">

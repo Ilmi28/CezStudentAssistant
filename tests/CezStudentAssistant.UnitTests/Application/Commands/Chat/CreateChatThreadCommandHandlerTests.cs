@@ -33,6 +33,9 @@ public class CreateChatThreadCommandHandlerTests
         var emptyResources = new List<Resource>().BuildMockDbSet();
         _resourceRepository.Find(Arg.Any<Expression<Func<Resource, bool>>>()).Returns(emptyResources);
 
+        var emptyThreads = new List<ChatThread>().BuildMockDbSet();
+        _chatThreadRepository.Find(Arg.Any<Expression<Func<ChatThread, bool>>>()).Returns(emptyThreads);
+
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
         _unitOfWork.Repository<IChatThreadRepository>().Returns(_chatThreadRepository);
         _unitOfWork.Repository<ICezResourceRepository>().Returns(_resourceRepository);
@@ -73,6 +76,43 @@ public class CreateChatThreadCommandHandlerTests
             t.UserId == userId &&
             t.Title == "Nowy czat"), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Handle_ShouldReuseExistingEmptyThread_WhenEmptyThreadAlreadyExists()
+    {
+        var courseId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var course = new CourseEntity { Id = courseId, Name = "Data Structures" };
+        var existingEmptyThread = new ChatThread
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            CourseId = courseId,
+            Title = "Nowy czat",
+            CreatedAt = DateTime.UtcNow,
+            Messages = new List<ChatMessage>()
+        };
+
+        _courseRepository.GetByIdAsync(courseId, Arg.Any<CancellationToken>()).Returns(course);
+        var threads = new List<ChatThread> { existingEmptyThread }.BuildMockDbSet();
+        _chatThreadRepository.Find(Arg.Any<Expression<Func<ChatThread, bool>>>()).Returns(threads);
+
+        var command = new CreateChatThreadCommand
+        {
+            UserId = userId,
+            CourseId = courseId
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data!.Id.Should().Be(existingEmptyThread.Id);
+        result.Data.CourseName.Should().Be("Data Structures");
+
+        await _chatThreadRepository.DidNotReceive().AddAsync(Arg.Any<ChatThread>(), Arg.Any<CancellationToken>());
     }
 
     [Test]

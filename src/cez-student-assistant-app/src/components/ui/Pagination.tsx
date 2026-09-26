@@ -63,7 +63,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     <Flex
       align="center"
       justify="between"
-      className={`flex-col sm:flex-row gap-3 pt-5 border-t border-border ${className}`}
+      className={`flex-col sm:flex-row gap-3 pt-5 pb-6 sm:pb-8 border-t border-border ${className}`}
     >
       <Text size="xs" variant="muted" className="order-2 sm:order-1 font-medium">
         {t("common.paginationInfo", { current: safePageNumber, total: safeTotalPages })}

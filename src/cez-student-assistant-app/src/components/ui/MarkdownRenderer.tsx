@@ -32,17 +32,17 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
   }, [darkMode]);
 
   return (
-    <div className={`markdown-content text-sm leading-relaxed ${className}`}>
+    <div className={`markdown-content text-[13px] sm:text-sm leading-relaxed ${className}`}>
       <ReactMarkdown
         components={{
           h1: ({ children }) => (
-            <h1 className="text-base font-bold my-2.5 text-foreground">{children}</h1>
+            <h1 className="text-sm sm:text-base font-bold my-2 text-foreground">{children}</h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-sm font-bold my-2 text-foreground">{children}</h2>
+            <h2 className="text-[13px] sm:text-sm font-bold my-1.5 text-foreground">{children}</h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-xs font-bold my-1.5 text-foreground">{children}</h3>
+            <h3 className="text-xs font-bold my-1 text-foreground">{children}</h3>
           ),
           p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
           strong: ({ children }) => (

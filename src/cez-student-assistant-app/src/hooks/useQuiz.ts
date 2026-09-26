@@ -31,9 +31,25 @@ export function useQuiz() {
     }
   };
 
+  const deleteQuiz = async (quizId: string): Promise<boolean> => {
+    try {
+      await quizService.deleteQuiz(quizId);
+      ctx.setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
+      return true;
+    } catch (err: unknown) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+        throw err;
+      }
+      setError(t("common.errorConnection"));
+      return false;
+    }
+  };
+
   return {
     quizzes: ctx.quizzes,
     setQuizzes: ctx.setQuizzes,
     refreshQuizzes,
+    deleteQuiz,
   };
 }

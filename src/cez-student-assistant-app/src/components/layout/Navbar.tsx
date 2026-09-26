@@ -23,7 +23,11 @@ function NavItem({ label, isActive, onClick }: NavItemProps) {
   );
 }
 
-export default function Navbar() {
+interface NavbarProps {
+  isMobileCompact?: boolean;
+}
+
+export default function Navbar({ isMobileCompact = false }: NavbarProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -56,8 +60,31 @@ export default function Navbar() {
     },
   ];
 
+  if (isMobileCompact) {
+    return (
+      <div
+        className="flex items-center gap-2 cursor-pointer group btn-app-spring select-none shrink min-w-0"
+        onClick={() => navigate("/home")}
+      >
+        <img
+          src={pbEmblem}
+          alt="Politechnika Białostocka"
+          className="h-7 sm:h-8 w-auto object-contain flex-shrink-0 transition-transform group-hover:scale-105"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="text-white font-bold text-xs sm:text-sm leading-tight tracking-tight truncate">
+            CEZStudentAssistant
+          </div>
+          <div className="text-[8px] tracking-[0.10em] uppercase text-white/50 font-semibold truncate hidden sm:block">
+            Politechnika Białostocka
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col md:flex-row md:items-center gap-6 lg:gap-10">
+    <div className="flex flex-row items-center gap-6 lg:gap-10">
       {/* Brand Logo & Name */}
       <div
         className="flex items-center gap-3.5 cursor-pointer group btn-app-spring select-none"
@@ -79,7 +106,7 @@ export default function Navbar() {
       </div>
 
       {/* Horizontal Navigation Links */}
-      <nav className="flex items-center gap-2 lg:gap-3 border-t md:border-t-0 border-white/10 pt-3 md:pt-0">
+      <nav className="flex items-center gap-2 lg:gap-3">
         {navItems.map((item) => (
           <NavItem
             key={item.path}

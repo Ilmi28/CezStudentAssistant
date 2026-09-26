@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import type { QuizDto } from "../../../types";
 import { QuizStatusEnum, QuizAttemptStatus } from "../../../enums/quizEnums";
 import { Card, Heading, Text, Flex, Tooltip } from "../../index";
@@ -11,6 +12,7 @@ interface QuizCardProps {
   index?: number;
   className?: string;
   showCourseName?: boolean;
+  onDelete?: (e: MouseEvent) => void;
 }
 
 export default function QuizCard({
@@ -18,6 +20,7 @@ export default function QuizCard({
   index,
   className = "",
   showCourseName = true,
+  onDelete,
 }: QuizCardProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,7 +41,7 @@ export default function QuizCard({
           navigate(`/quiz/${quiz.id}`, { state: { fromPath: location.pathname } });
         }
       }}
-      className={`p-3.5 px-4 flex-row items-center justify-between gap-4 ${className}`}
+      className={`p-3.5 px-4 flex-row items-center justify-between gap-3 sm:gap-4 ${className}`}
     >
       <div className="min-w-0 flex-1 space-y-0.5">
         <Flex align="center" gap={2} className="min-w-0">
@@ -53,31 +56,48 @@ export default function QuizCard({
         )}
       </div>
 
-      <Flex direction="col" align="end" justify="center" gap={0.5} className="shrink-0 text-right">
-        {isProcessing ? (
-          <Tooltip content={t("quizzes.btnGenerating")}>
-            <div
-              aria-label={t("quizzes.btnGenerating")}
-              className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
-            >
-              <RefreshCw size={15} className="animate-spin" />
-            </div>
-          </Tooltip>
-        ) : isInProgress ? (
-          <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
-            {t("quizDetails.status.inProgress", "W TOKU")}
-          </span>
-        ) : (
-          <>
-            <span
-              className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(quiz.progressPercentage)}`}
-            >
-              {quiz.progressPercentage ?? 0}%
+      <Flex align="center" gap={3} className="shrink-0 text-right">
+        <Flex direction="col" align="end" justify="center" gap={0.5}>
+          {isProcessing ? (
+            <Tooltip content={t("quizzes.btnGenerating")}>
+              <div
+                aria-label={t("quizzes.btnGenerating")}
+                className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
+              >
+                <RefreshCw size={15} className="animate-spin" />
+              </div>
+            </Tooltip>
+          ) : isInProgress ? (
+            <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+              {t("quizDetails.status.inProgress", "W TOKU")}
             </span>
-            <Text size="xs" variant="subtitle">
-              {t("quizDetails.stats.masteryIndex", "PROGRES")}
-            </Text>
-          </>
+          ) : (
+            <>
+              <span
+                className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(quiz.progressPercentage)}`}
+              >
+                {quiz.progressPercentage ?? 0}%
+              </span>
+              <Text size="xs" variant="subtitle">
+                {t("quizDetails.stats.masteryIndex", "PROGRES")}
+              </Text>
+            </>
+          )}
+        </Flex>
+
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(e);
+            }}
+            title={t("common.delete", "Usuń")}
+            aria-label={t("common.delete", "Usuń")}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer shrink-0"
+          >
+            <Trash2 size={16} />
+          </button>
         )}
       </Flex>
     </Card>

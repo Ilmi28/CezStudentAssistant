@@ -280,7 +280,7 @@ export default function FlashcardStudyPage() {
 
         <div className="flex flex-col md:flex-row gap-4 items-start">
           {/* Main Report Card */}
-          <div className="flex-1 w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
+          <div className="flex-1 w-full order-2 md:order-1 bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
             <div className="flex items-center justify-between gap-3 pb-4 border-b border-border">
               <div className="flex items-center gap-3">
                 <span className="text-base font-bold text-foreground">
@@ -373,7 +373,7 @@ export default function FlashcardStudyPage() {
           </div>
 
           {/* Right sticky card navigator tiles - matching QuizSolverPage 1:1 */}
-          <div className="grid grid-cols-5 gap-2 shrink-0 sticky top-6 self-start">
+          <div className="flex flex-wrap items-center gap-2 md:grid md:grid-cols-5 w-full md:w-auto shrink-0 md:sticky md:top-6 self-start order-1 md:order-2">
             {sessionCards.map((card, idx) => {
               const state = cardStates[card.id] || card.state;
               const isMastered = state === FlashcardStateEnum.Mastered;
@@ -435,7 +435,7 @@ export default function FlashcardStudyPage() {
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
         {/* Main Card Column */}
-        <div className="flex-1 w-full space-y-4">
+        <div className="flex-1 w-full space-y-4 order-2 md:order-1">
           {/* Progress Bar - matching exact question card width */}
           <div className="w-full h-2 bg-secondary rounded-full overflow-hidden border border-border/60">
             <div
@@ -564,8 +564,8 @@ export default function FlashcardStudyPage() {
         </div>
 
         {/* Right Sticky Card Navigator Tiles - matching QuizSolverPage 1:1 */}
-        <div className="shrink-0 sticky top-6 self-start pt-6">
-          <div className="grid grid-cols-5 gap-2">
+        <div className="w-full md:w-auto shrink-0 md:sticky md:top-6 self-start order-1 md:order-2">
+          <div className="flex flex-wrap items-center gap-2 md:grid md:grid-cols-5">
             {sessionCards.map((c, idx) => {
               const isCurrent = idx === currentIndex;
               const ratedState = sessionRatedCards[c.id];

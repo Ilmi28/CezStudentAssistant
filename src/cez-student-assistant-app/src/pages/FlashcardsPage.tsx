@@ -2,18 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, X } from "lucide-react";
-import { FlashcardDeckCard, Flex, Heading, Input, Pagination, Badge, EmptyState, PrimaryButton, SecondaryButton } from "../components";
+import { FlashcardDeckCard, Flex, Heading, Input, Pagination, Badge, EmptyState, PrimaryButton, SecondaryButton, ConfirmModal } from "../components";
 import { useFlashcards } from "../hooks";
 import { signalRService } from "../services/signalRService";
 
 export default function FlashcardsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { decks, refreshDecks } = useFlashcards();
+  const { decks, refreshDecks, deleteDeck } = useFlashcards();
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [deckToDelete, setDeckToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const fetchDecks = async (page: number, search: string) => {
     const res = await refreshDecks({
@@ -50,6 +51,13 @@ export default function FlashcardsPage() {
   const handleClearSearch = () => {
     setSearchTerm("");
     setPageNumber(1);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deckToDelete) return;
+    await deleteDeck(deckToDelete.id);
+    await fetchDecks(pageNumber, searchTerm);
+    setDeckToDelete(null);
   };
 
   return (
@@ -113,9 +121,14 @@ export default function FlashcardsPage() {
               />
             )
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2 sm:space-y-2.5">
               {decks.map((deck, idx) => (
-                <FlashcardDeckCard key={deck.id} deck={deck} index={(pageNumber - 1) * 10 + idx + 1} />
+                <FlashcardDeckCard
+                  key={deck.id}
+                  deck={deck}
+                  index={(pageNumber - 1) * 10 + idx + 1}
+                  onDelete={() => setDeckToDelete({ id: deck.id, name: deck.name })}
+                />
               ))}
             </div>
           )}
@@ -129,6 +142,16 @@ export default function FlashcardsPage() {
           />
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!deckToDelete}
+        onClose={() => setDeckToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Usuń talię fiszek"
+        message={`Czy na pewno chcesz usunąć talię fiszek "${deckToDelete?.name || ""}"?`}
+        confirmBtnText="Usuń talię"
+        isDestructive
+      />
     </div>
   );
 }

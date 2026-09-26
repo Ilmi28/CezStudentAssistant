@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import type { FlashcardDeckDto } from "../../../types/flashcardTypes";
 import { FlashcardDeckStatusEnum } from "../../../enums/flashcardEnums";
 import { Card, Heading, Text, Flex, Tooltip } from "../../index";
@@ -11,6 +12,7 @@ interface FlashcardDeckCardProps {
   index?: number;
   showCourseName?: boolean;
   className?: string;
+  onDelete?: (e: MouseEvent) => void;
 }
 
 export function FlashcardDeckCard({
@@ -18,6 +20,7 @@ export function FlashcardDeckCard({
   index,
   showCourseName = true,
   className = "",
+  onDelete,
 }: FlashcardDeckCardProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,10 +39,10 @@ export function FlashcardDeckCard({
           navigate(`/flashcards/${deck.id}`, { state: { fromPath: location.pathname } });
         }
       }}
-      className={`p-3.5 px-4 flex-row items-center justify-between gap-4 ${className}`}
+      className={`p-3.5 px-4 flex-row items-center justify-between gap-3 sm:gap-4 ${className}`}
     >
       <div className="min-w-0 flex-1 space-y-0.5">
-        <Flex align="center" gap={2} wrap className="min-w-0">
+        <Flex align="center" gap={2} className="min-w-0">
           <Heading level={4} size="sm" className="leading-snug line-clamp-1 truncate tile-title-scale" title={displayTitle}>
             {displayTitle}
           </Heading>
@@ -51,26 +54,43 @@ export function FlashcardDeckCard({
         )}
       </div>
 
-      <Flex direction="col" align="end" justify="center" gap={0.5} className="shrink-0 text-right">
-        {isProcessing ? (
-          <Tooltip content="Generowanie fiszek...">
-            <div
-              className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
-            >
-              <RefreshCw size={15} className="animate-spin" />
-            </div>
-          </Tooltip>
-        ) : (
-          <>
-            <span
-              className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(deck.progressPercentage)}`}
-            >
-              {deck.progressPercentage ?? 0}%
-            </span>
-            <Text size="xs" variant="subtitle">
-              {t("quizDetails.stats.masteryIndex", "PROGRES")}
-            </Text>
-          </>
+      <Flex align="center" gap={3} className="shrink-0 text-right">
+        <Flex direction="col" align="end" justify="center" gap={0.5}>
+          {isProcessing ? (
+            <Tooltip content="Generowanie fiszek...">
+              <div
+                className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/25"
+              >
+                <RefreshCw size={15} className="animate-spin" />
+              </div>
+            </Tooltip>
+          ) : (
+            <>
+              <span
+                className={`text-base font-bold tabular-nums leading-tight ${getScoreColorClass(deck.progressPercentage)}`}
+              >
+                {deck.progressPercentage ?? 0}%
+              </span>
+              <Text size="xs" variant="subtitle">
+                {t("quizDetails.stats.masteryIndex", "PROGRES")}
+              </Text>
+            </>
+          )}
+        </Flex>
+
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(e);
+            }}
+            title={t("common.delete", "Usuń")}
+            aria-label={t("common.delete", "Usuń")}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer shrink-0"
+          >
+            <Trash2 size={16} />
+          </button>
         )}
       </Flex>
     </Card>

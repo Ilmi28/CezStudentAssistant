@@ -14,6 +14,7 @@ import {
   Alert,
   LoadingScreen,
   EditFlashcardDeckModal,
+  ConfirmModal,
   MultiSegmentProgressBar,
   Tooltip,
 } from "../components";
@@ -60,6 +61,7 @@ export default function FlashcardDeckDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const fromPath = (location.state as { fromPath?: string })?.fromPath || (deck?.courseId ? `/course/${deck.courseId}` : "/courses");
 
@@ -91,15 +93,15 @@ export default function FlashcardDeckDetailsPage() {
     }
   };
 
-  const handleDeleteDeck = async () => {
+  const handleConfirmDeleteDeck = async () => {
     if (!id || !deck) return;
-    if (window.confirm(t("flashcardDetails.deleteConfirm"))) {
-      try {
-        await flashcardService.deleteFlashcardDeck(id);
-        navigate(fromPath);
-      } catch (err: any) {
-        setErrorMsg(err.message || t("flashcardDetails.deleteError"));
-      }
+    try {
+      await flashcardService.deleteFlashcardDeck(id);
+      navigate(fromPath);
+    } catch (err: any) {
+      setErrorMsg(err.message || t("flashcardDetails.deleteError"));
+    } finally {
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -207,41 +209,41 @@ export default function FlashcardDeckDetailsPage() {
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Header & Actions */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           <SecondaryButton
             type="button"
             onClick={handleGoBack}
             aria-label={t("flashcardDetails.backBtn")}
             icon={<ChevronLeft size={22} strokeWidth={2.25} />}
-            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0"
           />
-          <div className="flex flex-col justify-center min-w-0">
+          <div className="flex flex-col justify-center min-w-0 flex-1">
             {deck.courseName && (
               <Badge variant="secondary" className="self-start mb-1">
                 {deck.courseName}
               </Badge>
             )}
-            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground break-words leading-tight">
               {deck.name}
             </h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
           <SecondaryButton
             type="button"
             onClick={() => setIsEditModalOpen(true)}
             icon={<Pencil size={15} strokeWidth={2.25} />}
-            className="py-2.5 px-3.5 text-xs font-semibold"
+            className="py-2.5 px-3.5 text-xs font-semibold flex-1 sm:flex-initial justify-center"
           >
             {t("flashcardDetails.editBtn")}
           </SecondaryButton>
           <SecondaryButton
             type="button"
-            onClick={handleDeleteDeck}
+            onClick={() => setIsDeleteModalOpen(true)}
             icon={<Trash2 size={15} strokeWidth={2.25} className="text-rose-400" />}
-            className="py-2.5 px-3.5 text-xs font-semibold"
+            className="py-2.5 px-3.5 text-xs font-semibold flex-1 sm:flex-initial justify-center"
           >
             {t("flashcardDetails.deleteBtn")}
           </SecondaryButton>
@@ -250,7 +252,7 @@ export default function FlashcardDeckDetailsPage() {
             disabled={deck.cardCount === 0}
             onClick={handleStartStudyDirect}
             icon={<Play size={16} strokeWidth={2.25} />}
-            className="py-2.5 px-4 text-xs font-semibold"
+            className="py-2.5 px-4 text-xs font-semibold w-full sm:w-auto justify-center"
           >
             {t("flashcardDetails.startStudyBtn")}
           </PrimaryButton>
@@ -481,6 +483,16 @@ export default function FlashcardDeckDetailsPage() {
         mediumInPool={mediumInDeck}
         hardInPool={hardInDeck}
         onSuccess={fetchDeckDetails}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDeleteDeck}
+        title="Usuń talię fiszek"
+        message="Czy na pewno chcesz usunąć tę talię fiszek wraz ze wszystkimi fiszkami i postępem nauki?"
+        confirmBtnText="Usuń talię"
+        isDestructive
       />
     </div>
   );

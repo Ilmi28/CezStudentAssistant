@@ -248,7 +248,7 @@ export default function QuizSolverPage({
 
         <div className="flex flex-col md:flex-row gap-4 items-start">
           {/* Main Report Card */}
-          <div className="flex-1 w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
+          <div className="flex-1 w-full order-2 md:order-1 bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border">
               <div className="flex items-center gap-3">
                 <span className="text-base font-bold text-foreground">
@@ -369,7 +369,7 @@ export default function QuizSolverPage({
           </div>
 
           {/* Right sticky question tiles - sleek obsidian dark cards with status dots */}
-          <div className="grid grid-cols-5 gap-2 shrink-0 sticky top-6 self-start">
+          <div className="flex flex-wrap items-center gap-2 md:grid md:grid-cols-5 w-full md:w-auto shrink-0 md:sticky md:top-6 self-start order-1 md:order-2">
             {attemptDetails.questions.map((q, idx) => {
               const userSelected = selectedAnswers[q.id] || [];
               const earnedPoints = calculateQuestionPoints(q, userSelected);
@@ -425,7 +425,7 @@ export default function QuizSolverPage({
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
         {/* Main Content Column */}
-        <div className="flex-1 w-full">
+        <div className="flex-1 w-full order-2 md:order-1">
           {/* Main Content Area: Question Card or Review Screen */}
           {isReviewMode ? (
             <div className="w-full bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6 md:p-8 space-y-6">
@@ -579,7 +579,7 @@ export default function QuizSolverPage({
         </div>
 
         {/* Right Sidebar: Timer + Question Selector Tiles */}
-        <div className="shrink-0 sticky top-6 self-start pt-6 space-y-3">
+        <div className="w-full md:w-auto shrink-0 md:sticky md:top-6 self-start space-y-3 order-1 md:order-2">
           {attemptDetails.timeLimitMinutes != null && attemptDetails.timeLimitMinutes > 0 && !finished && (
             <div className="px-3 py-2 rounded-xl border flex items-center justify-center gap-2 shadow-xs bg-card border-border text-foreground font-semibold">
               <Clock size={15} strokeWidth={2.25} className="text-primary" />
@@ -589,7 +589,7 @@ export default function QuizSolverPage({
             </div>
           )}
 
-          <div className="grid grid-cols-5 gap-2">
+          <div className="flex flex-wrap items-center gap-2 md:grid md:grid-cols-5">
             {attemptDetails.questions.map((q, idx) => {
               const isCurrent = !isReviewMode && idx === currentQuestionIndex;
               const isAnswered = (selectedAnswers[q.id]?.length || 0) > 0;

@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   Play,
   Pencil,
+  Trash2,
   Target,
   HelpCircle,
   Clock,
@@ -19,6 +20,7 @@ import {
   SecondaryButton,
   LoadingScreen,
   EditQuizModal,
+  ConfirmModal,
   MultiSegmentProgressBar,
   Tooltip,
 } from "../components";
@@ -98,11 +100,31 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     loadQuizDetails(id);
   }, [id]);
+
+  const handleDeleteQuizConfirm = async () => {
+    if (!id) return;
+    try {
+      await quizService.deleteQuiz(id);
+      if (location.state?.fromPath) {
+        navigate(location.state.fromPath);
+      } else if (quiz?.courseId) {
+        navigate(`/course/${quiz.courseId}`);
+      } else {
+        navigate("/quizzes");
+      }
+    } catch (err) {
+      console.warn("[QuizDetailsPage] Failed to delete quiz:", err);
+      setError(t("common.genericError"));
+    } finally {
+      setIsDeleteModalOpen(false);
+    }
+  };
 
   const loadQuizDetails = async (quizId: string, showFullLoading = true) => {
     if (showFullLoading) {
@@ -247,41 +269,49 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Header & Actions */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           <SecondaryButton
             type="button"
             onClick={handleGoBack}
             aria-label={t("quizDetails.backBtn")}
             icon={<ChevronLeft size={22} strokeWidth={2.25} />}
-            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0"
           />
-          <div className="flex flex-col justify-center min-w-0">
+          <div className="flex flex-col justify-center min-w-0 flex-1">
             {quiz.courseName && (
               <Badge variant="secondary" className="self-start mb-1">
                 {quiz.courseName}
               </Badge>
             )}
-            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground break-words leading-tight">
               {quiz.name}
             </h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
           <SecondaryButton
             type="button"
             onClick={() => setIsEditModalOpen(true)}
             icon={<Pencil size={15} strokeWidth={2.25} />}
-            className="py-2.5 px-3.5 text-xs font-semibold"
+            className="py-2.5 px-3.5 text-xs font-semibold flex-1 sm:flex-initial justify-center"
           >
             {t("quizDetails.editBtn")}
+          </SecondaryButton>
+          <SecondaryButton
+            type="button"
+            onClick={() => setIsDeleteModalOpen(true)}
+            icon={<Trash2 size={15} strokeWidth={2.25} className="text-rose-400" />}
+            className="py-2.5 px-3.5 text-xs font-semibold flex-1 sm:flex-initial justify-center"
+          >
+            {t("common.delete", "Usuń")}
           </SecondaryButton>
           <PrimaryButton
             loading={starting}
             onClick={handleStartNewAttempt}
             icon={<Play size={16} strokeWidth={2.25} />}
-            className="py-2.5 px-4 text-xs font-semibold"
+            className="py-2.5 px-4 text-xs font-semibold flex-1 sm:flex-initial justify-center"
           >
             {t("quizDetails.startNewAttempt")}
           </PrimaryButton>
@@ -289,63 +319,63 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
       </div>
 
       {/* Unified Stats Card */}
-      <Card className="p-4 sm:p-5">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 xl:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-border/50">
+      <Card className="p-3.5 sm:p-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 xl:gap-4 sm:divide-x divide-border/50">
           {/* Questions Per Attempt */}
-          <div className="flex items-center gap-2.5 pt-1 sm:pt-0">
-            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
-              <HelpCircle size={18} strokeWidth={2.25} />
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-0 rounded-xl sm:rounded-none bg-secondary/40 sm:bg-transparent border border-border/40 sm:border-none">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
+              <HelpCircle size={17} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
+              <span className="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.questions")}
               </span>
-              <span key={String(quiz.questionCountPerAttempt ?? totalAttemptConfigured)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
+              <span key={String(quiz.questionCountPerAttempt ?? totalAttemptConfigured)} className="text-base sm:text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {quiz.questionCountPerAttempt ?? totalAttemptConfigured}
               </span>
             </div>
           </div>
 
           {/* Question Bank Pool */}
-          <div className="flex items-center gap-2.5 pt-1 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
-              <Layers size={18} strokeWidth={2.25} />
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-0 sm:pl-3 xl:pl-4 rounded-xl sm:rounded-none bg-secondary/40 sm:bg-transparent border border-border/40 sm:border-none">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
+              <Layers size={17} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
+              <span className="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.questionPool")}
               </span>
-              <span key={String(quiz.questions.length)} className="text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
+              <span key={String(quiz.questions.length)} className="text-base sm:text-lg font-bold text-foreground block truncate animate-in fade-in zoom-in-95 duration-300">
                 {quiz.questions.length}
               </span>
             </div>
           </div>
 
           {/* Time Limit */}
-          <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
-              <Clock size={18} strokeWidth={2.25} />
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-0 sm:pl-3 xl:pl-4 rounded-xl sm:rounded-none bg-secondary/40 sm:bg-transparent border border-border/40 sm:border-none">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
+              <Clock size={17} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
+              <span className="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.timeLimit")}
               </span>
-              <span key={String(quiz.timeLimitMinutes)} className="text-lg font-bold text-foreground block whitespace-nowrap truncate animate-in fade-in zoom-in-95 duration-300">
+              <span key={String(quiz.timeLimitMinutes)} className="text-base sm:text-lg font-bold text-foreground block whitespace-nowrap truncate animate-in fade-in zoom-in-95 duration-300">
                 {quiz.timeLimitMinutes ? `${quiz.timeLimitMinutes} min` : t("quizDetails.stats.noLimit")}
               </span>
             </div>
           </div>
 
           {/* Max Points */}
-          <div className="flex items-center gap-2.5 pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-9 h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
-              <Target size={18} strokeWidth={2.25} />
+          <div className="flex items-center gap-2.5 p-2.5 sm:p-0 sm:pl-3 xl:pl-4 rounded-xl sm:rounded-none bg-secondary/40 sm:bg-transparent border border-border/40 sm:border-none">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary/80 border border-border flex items-center justify-center text-foreground dark:text-white shrink-0">
+              <Target size={17} strokeWidth={2.25} />
             </div>
             <div className="min-w-0">
-              <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
+              <span className="text-[10px] sm:text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold block whitespace-nowrap truncate">
                 {t("quizDetails.stats.totalPoints")}
               </span>
-              <span key={String(configuredAttemptMaxPoints)} className="text-lg font-bold text-foreground block whitespace-nowrap truncate animate-in fade-in zoom-in-95 duration-300">
+              <span key={String(configuredAttemptMaxPoints)} className="text-base sm:text-lg font-bold text-foreground block whitespace-nowrap truncate animate-in fade-in zoom-in-95 duration-300">
                 {formatScore(configuredAttemptMaxPoints)} {t("quizDetails.stats.pts")}
               </span>
             </div>
@@ -524,6 +554,16 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
         easyInPool={easyInPool}
         mediumInPool={mediumInPool}
         hardInPool={hardInPool}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteQuizConfirm}
+        title="Usuń quiz"
+        message="Czy na pewno chcesz usunąć ten quiz wraz ze wszystkimi pytaniami i historią podejść?"
+        confirmBtnText="Usuń quiz"
+        isDestructive
       />
     </div>
   );

@@ -35,9 +35,25 @@ export function useFlashcards(courseId?: string) {
     }
   };
 
+  const deleteDeck = async (deckId: string): Promise<boolean> => {
+    try {
+      await flashcardService.deleteFlashcardDeck(deckId);
+      ctx.setDecks((prev) => prev.filter((d) => d.id !== deckId));
+      return true;
+    } catch (err: unknown) {
+      if (err instanceof UnauthorizedError) {
+        handleLogout();
+        throw err;
+      }
+      setError(t("common.errorConnection"));
+      return false;
+    }
+  };
+
   return {
     decks: ctx.decks,
     setDecks: ctx.setDecks,
     refreshDecks,
+    deleteDeck,
   };
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, FileText, ChevronDown, Download, Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
-import { courseService, type CourseDetailsDto, type CourseResourceDto } from "../services";
+import { courseService, chatService, type CourseDetailsDto, type CourseResourceDto } from "../services";
 import { quizService } from "../services/quizService";
 import { flashcardService } from "../services/flashcardService";
 import { signalRService } from "../services/signalRService";
@@ -99,14 +99,31 @@ export default function CourseDetailsPage({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteFileModalOpen, setIsDeleteFileModalOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [quizToDelete, setQuizToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deckToDelete, setDeckToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isGenerateQuizModalOpen, setIsGenerateQuizModalOpen] = useState(false);
   const [isGenerateFlashcardsModalOpen, setIsGenerateFlashcardsModalOpen] = useState(false);
 
   const { threads, deleteThread } = useCourseChat(id || "");
 
-  const handleCreateChatThread = () => {
-    navigate(`/chats/new?courseId=${id}`, { state: { fromPath: location.pathname } });
+  const handleCreateChatThread = async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const files = await courseService.getCourseFiles(id);
+      const defaultAttachedIds = files.filter((f) => !f.isHidden).map((f) => f.id);
+      const created = await chatService.createChatThread({
+        courseId: id,
+        attachedResourceIds: defaultAttachedIds,
+      });
+      navigate(`/chats/${created.id}`, { state: { fromPath: location.pathname } });
+    } catch (err) {
+      console.warn("[CourseDetailsPage] Failed to create chat thread:", err);
+      setError(t("common.genericError"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -255,6 +272,34 @@ export default function CourseDetailsPage({
     }
   };
 
+  const handleConfirmDeleteQuiz = async () => {
+    if (!id || !quizToDelete) return;
+    try {
+      await quizService.deleteQuiz(quizToDelete.id);
+      const quizzesData = await quizService.getQuizzes(id);
+      setCourseQuizzes(quizzesData.items);
+    } catch (deleteErr) {
+      console.warn("[CourseDetailsPage] Quiz deletion failed:", deleteErr);
+      setError(t("common.genericError"));
+    } finally {
+      setQuizToDelete(null);
+    }
+  };
+
+  const handleConfirmDeleteDeck = async () => {
+    if (!id || !deckToDelete) return;
+    try {
+      await flashcardService.deleteFlashcardDeck(deckToDelete.id);
+      const decksData = await flashcardService.getFlashcardDecks(id);
+      setDecks(decksData.items);
+    } catch (deleteErr) {
+      console.warn("[CourseDetailsPage] Flashcard deck deletion failed:", deleteErr);
+      setError(t("common.genericError"));
+    } finally {
+      setDeckToDelete(null);
+    }
+  };
+
   if (loading || !selectedCourse) {
     return <LoadingScreen message={t("courseDetails.loadingDetails")} />;
   }
@@ -262,34 +307,34 @@ export default function CourseDetailsPage({
   return (
     <div className="w-full space-y-6 pb-8 animate-in fade-in duration-300">
       {/* Header & Title */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           <SecondaryButton
             type="button"
             onClick={handleGoBack}
             aria-label={t("courseDetails.backBtn")}
             icon={<ChevronLeft size={22} strokeWidth={2.25} />}
-            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0"
           />
-          <div className="flex flex-col justify-center min-w-0">
+          <div className="flex flex-col justify-center min-w-0 flex-1">
             {selectedCourse.isCez && (
               <span className="text-xs font-bold text-primary uppercase tracking-wider self-start mb-1">
                 {t("courses.tagCez")}
               </span>
             )}
-            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground break-words leading-tight">
               {selectedCourse.name}
             </h1>
           </div>
         </div>
 
         {!selectedCourse.isCez && (
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
             <SecondaryButton
               type="button"
               onClick={() => setIsEditModalOpen(true)}
               icon={<Pencil size={15} strokeWidth={2.25} />}
-              className="py-2.5 px-3.5 text-xs font-semibold"
+              className="py-2.5 px-3.5 text-xs font-semibold flex-1 sm:flex-initial justify-center"
             >
               {t("quizDetails.editBtn")}
             </SecondaryButton>
@@ -297,7 +342,7 @@ export default function CourseDetailsPage({
               type="button"
               onClick={() => setIsDeleteModalOpen(true)}
               icon={<Trash2 size={15} strokeWidth={2.25} className="text-rose-400" />}
-              className="py-2.5 px-3.5 text-xs font-semibold"
+              className="py-2.5 px-3.5 text-xs font-semibold flex-1 sm:flex-initial justify-center"
             >
               {t("courses.deleteCourseBtn")}
             </SecondaryButton>
@@ -435,9 +480,15 @@ export default function CourseDetailsPage({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   {courseQuizzes.map((quiz, idx) => (
-                    <QuizCard key={quiz.id} quiz={quiz} index={idx + 1} showCourseName={false} />
+                    <QuizCard
+                      key={quiz.id}
+                      quiz={quiz}
+                      index={idx + 1}
+                      showCourseName={false}
+                      onDelete={() => setQuizToDelete({ id: quiz.id, name: quiz.name })}
+                    />
                   ))}
                 </div>
               )}
@@ -470,7 +521,7 @@ export default function CourseDetailsPage({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   {threads.map((thread, idx) => (
                     <ChatThreadCard
                       key={thread.id}
@@ -515,9 +566,15 @@ export default function CourseDetailsPage({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   {decks.map((deck, idx) => (
-                    <FlashcardDeckCard key={deck.id} deck={deck} index={idx + 1} showCourseName={false} />
+                    <FlashcardDeckCard
+                      key={deck.id}
+                      deck={deck}
+                      index={idx + 1}
+                      showCourseName={false}
+                      onDelete={() => setDeckToDelete({ id: deck.id, name: deck.name })}
+                    />
                   ))}
                 </div>
               )}
@@ -554,6 +611,26 @@ export default function CourseDetailsPage({
         title={t("courseDetails.deleteFileModalTitle")}
         message={t("courseDetails.deleteFileConfirmMsg")}
         confirmBtnText={t("courseDetails.deleteFileBtn")}
+        isDestructive
+      />
+
+      <ConfirmModal
+        isOpen={!!quizToDelete}
+        onClose={() => setQuizToDelete(null)}
+        onConfirm={handleConfirmDeleteQuiz}
+        title="Usuń quiz"
+        message={`Czy na pewno chcesz usunąć quiz "${quizToDelete?.name || ""}"?`}
+        confirmBtnText="Usuń quiz"
+        isDestructive
+      />
+
+      <ConfirmModal
+        isOpen={!!deckToDelete}
+        onClose={() => setDeckToDelete(null)}
+        onConfirm={handleConfirmDeleteDeck}
+        title="Usuń talię fiszek"
+        message={`Czy na pewno chcesz usunąć talię fiszek "${deckToDelete?.name || ""}"?`}
+        confirmBtnText="Usuń talię"
         isDestructive
       />
 

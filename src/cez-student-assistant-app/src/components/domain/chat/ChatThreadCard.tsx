@@ -56,10 +56,10 @@ export function ChatThreadCard({
     <Card
       hoverEffect
       onClick={handleClick}
-      className={`p-3.5 px-4 flex-row items-center justify-between gap-4 ${className}`}
+      className={`p-3.5 px-4 flex-row items-center justify-between gap-3 sm:gap-4 ${className}`}
     >
       <div className="min-w-0 flex-1 space-y-0.5">
-        <Flex align="center" gap={2} wrap className="min-w-0">
+        <Flex align="center" gap={2} className="min-w-0">
           <Heading
             level={4}
             size="sm"
@@ -97,7 +97,7 @@ export function ChatThreadCard({
             }}
             title={t("common.delete", "Usuń")}
             aria-label={t("common.delete", "Usuń")}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors cursor-pointer shrink-0"
           >
             <Trash2 size={16} />
           </button>

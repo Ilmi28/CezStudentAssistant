@@ -1,11 +1,10 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth, useUI, useCourse, useQuiz } from "../hooks";
 import { Topbar, CezModal } from "../components";
 import { cezService, UnauthorizedError } from "../services";
 
 export default function DashboardLayout() {
-  const location = useLocation();
   const { username, fullName, handleLogout, handleCezLinkSubmit, setIsCezConnected, setLastCezSync } = useAuth();
   const { loading, setLoading, showCezModal, setShowCezModal, setError } = useUI();
   const { refreshCourses } = useCourse();
@@ -43,13 +42,13 @@ export default function DashboardLayout() {
         fullName={fullName}
         onLogout={handleLogout}
       />
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 flex flex-col">
-        <div className="max-w-7xl mx-auto w-full flex-1 min-h-0 flex flex-col pb-12 md:pb-16">
-          <div key={location.pathname} className="flex-1 min-h-0 flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
-            <Outlet />
-          </div>
+      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 pb-6 sm:pb-8 flex flex-col">
+        <div className="flex-1 w-full flex flex-col">
+          <Outlet />
         </div>
-      </div>
+        {/* Compact bottom breathing room */}
+        <div className="h-6 sm:h-8 shrink-0 w-full pointer-events-none" aria-hidden="true" />
+      </main>
       <CezModal
         isOpen={showCezModal}
         onClose={() => setShowCezModal(false)}

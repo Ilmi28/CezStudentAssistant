@@ -29,80 +29,88 @@ export default function HomePage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      <Card className="p-4 sm:p-5">
-        <Grid cols={1} smCols={2} lgCols={4} gap={4} className="divide-y sm:divide-y-0 sm:divide-x divide-border/50">
-          <Flex align="center" gap={3} className="pt-1 sm:pt-0">
-            <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
-              <Layers size={20} strokeWidth={2} />
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
+      {/* Dashboard Quick Stats */}
+      <Grid cols={2} lgCols={4} gap={3} className="sm:gap-4">
+        <Card className="p-3.5 sm:p-4 hover:border-primary/40 transition-colors">
+          <Flex align="center" gap={3}>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
+              <Layers size={18} className="sm:w-5 sm:h-5" strokeWidth={2} />
             </div>
-            <div className="min-w-0">
-              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
+            <div className="min-w-0 flex-1">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block truncate tracking-wider text-[10px] sm:text-xs">
                 {t("home.stats.courses")}
               </Text>
-              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
+              <Text size="lg" variant="default" className="font-bold block truncate leading-tight sm:text-xl">
                 {loadingStats ? "..." : (stats?.courseCount ?? 0)}
               </Text>
             </div>
           </Flex>
+        </Card>
 
-          <Flex align="center" gap={3} className="pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
-              <Trophy size={20} strokeWidth={2} />
+        <Card className="p-3.5 sm:p-4 hover:border-primary/40 transition-colors">
+          <Flex align="center" gap={3}>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
+              <Trophy size={18} className="sm:w-5 sm:h-5" strokeWidth={2} />
             </div>
-            <div className="min-w-0">
-              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
+            <div className="min-w-0 flex-1">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block truncate tracking-wider text-[10px] sm:text-xs">
                 {t("home.stats.quizzes")}
               </Text>
-              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
+              <Text size="lg" variant="default" className="font-bold block truncate leading-tight sm:text-xl">
                 {loadingStats ? "..." : (stats?.quizCount ?? 0)}
               </Text>
             </div>
           </Flex>
+        </Card>
 
-          <Flex align="center" gap={3} className="pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
-              <Brain size={20} strokeWidth={2} />
+        <Card className="p-3.5 sm:p-4 hover:border-primary/40 transition-colors">
+          <Flex align="center" gap={3}>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
+              <Brain size={18} className="sm:w-5 sm:h-5" strokeWidth={2} />
             </div>
-            <div className="min-w-0">
-              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
+            <div className="min-w-0 flex-1">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block truncate tracking-wider text-[10px] sm:text-xs">
                 {t("home.stats.flashcards")}
               </Text>
-              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
+              <Text size="lg" variant="default" className="font-bold block truncate leading-tight sm:text-xl">
                 {loadingStats ? "..." : (stats?.flashcardCount ?? 0)}
               </Text>
             </div>
           </Flex>
+        </Card>
 
-          <Flex align="center" gap={3} className="pt-3 sm:pt-0 sm:pl-3 xl:pl-4">
-            <div className="w-10 h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
-              <MessageSquare size={20} strokeWidth={2} />
+        <Card className="p-3.5 sm:p-4 hover:border-primary/40 transition-colors">
+          <Flex align="center" gap={3}>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-secondary/80 border border-border flex items-center justify-center text-foreground shrink-0">
+              <MessageSquare size={18} className="sm:w-5 sm:h-5" strokeWidth={2} />
             </div>
-            <div className="min-w-0">
-              <Text size="xs" variant="subtle" uppercase className="font-semibold block whitespace-nowrap truncate tracking-wider">
+            <div className="min-w-0 flex-1">
+              <Text size="xs" variant="subtle" uppercase className="font-semibold block truncate tracking-wider text-[10px] sm:text-xs">
                 {t("home.stats.chats")}
               </Text>
-              <Text size="xl" variant="default" className="font-bold block truncate leading-tight">
+              <Text size="lg" variant="default" className="font-bold block truncate leading-tight sm:text-xl">
                 {loadingStats ? "..." : (stats?.chatCount ?? 0)}
               </Text>
             </div>
           </Flex>
-        </Grid>
-      </Card>
+        </Card>
+      </Grid>
 
+      {/* Recent Activity Section */}
       <div>
-        <Flex align="center" justify="between" className="mb-4 border-b border-border pb-2">
-          <Heading level={3} size="sm" uppercase className="tracking-wider">
+        <Flex align="center" justify="between" className="mb-3.5 sm:mb-4 border-b border-border pb-2">
+          <Heading level={3} size="sm" uppercase className="tracking-wider text-xs sm:text-sm">
             {t("home.recentActivity")}
           </Heading>
         </Flex>
 
         {loadingActivity ? (
-          <Card className="p-8 text-center shadow-sm">
+          <Card className="p-6 sm:p-8 text-center shadow-sm">
             <Text size="sm" variant="muted">{t("common.loading")}</Text>
           </Card>
         ) : recentActivity.length === 0 ? (
-          <Card className="p-8 text-center shadow-sm">
+          <Card className="p-6 sm:p-8 text-center shadow-sm">
             <div>
               <Activity size={32} className="mx-auto text-muted-foreground/30 mb-2" />
               <Text size="sm" variant="muted">{t("home.noActivity")}</Text>
@@ -122,21 +130,21 @@ export default function HomePage() {
                   key={act.id}
                   hoverEffect
                   onClick={() => handleActivityClick(act)}
-                  className="p-3.5 px-4 flex-row items-center justify-between gap-4 cursor-pointer"
+                  className="p-3 sm:p-4 flex-row items-center justify-between gap-3 sm:gap-4 cursor-pointer"
                 >
                   <div className="min-w-0 flex-1 space-y-0.5">
-                    <Heading level={4} size="sm" className="line-clamp-1 truncate leading-snug tile-title-scale" title={displayTitle}>
+                    <Heading level={4} size="sm" className="line-clamp-1 truncate text-xs sm:text-sm leading-snug tile-title-scale" title={displayTitle}>
                       {displayTitle}
                     </Heading>
                     {act.courseName && (
-                      <Text size="xs" variant="muted" className="line-clamp-1 truncate">
+                      <Text size="xs" variant="muted" className="line-clamp-1 truncate text-[11px] sm:text-xs">
                         {act.courseName}
                       </Text>
                     )}
                   </div>
 
-                  <Flex direction="col" align="end" justify="center" gap={1} className="shrink-0 text-right">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                  <Flex direction="col" align="end" justify="center" gap={0.5} className="shrink-0 text-right">
+                    <span className="text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">
                       {isQuiz
                         ? t("home.badgeQuiz", "QUIZ")
                         : isChat
@@ -145,15 +153,15 @@ export default function HomePage() {
                     </span>
 
                     {isInProgress ? (
-                      <span className="text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
+                      <span className="text-[10px] sm:text-xs font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider">
                         {t("quizDetails.status.inProgress", "W TOKU")}
                       </span>
                     ) : isChat ? (
-                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums text-[11px] sm:text-xs">
                         {t("home.messagesCount", { count: act.totalCount ?? 0 })}
                       </Text>
                     ) : isQuiz ? (
-                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums text-[11px] sm:text-xs">
                         <span className={`font-bold ${getScoreColorClass(act.scorePercentage)}`}>
                           {act.scorePercentage ?? 0}%
                         </span>
@@ -161,7 +169,7 @@ export default function HomePage() {
                         {formatScore(act.earnedPoints ?? 0)} / {formatScore(act.maxPoints ?? 0)}
                       </Text>
                     ) : (
-                      <Text size="xs" variant="muted" className="font-medium tabular-nums">
+                      <Text size="xs" variant="muted" className="font-medium tabular-nums text-[11px] sm:text-xs">
                         <span className={`font-bold ${getScoreColorClass(act.scorePercentage)}`}>
                           {act.scorePercentage ?? 0}%
                         </span>

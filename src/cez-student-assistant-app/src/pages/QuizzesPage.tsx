@@ -2,17 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, X } from "lucide-react";
-import { QuizCard, Flex, Heading, Input, Pagination, Badge, EmptyState, PrimaryButton, SecondaryButton } from "../components";
+import { QuizCard, Flex, Heading, Input, Pagination, Badge, EmptyState, PrimaryButton, SecondaryButton, ConfirmModal } from "../components";
 import { useQuiz } from "../hooks";
 
 export default function QuizzesPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { quizzes, refreshQuizzes } = useQuiz();
+  const { quizzes, refreshQuizzes, deleteQuiz } = useQuiz();
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [quizToDelete, setQuizToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const fetchQuizzes = async (page: number, search: string) => {
     const res = await refreshQuizzes({
@@ -38,6 +39,13 @@ export default function QuizzesPage() {
   const handleClearSearch = () => {
     setSearchTerm("");
     setPageNumber(1);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!quizToDelete) return;
+    await deleteQuiz(quizToDelete.id);
+    await fetchQuizzes(pageNumber, searchTerm);
+    setQuizToDelete(null);
   };
 
   return (
@@ -101,9 +109,14 @@ export default function QuizzesPage() {
               />
             )
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2 sm:space-y-2.5">
               {quizzes.map((q, idx) => (
-                <QuizCard key={q.id} quiz={q} index={(pageNumber - 1) * 10 + idx + 1} />
+                <QuizCard
+                  key={q.id}
+                  quiz={q}
+                  index={(pageNumber - 1) * 10 + idx + 1}
+                  onDelete={() => setQuizToDelete({ id: q.id, name: q.name })}
+                />
               ))}
             </div>
           )}
@@ -117,6 +130,16 @@ export default function QuizzesPage() {
           />
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!quizToDelete}
+        onClose={() => setQuizToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Usuń quiz"
+        message={`Czy na pewno chcesz usunąć quiz "${quizToDelete?.name || ""}"?`}
+        confirmBtnText="Usuń quiz"
+        isDestructive
+      />
     </div>
   );
 }

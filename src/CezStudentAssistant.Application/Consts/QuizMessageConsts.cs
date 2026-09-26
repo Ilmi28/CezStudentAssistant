@@ -37,4 +37,7 @@ public static class QuizMessageConsts
     public const string UpdateQuizSuccess = "Quiz updated successfully.";
     public const string UpdateQuizError = "An error occurred while updating the quiz.";
     public const string QuizAccessDenied = "You are not authorized to modify this quiz.";
+
+    public const string DeleteQuizSuccess = "Quiz deleted successfully.";
+    public const string DeleteQuizError = "An error occurred while deleting the quiz.";
 }

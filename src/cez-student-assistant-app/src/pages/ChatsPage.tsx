@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, X } from "lucide-react";
+import { Search, X, Plus } from "lucide-react";
 import {
   Flex,
   Heading,
@@ -13,14 +13,17 @@ import {
   Pagination,
   ChatThreadCard,
 } from "../components";
-import { useCourseChat } from "../hooks";
+import { useCourseChat, useCourse } from "../hooks";
+import { chatService, courseService } from "../services";
 
 export default function ChatsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { threads, totalPages, totalCount, fetchThreads, deleteThread } = useCourseChat();
+  const { courses } = useCourse();
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetchThreads({ pageNumber, pageSize: 10, searchTerm });
@@ -34,6 +37,28 @@ export default function ChatsPage() {
   const handleClearSearch = () => {
     setSearchTerm("");
     setPageNumber(1);
+  };
+
+  const handleCreateNewChat = async () => {
+    if (courses.length === 0) {
+      navigate("/courses");
+      return;
+    }
+    setCreating(true);
+    try {
+      const targetCourseId = courses[0].id;
+      const files = await courseService.getCourseFiles(targetCourseId);
+      const defaultAttachedIds = files.filter((f) => !f.isHidden).map((f) => f.id);
+      const created = await chatService.createChatThread({
+        courseId: targetCourseId,
+        attachedResourceIds: defaultAttachedIds,
+      });
+      navigate(`/chats/${created.id}`, { state: { fromPath: "/chats" } });
+    } catch (err) {
+      console.warn("[ChatsPage] Failed to create new chat:", err);
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -51,26 +76,32 @@ export default function ChatsPage() {
             )}
           </Flex>
 
-          <div className="relative w-full sm:w-80">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <Input
-              type="text"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              placeholder={t("quizzes.searchPlaceholder", "Szukaj...")}
-              className="pl-9.5 pr-8 text-xs py-2 bg-card border-border shadow-2xs focus:border-primary"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                title="Wyczyść wyszukiwanie"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
+          <Flex align="center" gap={3} className="w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-80">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                placeholder={t("quizzes.searchPlaceholder", "Szukaj...")}
+                className="pl-9.5 pr-8 text-xs py-2 bg-card border-border shadow-2xs focus:border-primary"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  title="Wyczyść wyszukiwanie"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            <PrimaryButton onClick={handleCreateNewChat} loading={creating} size="sm" icon={<Plus size={16} />} className="shrink-0">
+              {t("chat.newThreadBtn", "Nowy czat")}
+            </PrimaryButton>
+          </Flex>
         </Flex>
 
         <div>

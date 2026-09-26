@@ -69,15 +69,10 @@ export default function ChatThreadDetailsPage() {
     setErrorMsg(null);
     try {
       let targetCourseId = courseIdParam;
-      let targetCourseName = "";
       let defaultAttachedIds: string[] = [];
 
       if (!targetCourseId && courses.length > 0) {
         targetCourseId = courses[0].id;
-        targetCourseName = courses[0].name;
-      } else if (targetCourseId) {
-        const details = await courseService.getCourseDetails(targetCourseId);
-        targetCourseName = details.name;
       }
 
       if (targetCourseId) {
@@ -86,23 +81,24 @@ export default function ChatThreadDetailsPage() {
         defaultAttachedIds = files.filter((f) => !f.isHidden).map((f) => f.id);
       }
 
-      setThread({
-        id: "new",
-        courseId: targetCourseId || "",
-        courseName: targetCourseName,
-        userId: "",
-        title: "Nowy wątek czatu",
-        createdAt: new Date().toISOString(),
+      if (!targetCourseId) {
+        setErrorMsg("Brak dostępnych przedmiotów do utworzenia czatu.");
+        return;
+      }
+
+      const created = await chatService.createChatThread({
+        courseId: targetCourseId,
         attachedResourceIds: defaultAttachedIds,
       });
-      setMessages([]);
+
+      navigate(`/chats/${created.id}`, { replace: true, state: location.state });
     } catch (err: unknown) {
       console.warn("[ChatThreadDetailsPage] Failed to initialize new thread:", err);
       setErrorMsg("Nie udało się utworzyć nowego czatu.");
     } finally {
       setLoading(false);
     }
-  }, [courseIdParam, courses]);
+  }, [courseIdParam, courses, location.state, navigate]);
 
   useEffect(() => {
     if (!id) return;
@@ -131,10 +127,6 @@ export default function ChatThreadDetailsPage() {
 
   const handleUpdateResources = async (resourceIds: string[]) => {
     if (!thread) return;
-    if (isNew) {
-      setThread((prev) => (prev ? { ...prev, attachedResourceIds: resourceIds } : prev));
-      return;
-    }
     try {
       const updated = await chatService.updateThreadResources(thread.id, resourceIds);
       setThread(updated);
@@ -146,32 +138,12 @@ export default function ChatThreadDetailsPage() {
   const handleSendMessage = async (text: string) => {
     if (!thread || !text.trim() || streaming) return;
 
-    let targetThread = thread;
-
-    if (isNew) {
-      try {
-        setStreaming(true);
-        const created = await chatService.createChatThread({
-          courseId: thread.courseId,
-          attachedResourceIds: thread.attachedResourceIds,
-        });
-        targetThread = created;
-        setThread(created);
-        navigate(`/chats/${created.id}`, { replace: true, state: location.state });
-      } catch (createErr: unknown) {
-        console.warn("[ChatThreadDetailsPage] Failed to create thread:", createErr);
-        setErrorMsg("Nie udało się utworzyć nowego wątku czatu.");
-        setStreaming(false);
-        return;
-      }
-    }
-
     const userMsgId = `temp-user-${Date.now()}`;
     const assistantMsgId = `temp-assistant-${Date.now()}`;
 
     const userMsg: ChatMessageDto = {
       id: userMsgId,
-      chatThreadId: targetThread.id,
+      chatThreadId: thread.id,
       role: "user",
       content: text.trim(),
       tokenCount: 0,
@@ -180,7 +152,7 @@ export default function ChatThreadDetailsPage() {
 
     const assistantMsg: ChatMessageDto = {
       id: assistantMsgId,
-      chatThreadId: targetThread.id,
+      chatThreadId: thread.id,
       role: "assistant",
       content: "",
       tokenCount: 0,
@@ -193,7 +165,7 @@ export default function ChatThreadDetailsPage() {
 
     try {
       await chatService.streamChatMessage(
-        targetThread.id,
+        thread.id,
         { userMessage: text },
         (chunk: string) => {
           setMessages((prev) =>
@@ -206,11 +178,18 @@ export default function ChatThreadDetailsPage() {
         }
       );
 
-      const refreshedThread = await chatService.getChatThreadDetails(targetThread.id);
+      const refreshedThread = await chatService.getChatThreadDetails(thread.id);
       setThread(refreshedThread);
     } catch (err: unknown) {
       console.warn("[ChatThreadDetailsPage] Error during streaming:", err);
       setErrorMsg("Błąd podczas przesyłania odpowiedzi AI.");
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsgId && !msg.content
+            ? { ...msg, content: "Wystąpił błąd podczas uzyskiwania odpowiedzi od AI. Spróbuj ponownie." }
+            : msg
+        )
+      );
     } finally {
       setStreaming(false);
     }
@@ -237,8 +216,8 @@ export default function ChatThreadDetailsPage() {
 
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col gap-3.5 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3.5 min-w-0">
+      <div className="flex items-center justify-between gap-3 shrink-0 px-1 sm:px-0">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <SecondaryButton
             type="button"
             onClick={handleGoBack}
@@ -246,29 +225,27 @@ export default function ChatThreadDetailsPage() {
             icon={<ChevronLeft size={22} strokeWidth={2.25} />}
             className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
           />
-          <div className="flex flex-col justify-center min-w-0">
+          <div className="flex flex-col justify-center min-w-0 flex-1">
             {thread.courseName && (
-              <Badge variant="secondary" className="self-start mb-1">
+              <Badge variant="secondary" className="self-start mb-0.5">
                 {thread.courseName}
               </Badge>
             )}
-            <h1 className="text-xl font-bold text-foreground break-words leading-tight">
+            <h1 className="text-base sm:text-xl font-bold text-foreground truncate leading-tight">
               {thread.title || "Nowy wątek czatu"}
             </h1>
           </div>
         </div>
 
         {!isNew && (
-          <div className="flex items-center gap-2.5 shrink-0">
-            <SecondaryButton
-              type="button"
-              onClick={() => setIsDeleteModalOpen(true)}
-              icon={<Trash2 size={15} strokeWidth={2.25} className="text-rose-400" />}
-              className="py-2.5 px-3.5 text-xs font-semibold"
-            >
-              {t("common.delete", "Usuń wątek")}
-            </SecondaryButton>
-          </div>
+          <SecondaryButton
+            type="button"
+            onClick={() => setIsDeleteModalOpen(true)}
+            aria-label={t("common.delete", "Usuń wątek")}
+            title={t("common.delete", "Usuń wątek")}
+            icon={<Trash2 size={18} strokeWidth={2} className="text-rose-500 group-hover:text-rose-400" />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0 hover:border-rose-500/40 hover:bg-rose-500/10"
+          />
         )}
       </div>
 
