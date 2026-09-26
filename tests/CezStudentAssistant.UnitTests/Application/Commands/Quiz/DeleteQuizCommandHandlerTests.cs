@@ -43,7 +43,7 @@ public class DeleteQuizCommandHandlerTests
         {
             Id = quizId,
             UserId = userId,
-            Title = "Test Quiz",
+            Name = "Test Quiz",
             CourseId = Guid.NewGuid()
         };
 
@@ -92,7 +92,7 @@ public class DeleteQuizCommandHandlerTests
         {
             Id = quizId,
             UserId = ownerId,
-            Title = "Test Quiz",
+            Name = "Test Quiz",
             CourseId = Guid.NewGuid()
         };
 
