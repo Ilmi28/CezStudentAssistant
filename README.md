@@ -1,6 +1,6 @@
 # CEZ Student Assistant
 
-Full-stack student learning platform integrated with Moodle LMS Web Services, featuring RAG-based document Q&A, automated flashcard generation, and interactive study sessions with progress tracking.
+Full-stack student learning platform integrated with Moodle Services, featuring RAG-based document Q&A, automated flashcard and quizzes generation with progress tracking.
 
 ## Tech Stack
 
