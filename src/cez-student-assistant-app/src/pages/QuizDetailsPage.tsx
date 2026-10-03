@@ -269,7 +269,7 @@ export default function QuizDetailsPage({ setError }: QuizDetailsPageProps) {
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Header & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+      <div className="sticky top-[57px] sm:top-[61px] md:top-[73px] z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 py-2.5 sm:py-3 mb-2 sm:mb-4 border-b border-border/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
         <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           <SecondaryButton
             type="button"

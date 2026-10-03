@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Commands.Quiz;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
@@ -17,6 +18,7 @@ public class DeleteQuizCommandHandlerTests
 {
     private IUnitOfWork _unitOfWork = null!;
     private IQuizRepository _quizRepository = null!;
+    private ICascadeDeleteService _cascadeDeleteService = null!;
     private DeleteQuizCommandHandler _sut = null!;
 
     [SetUp]
@@ -24,8 +26,9 @@ public class DeleteQuizCommandHandlerTests
     {
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _quizRepository = Substitute.For<IQuizRepository>();
+        _cascadeDeleteService = Substitute.For<ICascadeDeleteService>();
         _unitOfWork.Repository<IQuizRepository>().Returns(_quizRepository);
-        _sut = new DeleteQuizCommandHandler(_unitOfWork);
+        _sut = new DeleteQuizCommandHandler(_unitOfWork, _cascadeDeleteService);
     }
 
     [TearDown]
@@ -60,7 +63,7 @@ public class DeleteQuizCommandHandlerTests
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
 
-        await _quizRepository.Received(1).DeleteAsync(quiz, Arg.Any<CancellationToken>());
+        await _cascadeDeleteService.Received(1).DeleteQuizCascadeAsync(quiz, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

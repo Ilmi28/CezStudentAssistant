@@ -198,6 +198,54 @@ export default function QuizSolverPage({
     }
   };
 
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!attemptDetails || finished || !attemptDetails.timeLimitMinutes || attemptDetails.timeLimitMinutes <= 0) {
+      setTimeLeftSeconds(null);
+      return;
+    }
+
+    const limitMins = attemptDetails.timeLimitMinutes;
+
+    const calculateRemaining = (): number => {
+      let targetEndTimeMs: number;
+      if (attemptDetails.expiresAt) {
+        targetEndTimeMs = new Date(attemptDetails.expiresAt).getTime();
+      } else if (attemptDetails.startedAt) {
+        targetEndTimeMs = new Date(attemptDetails.startedAt).getTime() + limitMins * 60 * 1000;
+      } else {
+        return limitMins * 60;
+      }
+
+      const diffSec = Math.floor((targetEndTimeMs - Date.now()) / 1000);
+      return Math.max(0, diffSec);
+    };
+
+    const initial = calculateRemaining();
+    setTimeLeftSeconds(initial);
+
+    const interval = setInterval(() => {
+      const remaining = calculateRemaining();
+      setTimeLeftSeconds(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        if (!finished) {
+          handleConfirmSubmit();
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [attemptDetails, finished]);
+
+  const formatTimeLeft = (totalSec: number) => {
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
   const handleCancel = () => {
     if (attemptDetails?.quizId) {
       navigate(`/quiz/${attemptDetails.quizId}`, {
@@ -226,7 +274,7 @@ export default function QuizSolverPage({
     return (
       <div className="w-full space-y-5 animate-in fade-in duration-300">
         {/* Top Header */}
-        <div className="flex items-center gap-3.5 min-w-0">
+        <div className="sticky top-[57px] sm:top-[61px] md:top-[73px] z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 py-2.5 sm:py-3 mb-2 border-b border-border/50 transition-all flex items-center gap-3.5 min-w-0">
           <SecondaryButton
             type="button"
             onClick={handleCancel}
@@ -369,37 +417,39 @@ export default function QuizSolverPage({
           </div>
 
           {/* Right sticky question tiles - sleek obsidian dark cards with status dots */}
-          <div className="flex flex-wrap items-center gap-2 md:grid md:grid-cols-5 w-full md:w-auto shrink-0 md:sticky md:top-6 self-start order-1 md:order-2">
-            {attemptDetails.questions.map((q, idx) => {
-              const userSelected = selectedAnswers[q.id] || [];
-              const earnedPoints = calculateQuestionPoints(q, userSelected);
-              const maxPoints = getDifficultyPoints(q.difficulty);
-              const isFull = earnedPoints === maxPoints;
-              const isPartial = earnedPoints > 0 && earnedPoints < maxPoints;
+          <div className="w-full md:w-auto shrink-0 sticky top-[122px] sm:top-[126px] md:top-[148px] z-20 bg-background/95 backdrop-blur-md py-2.5 px-4 sm:px-6 -mx-4 sm:-mx-6 md:mx-0 md:px-0 md:py-0 md:bg-transparent md:backdrop-blur-none border-b md:border-b-0 border-border/50 self-start space-y-2.5 sm:space-y-3 order-1 md:order-2 transition-all">
+            <div className="flex flex-wrap items-center gap-2 md:grid md:grid-cols-5">
+              {attemptDetails.questions.map((q, idx) => {
+                const userSelected = selectedAnswers[q.id] || [];
+                const earnedPoints = calculateQuestionPoints(q, userSelected);
+                const maxPoints = getDifficultyPoints(q.difficulty);
+                const isFull = earnedPoints === maxPoints;
+                const isPartial = earnedPoints > 0 && earnedPoints < maxPoints;
 
-              const ringBorder = isFull
-                ? "border-emerald-500/70 dark:border-emerald-500/60"
-                : isPartial
-                  ? "border-amber-500/70 dark:border-amber-500/60"
-                  : "border-rose-500/70 dark:border-rose-500/60";
+                const ringBorder = isFull
+                  ? "border-emerald-500/70 dark:border-emerald-500/60"
+                  : isPartial
+                    ? "border-amber-500/70 dark:border-amber-500/60"
+                    : "border-rose-500/70 dark:border-rose-500/60";
 
-              return (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById(`report-question-${idx}`);
-                    if (el) {
-                      el.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }
-                  }}
-                  className={`w-9 h-9 md:w-10 md:h-10 rounded-xl bg-card border ${ringBorder} text-foreground font-bold text-xs md:text-sm flex items-center justify-center transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer select-none shadow-2xs`}
-                  title={`${idx + 1}. ${isFull ? t("quizSolver.finishedCorrectFeedback") : isPartial ? "Częściowo poprawna" : t("quizSolver.finishedIncorrectFeedback")}`}
-                >
-                  {idx + 1}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={q.id}
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById(`report-question-${idx}`);
+                      if (el) {
+                        el.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }
+                    }}
+                    className={`w-9 h-9 md:w-10 md:h-10 rounded-xl bg-card border ${ringBorder} text-foreground font-bold text-xs md:text-sm flex items-center justify-center transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer select-none shadow-2xs`}
+                    title={`${idx + 1}. ${isFull ? t("quizSolver.finishedCorrectFeedback") : isPartial ? "Częściowo poprawna" : t("quizSolver.finishedIncorrectFeedback")}`}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -413,14 +463,26 @@ export default function QuizSolverPage({
   return (
     <div className="w-full space-y-5 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div>
-        <SecondaryButton
-          type="button"
-          onClick={handleCancel}
-          aria-label={t("quizDetails.backBtn")}
-          icon={<ChevronLeft size={22} strokeWidth={2.25} />}
-          className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
-        />
+      <div className="sticky top-[57px] sm:top-[61px] md:top-[73px] z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 py-2.5 sm:py-3 mb-2 border-b border-border/50 transition-all flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <SecondaryButton
+            type="button"
+            onClick={handleCancel}
+            aria-label={t("quizDetails.backBtn")}
+            icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          />
+          <div className="flex flex-col justify-center min-w-0 flex-1">
+            {attemptDetails.courseName && (
+              <Badge variant="secondary" className="self-start mb-0.5">
+                {attemptDetails.courseName}
+              </Badge>
+            )}
+            <h1 className="text-base sm:text-lg font-bold text-foreground truncate leading-tight">
+              {attemptDetails.name}
+            </h1>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -579,12 +641,16 @@ export default function QuizSolverPage({
         </div>
 
         {/* Right Sidebar: Timer + Question Selector Tiles */}
-        <div className="w-full md:w-auto shrink-0 md:sticky md:top-6 self-start space-y-3 order-1 md:order-2">
+        <div className="w-full md:w-auto shrink-0 sticky top-[122px] sm:top-[126px] md:top-[148px] z-20 bg-background/95 backdrop-blur-md py-2.5 px-4 sm:px-6 -mx-4 sm:-mx-6 md:mx-0 md:px-0 md:py-0 md:bg-transparent md:backdrop-blur-none border-b md:border-b-0 border-border/50 self-start space-y-2.5 sm:space-y-3 order-1 md:order-2 transition-all">
           {attemptDetails.timeLimitMinutes != null && attemptDetails.timeLimitMinutes > 0 && !finished && (
-            <div className="px-3 py-2 rounded-xl border flex items-center justify-center gap-2 shadow-xs bg-card border-border text-foreground font-semibold">
-              <Clock size={15} strokeWidth={2.25} className="text-primary" />
+            <div className={`px-3 py-2 rounded-xl border flex items-center justify-center gap-2 shadow-xs bg-card transition-colors ${
+              timeLeftSeconds !== null && timeLeftSeconds <= 60
+                ? "border-rose-500/60 text-rose-500 font-bold bg-rose-500/10 animate-pulse"
+                : "border-border text-foreground font-semibold"
+            }`}>
+              <Clock size={15} strokeWidth={2.25} className={timeLeftSeconds !== null && timeLeftSeconds <= 60 ? "text-rose-500" : "text-primary"} />
               <span className="text-xs font-bold tabular-nums">
-                {attemptDetails.timeLimitMinutes} min
+                {timeLeftSeconds !== null ? formatTimeLeft(timeLeftSeconds) : `${attemptDetails.timeLimitMinutes} min`}
               </span>
             </div>
           )}

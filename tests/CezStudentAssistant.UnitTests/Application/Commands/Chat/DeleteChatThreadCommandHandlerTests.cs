@@ -1,6 +1,7 @@
 using CezStudentAssistant.Application.Commands.Chat;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Entities;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using FluentAssertions;
@@ -14,6 +15,7 @@ public class DeleteChatThreadCommandHandlerTests
 {
     private IUnitOfWork _unitOfWork = null!;
     private IChatThreadRepository _chatThreadRepository = null!;
+    private ICascadeDeleteService _cascadeDeleteService = null!;
     private DeleteChatThreadCommandHandler _sut = null!;
 
     [SetUp]
@@ -21,9 +23,10 @@ public class DeleteChatThreadCommandHandlerTests
     {
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _chatThreadRepository = Substitute.For<IChatThreadRepository>();
+        _cascadeDeleteService = Substitute.For<ICascadeDeleteService>();
 
         _unitOfWork.Repository<IChatThreadRepository>().Returns(_chatThreadRepository);
-        _sut = new DeleteChatThreadCommandHandler(_unitOfWork);
+        _sut = new DeleteChatThreadCommandHandler(_unitOfWork, _cascadeDeleteService);
     }
 
     [TearDown]
@@ -48,7 +51,7 @@ public class DeleteChatThreadCommandHandlerTests
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
 
-        await _chatThreadRepository.Received(1).DeleteAsync(thread, Arg.Any<CancellationToken>());
+        await _cascadeDeleteService.Received(1).DeleteChatThreadCascadeAsync(thread, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

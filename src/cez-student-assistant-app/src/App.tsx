@@ -12,7 +12,7 @@ function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col antialiased w-full max-w-full overflow-x-clip">
+    <div className="min-h-screen bg-background text-foreground flex flex-col antialiased w-full max-w-full">
       <Toast variant="error" message={errorMsg} onClose={() => setErrorMsg(null)} />
       <Toast variant="success" message={successMsg} onClose={() => setSuccessMsg(null)} />
       <AppRoutes />

@@ -15,7 +15,7 @@ public class DeleteUserCourseCommand : ICommand, IUserRequest
     public Guid CourseId { get; set; }
 }
 
-public class DeleteUserCourseCommandHandler(IUnitOfWork unitOfWork, IFileService fileService) : BaseCommandHandler<DeleteUserCourseCommand>
+public class DeleteUserCourseCommandHandler(IUnitOfWork unitOfWork, ICascadeDeleteService cascadeDeleteService) : BaseCommandHandler<DeleteUserCourseCommand>
 {
     protected override string SuccessMessage => CourseMessageConsts.DeleteCourseSuccess;
     protected override string ErrorMessage => CourseMessageConsts.DeleteCourseError;
@@ -40,7 +40,7 @@ public class DeleteUserCourseCommandHandler(IUnitOfWork unitOfWork, IFileService
             throw new UnauthorizedException(CourseMessageConsts.CourseAccessDenied);
         }
 
-        await courseRepository.DeleteAsync(course, ct);
+        await cascadeDeleteService.DeleteCourseCascadeAsync(course, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
 }

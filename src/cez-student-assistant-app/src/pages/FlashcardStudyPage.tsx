@@ -258,7 +258,7 @@ export default function FlashcardStudyPage() {
     return (
       <div className="w-full space-y-5 animate-in fade-in duration-300">
         {/* Top Header */}
-        <div className="flex items-center gap-3.5 min-w-0">
+        <div className="sticky top-[57px] sm:top-[61px] md:top-[73px] z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 py-2.5 sm:py-3 mb-2 border-b border-border/50 transition-all flex items-center gap-3.5 min-w-0">
           <SecondaryButton
             type="button"
             onClick={handleGoBack}
@@ -423,14 +423,26 @@ export default function FlashcardStudyPage() {
   return (
     <div className="w-full space-y-5 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div>
-        <SecondaryButton
-          type="button"
-          onClick={handleGoBack}
-          aria-label={t("flashcards.exitStudy")}
-          icon={<ChevronLeft size={22} strokeWidth={2.25} />}
-          className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
-        />
+      <div className="sticky top-[57px] sm:top-[61px] md:top-[73px] z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 py-2.5 sm:py-3 mb-2 border-b border-border/50 transition-all flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <SecondaryButton
+            type="button"
+            onClick={handleGoBack}
+            aria-label={t("flashcards.exitStudy")}
+            icon={<ChevronLeft size={22} strokeWidth={2.25} />}
+            className="w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          />
+          <div className="flex flex-col justify-center min-w-0 flex-1">
+            {deck.courseName && (
+              <Badge variant="secondary" className="self-start mb-0.5">
+                {deck.courseName}
+              </Badge>
+            )}
+            <h1 className="text-base sm:text-lg font-bold text-foreground truncate leading-tight">
+              {deck.name}
+            </h1>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -564,7 +576,7 @@ export default function FlashcardStudyPage() {
         </div>
 
         {/* Right Sticky Card Navigator Tiles - matching QuizSolverPage 1:1 */}
-        <div className="w-full md:w-auto shrink-0 md:sticky md:top-6 self-start order-1 md:order-2">
+        <div className="w-full md:w-auto shrink-0 sticky top-[122px] sm:top-[126px] md:top-[148px] z-20 bg-background/95 backdrop-blur-md py-2.5 px-4 sm:px-6 -mx-4 sm:-mx-6 md:mx-0 md:px-0 md:py-0 md:bg-transparent md:backdrop-blur-none border-b md:border-b-0 border-border/50 self-start order-1 md:order-2 transition-all">
           <div className="flex flex-wrap items-center gap-2 md:grid md:grid-cols-5">
             {sessionCards.map((c, idx) => {
               const isCurrent = idx === currentIndex;

@@ -216,7 +216,7 @@ export default function ChatThreadDetailsPage() {
 
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col gap-3.5 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between gap-3 shrink-0 px-1 sm:px-0">
+      <div className="sticky top-[57px] sm:top-[61px] md:top-[73px] z-30 bg-background/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 py-2.5 sm:py-3 mb-1 border-b border-border/50 transition-all flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <SecondaryButton
             type="button"

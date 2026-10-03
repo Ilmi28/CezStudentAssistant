@@ -23,7 +23,7 @@ public class DeleteUserCourseCommandHandlerTests
 {
     private IUnitOfWork _unitOfWork = null!;
     private ICourseRepository _courseRepository = null!;
-    private IFileService _fileService = null!;
+    private ICascadeDeleteService _cascadeDeleteService = null!;
     private DeleteUserCourseCommandHandler _sut = null!;
 
     [SetUp]
@@ -31,10 +31,10 @@ public class DeleteUserCourseCommandHandlerTests
     {
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _courseRepository = Substitute.For<ICourseRepository>();
-        _fileService = Substitute.For<IFileService>();
+        _cascadeDeleteService = Substitute.For<ICascadeDeleteService>();
 
         _unitOfWork.Repository<ICourseRepository>().Returns(_courseRepository);
-        _sut = new DeleteUserCourseCommandHandler(_unitOfWork, _fileService);
+        _sut = new DeleteUserCourseCommandHandler(_unitOfWork, _cascadeDeleteService);
     }
 
     [TearDown]
@@ -67,7 +67,7 @@ public class DeleteUserCourseCommandHandlerTests
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
 
-        await _courseRepository.Received(1).DeleteAsync(course, Arg.Any<CancellationToken>());
+        await _cascadeDeleteService.Received(1).DeleteCourseCascadeAsync(course, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

@@ -2,6 +2,7 @@ using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using System;
 using System.Threading;
@@ -15,7 +16,7 @@ public class DeleteQuizCommand : ICommand, IUserRequest
     public Guid QuizId { get; set; }
 }
 
-public class DeleteQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandler<DeleteQuizCommand>
+public class DeleteQuizCommandHandler(IUnitOfWork unitOfWork, ICascadeDeleteService cascadeDeleteService) : BaseCommandHandler<DeleteQuizCommand>
 {
     protected override string SuccessMessage => QuizMessageConsts.DeleteQuizSuccess;
     protected override string ErrorMessage => QuizMessageConsts.DeleteQuizError;
@@ -35,7 +36,7 @@ public class DeleteQuizCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandl
             throw new UnauthorizedException(QuizMessageConsts.QuizAccessDenied);
         }
 
-        await quizRepo.DeleteAsync(quiz, ct);
+        await cascadeDeleteService.DeleteQuizCascadeAsync(quiz, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
 }

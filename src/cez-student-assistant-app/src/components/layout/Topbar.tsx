@@ -84,7 +84,7 @@ export default function Topbar({
   return (
     <header className="bg-sidebar border-b border-sidebar-border sticky top-0 z-40 shadow-md" ref={mobileNavRef}>
       {/* DESKTOP HEADER VIEW (md and up) - 100% Original Layout */}
-      <div className="hidden md:flex md:items-center md:justify-between px-8 py-4 gap-4">
+      <div className="hidden md:flex md:items-center md:justify-between px-8 h-[72px] gap-4">
         <Navbar />
         <UserControls
           loading={loading}
@@ -96,7 +96,7 @@ export default function Topbar({
       </div>
 
       {/* MOBILE HEADER VIEW (< md) - Sleek 1-line topbar */}
-      <div className="flex md:hidden items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 gap-2 sm:gap-3 w-full max-w-full">
+      <div className="flex md:hidden items-center justify-between px-3 sm:px-4 h-[56px] sm:h-[60px] gap-2 sm:gap-3 w-full max-w-full">
         {/* Compact Mobile Brand Logo */}
         <Navbar isMobileCompact />
 

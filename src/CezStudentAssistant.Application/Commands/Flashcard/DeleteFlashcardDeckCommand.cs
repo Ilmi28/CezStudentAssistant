@@ -2,6 +2,7 @@ using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 using System;
 using System.Threading;
@@ -15,7 +16,7 @@ public class DeleteFlashcardDeckCommand : ICommand, IUserRequest
     public Guid DeckId { get; set; }
 }
 
-public class DeleteFlashcardDeckCommandHandler(IUnitOfWork unitOfWork) : BaseCommandHandler<DeleteFlashcardDeckCommand>
+public class DeleteFlashcardDeckCommandHandler(IUnitOfWork unitOfWork, ICascadeDeleteService cascadeDeleteService) : BaseCommandHandler<DeleteFlashcardDeckCommand>
 {
     protected override string SuccessMessage => FlashcardMessageConsts.DeleteFlashcardDeckSuccess;
     protected override string ErrorMessage => FlashcardMessageConsts.DeleteFlashcardDeckError;
@@ -35,7 +36,7 @@ public class DeleteFlashcardDeckCommandHandler(IUnitOfWork unitOfWork) : BaseCom
             throw new UnauthorizedException(FlashcardMessageConsts.FlashcardAccessDenied);
         }
 
-        await deckRepo.DeleteAsync(deck, ct);
+        await cascadeDeleteService.DeleteFlashcardDeckCascadeAsync(deck, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
 }

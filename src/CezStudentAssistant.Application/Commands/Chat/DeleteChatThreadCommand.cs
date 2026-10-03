@@ -2,6 +2,7 @@ using CezStudentAssistant.Application.Consts;
 using CezStudentAssistant.Application.Exceptions;
 using CezStudentAssistant.Application.Interfaces.CQRS;
 using CezStudentAssistant.Application.Interfaces.Persistence;
+using CezStudentAssistant.Application.Interfaces.Services;
 using CezStudentAssistant.Domain.Interfaces.Repositories;
 
 namespace CezStudentAssistant.Application.Commands.Chat;
@@ -12,7 +13,7 @@ public sealed class DeleteChatThreadCommand : ICommand, IUserRequest
     public Guid ChatThreadId { get; set; }
 }
 
-public class DeleteChatThreadCommandHandler(IUnitOfWork unitOfWork)
+public class DeleteChatThreadCommandHandler(IUnitOfWork unitOfWork, ICascadeDeleteService cascadeDeleteService)
     : BaseCommandHandler<DeleteChatThreadCommand>
 {
     protected override string SuccessMessage => ChatConsts.ThreadDeletedSuccess;
@@ -29,7 +30,7 @@ public class DeleteChatThreadCommandHandler(IUnitOfWork unitOfWork)
             throw new ForbiddenException(ChatConsts.AccessDenied);
         }
 
-        await threadRepo.DeleteAsync(thread, ct);
+        await cascadeDeleteService.DeleteChatThreadCascadeAsync(thread, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
 }
